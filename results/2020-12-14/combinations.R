@@ -1,5 +1,5 @@
-enzims <- read.table("../../data/enzymes.txt", row.names = 1,
-                     col.names = c('enzims', 'Prime5', 'Prime3'),
+enzims <- read.table("../../data/enzyme_selection.txt", row.names = 1,
+                     col.names = c('enzims', 'Prime5', 'Prime3', 'Overhang'),
                      as.is = TRUE)
 NumEnzims <- dim(enzims)[1]
 combinacions_all <- data.frame(
