@@ -1,0 +1,70 @@
+---
+title: "Double-digest restriction-associated DNA sequencing of *Coregonus lavaretus*"
+author: "J. Ignacio Lucas Lledó"
+date: "14/1/2021"
+output: html_document
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Project size
+We attempt to prepare over 500 DNA libraries for ddRAD-seq. We plan for 2 NextSeq sequencing runs, expecting each to yield about 300 million 150-bases, single-end reads. Assuming successful sequencing, and well balanced among samples, that would produce over 1 million reads per sample. But that would produce a very modest mean coverage of $\sim$10 per locus if we were sequencing around 100.000 loci. It is, therefore essential to limit the number of loci to not much more than 50000. Such a modest number of loci should be enough for the purpose of population clustering and phylogenetics. A tight limit in the number of loci should also help optimize the fraction of loci that get well covered in all or most of the samples: the probability of a locus getting sequenced deep enough in all samples is $p^N$, $p$ being the probability of the locus getting sequenced deep enough in one sample, and $N$, the number of samples. And in a best-case scenario, $p$ is the Poisson probability of a locus getting sequenced at least a minimum number of times given the expected average coverage. Happily assuming all loci have the same chance of being sequenced, the graph below should show the optimistically expected fraction of 550 samples getting sequenced with a minimum coverage $k$, given an assumed average coverage.
+
+```{r coverage}
+MinimumCoverage <- 1:15
+AverageCoverage <- c(10, 15, 20, 25)
+FractionCovered <- lapply(AverageCoverage,
+                          function(x) (1 - ppois(MinimumCoverage, x-1))^550)
+# ppois(x,y) is P(X <= x). I subtract 1 to x to make threshold inclusive.
+plot(c(0,15), c(0,1), type = 'n', xlab = 'Minimum coverage',
+     ylab='Fraction of samples with minimum coverage')
+lines(MinimumCoverage, FractionCovered[[1]], lty = 1)
+lines(MinimumCoverage, FractionCovered[[2]], lty = 2)
+lines(MinimumCoverage, FractionCovered[[3]], lty = 3)
+lines(MinimumCoverage, FractionCovered[[4]], lty = 4)
+legend(11, 0.95, legend = as.character(AverageCoverage),
+       lty = 1:4, title = 'Average coverage')
+```
+
+Adding a third sequencing run could increase the expected average coverage to between 15 and 30, depending on the number of loci targeted (between 50.000 and 100.000). We will probably need it.
+
+# State of the art
+I have not found studies using double digest RAD sequencing in European whitefish. @Feulner2019 used traditional RAD sequencing with enzyme *SbfI*, random shearing and selection of sizes between 300 and 500 bases. They sequenced 500 million reads from 180 samples, identified 125.154 loci and retained only 16.173, in 138 individuals, after filtering. @De-Kayne2018 also use the *SbfI* enzyme. And the same enzyme is regularly used for digestion of American whitefish [@Gagnaire2013].
+
+Mar did find a couple references that apply ddRAD-seq to \emph{Coregonus} species. @Recknagel2015 develop a ddRAD-seq protocol for Ion Torrent sequencing technologies. They digest the fish DNA with *PstI-HF* (rare cutter) and *MspI* (frequent cutter), and select for two different ranges: 250-320 and 130-200 bases. They assemble 538133 stacks from the longer library and 378077 from the short one, although only a fraction of them are *shared* (I guess across libraries): 102959 and 87908 loci in the long and short libraries, respectively. I take these to mean that individual libraries waste a substantial sequencing depth in fragments that are likely outside the targeted size range, randomly included in any library due to imprecision in size selection. 
+
+```{r digestioRecknagel2015}
+suppressMessages(library(SimRAD))
+REFERENCE <- '../../data/reference.fa'
+refseq <- ref.DNAseq(REFERENCE, subselect.contigs = FALSE)
+# Restriction Enzyme 1 PstI
+cs_5p1 <- "CTGCA"
+cs_3p1 <- "G"
+# Restriction Enzyme 2 MspI
+cs_5p2 <- "C"
+cs_3p2 <- "CGG"
+simseq.dig <- insilico.digest(refseq, cs_5p1, cs_3p1, cs_5p2, cs_3p2, verbose=FALSE)
+simseq.sel <- adapt.select(simseq.dig, type="AB+BA", cs_5p1, cs_3p1, cs_5p2, cs_3p2)
+simseq.short <- size.select(simseq.sel, min.size=130, max.size=200, graph=FALSE, verbose=FALSE)
+simseq.long  <- size.select(simseq.sel, min.size=250, max.size=320, graph=FALSE, verbose=FALSE)
+simseq.crotti <- size.select(simseq.sel, min.size=150, max.size=300, graph=FALSE, verbose=FALSE)
+```
+
+Taking only shared loci into account, the number of loci identified somewhat resembles the in silico prediction: `r length(simseq.long)` and `r length(simseq.short)` in long and short ranges, respectively. The almost double number of longer fragments sequenced than expected is a mistery.
+
+The other article is by @Crotti2020. They compare ddRAD-seq to EpiRAD-seq. For ddRAD-seq, they use the exact same combination of enzymes, *PstI-HF* and *MspI*. They select 150-300 bp fragments and found 355491 loci among 43 individuals, but only 108127 loci per individual on average. They don't say the number of loci common to at least a few samples. The numbers are compatible with the in silico prediction of `r length(simseq.crotti)` loci in the targeted size range, a random fraction of them being sequenced in any single individual.
+
+What I conclude is that using frequent cutters, that generate an excess of loci, is not incompatible with selecting a small number of loci, if selected sizes are long enough, because cutting frequently produce mostly very short fragments and much fewer long ones. For example, in silico digestion with *PstI* and *MspI* suggest there may be `r length(size.select(simseq.sel, min.size=700, max.size=850))` fragments between 700 and 850 bp.
+
+However, another lesson is that size selection is imprecise, many reads potentially being wasted in sequencing fragments from outside the range, which are not expected to be shared among libraries. How does the fragment length distribution affect the proportion of out-of-range fragments included in a library? It seems to me that the longer the range, the lower the proportion of out-of-range fragments should be retained, but it's difficult to tell. By using two rare cutters instead of one rare and one frequent cutter, the fragment length distribution is shifted to the right. A larger fraction of the genome will be left in big chunks. That could also afect (improve?) the efficiency of the ligation step, because it reduces the molarity of not-targeted, sticky DNA ends.
+
+In conclusion, I think it's worth using two rare cutters, which allow for the selection of a wide range of fragment sizes without admitting an excessive number of fragments. See the report in `2020-12-14` for additional in silico digestions that suggest *NsiI* and *SphI* as a promissing pair of restriction enzymes.
+
+# Overview of the protocol
+
+Amparo (SCSIE) suggested to use an optimized ddRAD-seq protocol that uses Illumina indices instead of inline barcodes [@Salas-Lizana2018]. That way, it is cheaper tu multiplex when using several samples.
+
+# References
