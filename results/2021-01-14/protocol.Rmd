@@ -10,14 +10,14 @@ bibliography: references.bib
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Project size
-We attempt to prepare over 500 DNA libraries for ddRAD-seq. We plan for 2 NextSeq sequencing runs, expecting each to yield about 300 million 150-bases, single-end reads. Assuming successful sequencing, and well balanced among samples, that would produce over 1 million reads per sample. But that would produce a very modest mean coverage of $\sim$10 per locus if we were sequencing around 100.000 loci. It is, therefore essential to limit the number of loci to not much more than 50000. Such a modest number of loci should be enough for the purpose of population clustering and phylogenetics. A tight limit in the number of loci should also help optimize the fraction of loci that get well covered in all or most of the samples: the probability of a locus getting sequenced deep enough in all samples is $p^N$, $p$ being the probability of the locus getting sequenced deep enough in one sample, and $N$, the number of samples. And in a best-case scenario, $p$ is the Poisson probability of a locus getting sequenced at least a minimum number of times given the expected average coverage. Happily assuming all loci have the same chance of being sequenced, the graph below should show the optimistically expected fraction of 550 samples getting sequenced with a minimum coverage $k$, given an assumed average coverage.
+# Project size
+We attempt to prepare over 600 DNA libraries for ddRAD-seq. We plan for 3 NextSeq sequencing runs, expecting each to yield about 300 million 150-bases, single-end reads. Assuming successful sequencing, and well balanced among samples, that would produce around 1.5 million reads per sample. But that would produce a very modest mean coverage of $\sim$15 per locus if we were sequencing around 100000 loci. It is, therefore essential to limit the number of loci to not much more than 50000. Such a modest number of loci should be enough for the purpose of population clustering and phylogenetics. A tight limit in the number of loci should also help optimize the fraction of loci that get well covered in all or most of the samples: the probability of a locus getting sequenced deep enough in all samples is $p^N$, $p$ being the probability of the locus getting sequenced deep enough in one sample, and $N$, the number of samples. And in a best-case scenario, $p$ is the Poisson probability of a locus getting sequenced at least a minimum number of times given the expected average coverage. Happily assuming all loci have the same chance of being sequenced, the graph below should show the optimistically expected fraction of 600 samples getting sequenced with a minimum coverage $k$, given an assumed average coverage.
 
 ```{r coverage}
 MinimumCoverage <- 1:15
 AverageCoverage <- c(10, 15, 20, 25)
 FractionCovered <- lapply(AverageCoverage,
-                          function(x) (1 - ppois(MinimumCoverage, x-1))^550)
+                          function(x) (1 - ppois(MinimumCoverage, x-1))^753)
 # ppois(x,y) is P(X <= x). I subtract 1 to x to make threshold inclusive.
 plot(c(0,15), c(0,1), type = 'n', xlab = 'Minimum coverage',
      ylab='Fraction of samples with minimum coverage')
@@ -32,30 +32,41 @@ legend(11, 0.95, legend = as.character(AverageCoverage),
 Adding a third sequencing run could increase the expected average coverage to between 15 and 30, depending on the number of loci targeted (between 50.000 and 100.000). We will probably need it.
 
 # State of the art
-I have not found studies using double digest RAD sequencing in European whitefish. @Feulner2019 used traditional RAD sequencing with enzyme *SbfI*, random shearing and selection of sizes between 300 and 500 bases. They sequenced 500 million reads from 180 samples, identified 125.154 loci and retained only 16.173, in 138 individuals, after filtering. @De-Kayne2018 also use the *SbfI* enzyme. And the same enzyme is regularly used for digestion of American whitefish [@Gagnaire2013].
+I have not found studies using double digest RAD sequencing in European whitefish. @Feulner2019 used traditional RAD sequencing with enzyme *SbfI*, random shearing and selection of sizes between 300 and 500 bases. They sequenced 500 million reads from 180 samples, identified 125154 loci and retained only 16173, in 138 individuals, after filtering. @De-Kayne2018 also use the *SbfI* enzyme. And the same enzyme is regularly used for digestion of American whitefish [@Gagnaire2013].
 
-Mar did find a couple references that apply ddRAD-seq to \emph{Coregonus} species. @Recknagel2015 develop a ddRAD-seq protocol for Ion Torrent sequencing technologies. They digest the fish DNA with *PstI-HF* (rare cutter) and *MspI* (frequent cutter), and select for two different ranges: 250-320 and 130-200 bases. They assemble 538133 stacks from the longer library and 378077 from the short one, although only a fraction of them are *shared* (I guess across libraries): 102959 and 87908 loci in the long and short libraries, respectively. I take these to mean that individual libraries waste a substantial sequencing depth in fragments that are likely outside the targeted size range, randomly included in any library due to imprecision in size selection. 
+Mar did find a couple references that apply ddRAD-seq to \emph{Coregonus} species. @Recknagel2015 develop a ddRAD-seq protocol for Ion Torrent sequencing technologies. They digest the fish DNA with *PstI* (rare cutter) and *MspI* (frequent cutter), and select for two different ranges: 250-320 and 130-200 bases. They assemble 538133 stacks from the longer library and 378077 from the short one, although only a fraction of them are *shared* (I guess across libraries): 102959 and 87908 loci in the long and short libraries, respectively. I take these to mean that individual libraries waste a substantial sequencing depth in fragments that are likely outside the targeted size range, randomly included in any library due to imprecision in size selection. 
 
 ```{r digestioRecknagel2015}
-suppressMessages(library(SimRAD))
-REFERENCE <- '../../data/reference.fa'
-refseq <- ref.DNAseq(REFERENCE, subselect.contigs = FALSE)
-# Restriction Enzyme 1 PstI
-cs_5p1 <- "CTGCA"
-cs_3p1 <- "G"
-# Restriction Enzyme 2 MspI
-cs_5p2 <- "C"
-cs_3p2 <- "CGG"
-simseq.dig <- insilico.digest(refseq, cs_5p1, cs_3p1, cs_5p2, cs_3p2, verbose=FALSE)
-simseq.sel <- adapt.select(simseq.dig, type="AB+BA", cs_5p1, cs_3p1, cs_5p2, cs_3p2)
-simseq.short <- size.select(simseq.sel, min.size=130, max.size=200, graph=FALSE, verbose=FALSE)
-simseq.long  <- size.select(simseq.sel, min.size=250, max.size=320, graph=FALSE, verbose=FALSE)
-simseq.crotti <- size.select(simseq.sel, min.size=150, max.size=300, graph=FALSE, verbose=FALSE)
+if (file.exists('libLen.RData')) {
+  load('libLen.RData')
+} else {
+  suppressMessages(library(SimRAD))
+  REFERENCE <- '../../data/reference.fa'
+  refseq <- ref.DNAseq(REFERENCE, subselect.contigs = FALSE)
+  # Restriction Enzyme 1 PstI
+  cs_5p1 <- "CTGCA"
+  cs_3p1 <- "G"
+  # Restriction Enzyme 2 MspI
+  cs_5p2 <- "C"
+  cs_3p2 <- "CGG"
+  simseq.dig <- insilico.digest(refseq, cs_5p1, cs_3p1, cs_5p2, cs_3p2, verbose=FALSE)
+  simseq.sel <- adapt.select(simseq.dig, type="AB+BA", cs_5p1, cs_3p1, cs_5p2, cs_3p2)
+  simseq.short <- size.select(simseq.sel, min.size=130, max.size=200,
+                              graph=FALSE, verbose=FALSE)
+  simseq.long  <- size.select(simseq.sel, min.size=250, max.size=320,
+                              graph=FALSE, verbose=FALSE)
+  simseq.crotti <- size.select(simseq.sel, min.size=150, max.size=300,
+                               graph=FALSE, verbose=FALSE)
+  LibLen <- data.frame(RecknagelShort = length(simseq.short),
+                              RecknagelLong  = length(simseq.long),
+                              Crotti = length(simseq.crotti))
+  save(LibLen, file = 'libLen.RData')
+}
 ```
 
-Taking only shared loci into account, the number of loci identified somewhat resembles the in silico prediction: `r length(simseq.long)` and `r length(simseq.short)` in long and short ranges, respectively. The almost double number of longer fragments sequenced than expected is a mistery.
+Taking only shared loci into account, the number of loci identified somewhat resembles the in silico prediction: `r LibLen$RecknagelLong` and `r LibLen$RecknagelShort` in long and short ranges, respectively. The almost double number of longer fragments sequenced than expected is a mistery.
 
-The other article is by @Crotti2020. They compare ddRAD-seq to EpiRAD-seq. For ddRAD-seq, they use the exact same combination of enzymes, *PstI-HF* and *MspI*. They select 150-300 bp fragments and found 355491 loci among 43 individuals, but only 108127 loci per individual on average. They don't say the number of loci common to at least a few samples. The numbers are compatible with the in silico prediction of `r length(simseq.crotti)` loci in the targeted size range, a random fraction of them being sequenced in any single individual.
+The other article is by @Crotti2020. They compare ddRAD-seq to EpiRAD-seq. For ddRAD-seq, they use the exact same combination of enzymes, *PstI* and *MspI*. They select 150-300 bp fragments and found 355491 loci among 43 individuals, but only 108127 loci per individual on average. They don't say the number of loci common to at least a few samples. The numbers are compatible with the in silico prediction of `r LibLen$Crotti` loci in the targeted size range, a random fraction of them being sequenced in any single individual.
 
 What I conclude is that using frequent cutters, that generate an excess of loci, is not incompatible with selecting a small number of loci, if selected sizes are long enough, because cutting frequently produce mostly very short fragments and much fewer long ones. For example, in silico digestion with *PstI* and *MspI* suggest there may be `r length(size.select(simseq.sel, min.size=700, max.size=850))` fragments between 700 and 850 bp.
 
@@ -63,8 +74,30 @@ However, another lesson is that size selection is imprecise, many reads potentia
 
 In conclusion, I think it's worth using two rare cutters, which allow for the selection of a wide range of fragment sizes without admitting an excessive number of fragments. See the report in `2020-12-14` for additional in silico digestions that suggest *NsiI* and *SphI* as a promissing pair of restriction enzymes.
 
+# Choice of restriction enzyme combination
+When limiting the expected number of targeted fragments between 50000 and 65000, the combination with more unique fragments is *NsiI* and *SphI*. However, I am afraid that their products could spuriously cross-hybridize through the \textsf{CA}-3' and \textsf{TG}-3' ends of their respective overhangs. Using T7 DNA ligase, instead of T4, would increase the specificity for well paired substrate (see [NEB](https://international.neb.com/tools-and-resources/selection-charts/properties-of-dna-and-rna-ligases)). But T7 requires PEG in addition to ATP, and I don't know how PEG could affect the digestion. To simplify, we will use T4 DNA ligase.
+
+The next best combinations are *SphI* with *HindIII* ($\sim59000$ expected targeted fragments) and *BmtI* with *BamHI* ($\sim 61000 expected targeted fragments). For the moment I choose *SphI* and *HindIII*, which share a recomended diluent buffer. See the document `adapters.pdf` for the adapters design.
+
 # Overview of the protocol
 
-Amparo (SCSIE) suggested to use an optimized ddRAD-seq protocol that uses Illumina indices instead of inline barcodes [@Salas-Lizana2018]. That way, it is cheaper tu multiplex when using several samples.
+Amparo (SCSIE) suggested to use an optimized ddRAD-seq protocol that uses Illumina indices instead of inline barcodes [@Salas-Lizana2018]. That way, it is cheaper tu multiplex when using several samples. Briefly, the protocol includes the following steps:
+
+- DNA extraction.
+- Annealing of non-barcoded adapters (P1 and P2).
+- Double digestion and simultaneous ligation of adapters.
+- Clean up with magnetic beads and removing small fragments.
+- PCR amplification and incorporation of Nextera Indices.
+- Pooling samples in equimolar proportion.
+- Size selection.
+
+We will use a DNA extraction method different from the one suggested by @Salas-Lizana2018, and adequate for fish tissue, but respecting the recommendation of final concentration and volume. Annother difference is the simultaneous digestion and ligation. This simplification of two reactions in one step will be attempted after designing the universal adapters in a way that does not reproduce the recognition sites. According to @Salas-Lizana2018, the adapter specific of the *MseI* enzyme should be 10 times more concentrated than the adapter for *EcoRI* sites. I assume the reason is that *MseI* cuts more frequently.
+
+The fourth step cleans up the digestion/ligation reaction while imposing a size threshold only on the left side of the distribution. The actual size selection step is supposed to happen after pooling the samples, at the end of the protocol. This seems to serve the purpose of minimizing the number of size-selection procedures, which could otherwise introduce variation among samples. I guess the fact of running the PCR amplification before removing larger DNA fragments is not concerning, because after all the targetted fragments being shorter, they are expected to amplify more efficiently.
+
+# DNA extraction
+
+# Annealing of adapters
+
 
 # References

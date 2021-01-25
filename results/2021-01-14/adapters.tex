@@ -1,0 +1,147 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{rotating}
+\usepackage{color}
+\usepackage{fancyvrb}
+\usepackage[left=3cm]{geometry}
+\author{J. Ignacio Lucas Lledó}
+
+\begin{document}
+\begin{flushleft}
+\section{Salas-Lizana and Oono's design}
+These are the sequences of the adapters reported by \cite{Salas-Lizana2018}.
+
+\subsection*{\emph{MseI}-P1}
+
+\begin{tabular}{l}
+\verb+*TACTGTCTCTTATACGAGAACAA+\\
+\verb+   |||||||||||||+\\[-8pt]
+   \begin{turn}{180}
+   \verb+GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG   +
+   \end{turn}
+\\
+\end{tabular}
+\vspace*{0.3cm}
+
+\subsection*{\emph{EcoRI}-P2}
+
+%\vspace*{0.3cm}
+\begin{tabular}{l}
+\verb+  GTCGGCAGCGTCAGATGTGTATAAGAGACAGC+\\
+\verb+  ||||||||||||||||||||||||||||||||+\\[-8pt]
+   \begin{turn}{180}
+   \verb+*AATTGCTGTCTCTTATACACATCTGACGCTGCCGACGA+
+   \end{turn}
+\\
+\end{tabular}
+\vspace*{0.3cm}
+
+\subsection*{Ligated fragment}
+
+%\vspace*{0.3cm}
+\fvset{fontsize=\scriptsize,commandchars=\\\{\}}
+\begin{tabular}{l}
+   \Verb+  GTCGGCAGCGTCAGATGTGTATAAGAGACAGC\textcolor{blue}{AATTCNNNNNNNNNNNNT}TACTGTCTCTTATACGAGAACAA+\\[-4pt]
+   \Verb+  |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||+\\[-10pt]
+   \begin{turn}{180}
+      \Verb+GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG\textcolor{blue}{TAANNNNNNNNNNNNG}AATTGCTGTCTCTTATACACATCTGACGCTGCCGACGA+
+   \end{turn}
+\\
+\end{tabular}
+\vspace*{0.3cm}
+
+\subsection*{Ligated fragment with amplification primers}
+The sequences of the Illumina amplification primers is taken from document \# 1000000002694 v14 (page 4; July 2020). Note that the primer with \emph{i7} identification will only hybridize after successful extension from \emph{i5} primer.
+
+%\vspace*{0.3cm}
+\fvset{fontsize=\tiny}
+\begin{tabular}{l}
+   \Verb+  AATGATACGGCGACCACCGAGATCTACAC[i5]TCGTCGGCAGCGTC+\\[-6pt]
+   \Verb+                                     GTCGGCAGCGTCAGATGTGTATAAGAGACAGC\textcolor{blue}{AATTCNNNNNNNNNNNNT}TACTGTCTCTTATACGAGAACAA+\\[-6pt]
+   \Verb+                                     |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||+\\[-10pt]
+   \begin{turn}{180}
+      \Verb+GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG\textcolor{blue}{TAANNNNNNNNNNNNG}AATTGCTGTCTCTTATACACATCTGACGCTGCCGACGA                                   +
+   \end{turn}
+\\[-6pt]
+   \begin{turn}{180}
+      \Verb+CAAGCAGAAGACGGCATACGAGAT[i7]GTCTCGTGGGCTCGG                                                                                                            +
+   \end{turn}
+\\
+\end{tabular}
+\vspace*{0.3cm}
+
+\section{\emph{SphI} and \emph{HindIII} combination}
+I temptatively choose this combination of results on the grounds of the analysis is folder `2020-12-14`. If the \emph{Coregonus} sp. `balchen' reference genome was accurate, we would obtain about 59000 fragments in the size range 250-650, with the two ends cut by different enzymes. \emph{SphI} recognizes the sequence \textsf{GCATGC} and produces \textsf{CATG}-3' overhangs. And \emph{HindIII} recognizes \textsf{AAGCTT} and produces 5'-\textsf{AGCT} overhangs. Below I show a possible design for the universal adapters. Note that there are two adapters, each made of two strands, and in principle I should not matter which one is specific for which enzyme.
+
+\subsection*{\emph{HindIII}-P1 adaptor}
+\begin{tabular}{l}
+\verb+*AGCTCTGTCTCTTATACGAGAACAA+\\
+\verb+     |||||||||||||+\\[-8pt]
+   \begin{turn}{180}
+   \verb+GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG     +
+   \end{turn}
+\\
+\end{tabular}
+\vspace*{0.3cm}
+
+\subsection*{\emph{SphI}-P2 adaptor}
+
+\begin{tabular}{l}
+\verb+  GTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATG+\\
+\verb+  ||||||||||||||||||||||||||||||||+\\[-8pt]
+   \begin{turn}{180}
+   \verb+*GCTGTCTCTTATACACATCTGACGCTGCCGACGA+
+   \end{turn}
+\\
+\end{tabular}
+\vspace*{0.3cm}
+
+\subsection*{Ligated fragment}
+Note that once the adapters are ligated to the genomic fragment (blue), the restriction sites are not available any more, and the fragment will not be digested again.
+
+\fvset{fontsize=\scriptsize,commandchars=\\\{\}}
+\begin{tabular}{l}
+\Verb+  GTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATG\textcolor{blue}{CNNNNNNNNNNA}AGCTCTGTCTCTTATACGAGAACAA+\\[-6pt]
+\Verb+  ||||||||||||||||||||||||||||||||||||\textcolor{blue}{||||||||||||}|||||||||||||||||+\\[-10pt]
+   \begin{turn}{180}
+   \Verb+GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG\textcolor{blue}{AGCTTNNNNNNNNNNGCATG}GCTGTCTCTTATACACATCTGACGCTGCCGACGA+
+   \end{turn}
+\\
+\end{tabular}
+\vspace*{0.3cm}
+
+\subsection*{Ligated fragment with amplification primers}
+\fvset{fontsize=\tiny}
+\begin{tabular}{l}
+\Verb+AATGATACGGCGACCACCGAGATCTACAC[i5]TCGTCGGCAGCGTC+\\[-8pt]
+\Verb+                                   GTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATG\textcolor{blue}{CNNNNNNNNNNA}AGCTCTGTCTCTTATACGAGAACAA+\\[-6pt]
+\Verb+                                   ||||||||||||||||||||||||||||||||||||\textcolor{blue}{||||||||||||}|||||||||||||||||+\\[-10pt]
+   \begin{turn}{180}
+   \Verb+GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG\textcolor{blue}{AGCTTNNNNNNNNNNGCATG}GCTGTCTCTTATACACATCTGACGCTGCCGACGA                                 +
+   \end{turn}
+\\[-8pt]
+   \begin{turn}{180}
+   \Verb+CAAGCAGAAGACGGCATACGAGAT[i7]GTCTCGTGGGCTCGG                                                                                                          +
+   \end{turn}
+\\
+\end{tabular}
+\vspace*{0.3cm}
+
+\subsection*{Amplified fragment}
+Below, the positions marked as \emph{[i5]} and \emph{[i7]} correspond to the 10-bases long indices. In all, the adapters and amplification primers will represent either 141 or 149 additional bases (145 on average), depending on whether we count overhangs or not as part of the length of the double stranded DNA fragment. Thus, aiming at an original size range of 250-650 means we should select amplified fragments in the range 395-795, or 400 to 800.
+\begin{tabular}{l}
+\Verb+AATGATACGGCGACCACCGAGATCTACAC[i5]TCGTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATG\textcolor{blue}{CNNNNNNNNNNA}AGCTCTGTCTCTTATACACATCTCCGAGCCCACGAGAC[i7]ATCTCGTATGCCGTCTTCTGCTTG+\\[-8pt]
+\Verb+||||||||||||||||||||||||||||| || ||||||||||||||||||||||||||||||||||||||\textcolor{blue}{||||||||||||}|||||||||||||||||||||||||||||||||||||| || ||||||||||||||||||||||||+\\[-10pt]
+\begin{turn}{180}
+\Verb+CAAGCAGAAGACGGCATACGAGAT[i7]GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG\textcolor{blue}{AGCTTNNNNNNNNNNGCATG}GCTGTCTCTTATACACATCTGACGCTGCCGACGA[i5]GTGTAGATCTCGGTGGTCGCCGTATCATT+
+\end{turn}
+\\
+\end{tabular}
+
+\end{flushleft}
+\bibliography{references} 
+\bibliographystyle{ieeetr}
+\end{document}
