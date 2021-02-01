@@ -37,10 +37,10 @@ I have not found studies using double digest RAD sequencing in European whitefis
 Mar did find a couple references that apply ddRAD-seq to \emph{Coregonus} species. @Recknagel2015 develop a ddRAD-seq protocol for Ion Torrent sequencing technologies. They digest the fish DNA with *PstI* (rare cutter) and *MspI* (frequent cutter), and select for two different ranges: 250-320 and 130-200 bases. They assemble 538133 stacks from the longer library and 378077 from the short one, although only a fraction of them are *shared* (I guess across libraries): 102959 and 87908 loci in the long and short libraries, respectively. I take these to mean that individual libraries waste a substantial sequencing depth in fragments that are likely outside the targeted size range, randomly included in any library due to imprecision in size selection. 
 
 ```{r digestioRecknagel2015}
+suppressMessages(library(SimRAD))
 if (file.exists('libLen.RData')) {
   load('libLen.RData')
 } else {
-  suppressMessages(library(SimRAD))
   REFERENCE <- '../../data/reference.fa'
   refseq <- ref.DNAseq(REFERENCE, subselect.contigs = FALSE)
   # Restriction Enzyme 1 PstI
@@ -57,9 +57,12 @@ if (file.exists('libLen.RData')) {
                               graph=FALSE, verbose=FALSE)
   simseq.crotti <- size.select(simseq.sel, min.size=150, max.size=300,
                                graph=FALSE, verbose=FALSE)
+  simseq.max <- size.select(simseq.sel, min.size=700, max.size=850,
+                            graph=FALSE, verbose=FALSE)
   LibLen <- data.frame(RecknagelShort = length(simseq.short),
-                              RecknagelLong  = length(simseq.long),
-                              Crotti = length(simseq.crotti))
+                       RecknagelLong  = length(simseq.long),
+                       Crotti = length(simseq.crotti),
+                       Maximum = length(simseq.max))
   save(LibLen, file = 'libLen.RData')
 }
 ```
@@ -68,19 +71,41 @@ Taking only shared loci into account, the number of loci identified somewhat res
 
 The other article is by @Crotti2020. They compare ddRAD-seq to EpiRAD-seq. For ddRAD-seq, they use the exact same combination of enzymes, *PstI* and *MspI*. They select 150-300 bp fragments and found 355491 loci among 43 individuals, but only 108127 loci per individual on average. They don't say the number of loci common to at least a few samples. The numbers are compatible with the in silico prediction of `r LibLen$Crotti` loci in the targeted size range, a random fraction of them being sequenced in any single individual.
 
-What I conclude is that using frequent cutters, that generate an excess of loci, is not incompatible with selecting a small number of loci, if selected sizes are long enough, because cutting frequently produce mostly very short fragments and much fewer long ones. For example, in silico digestion with *PstI* and *MspI* suggest there may be `r length(size.select(simseq.sel, min.size=700, max.size=850))` fragments between 700 and 850 bp.
+Using frequent cutters, that generate an excess of loci, is not incompatible with selecting a small number of loci, if selected sizes are long enough, because cutting frequently produce mostly very short fragments and much fewer long ones. For example, in silico digestion with *PstI* and *MspI* suggests there may be `r LibLen$Maximum` fragments between 700 and 850 bp.
 
-However, another lesson is that size selection is imprecise, many reads potentially being wasted in sequencing fragments from outside the range, which are not expected to be shared among libraries. How does the fragment length distribution affect the proportion of out-of-range fragments included in a library? It seems to me that the longer the range, the lower the proportion of out-of-range fragments should be retained, but it's difficult to tell. By using two rare cutters instead of one rare and one frequent cutter, the fragment length distribution is shifted to the right. A larger fraction of the genome will be left in big chunks. That could also afect (improve?) the efficiency of the ligation step, because it reduces the molarity of not-targeted, sticky DNA ends.
+However, size selection is imprecise, many reads potentially being wasted in sequencing fragments from outside the range, which are not expected to be shared among libraries. How does the fragment length distribution affect the proportion of out-of-range fragments included in a library? It seems to me that the longer the range, the lower the proportion of out-of-range fragments should be retained, but it's difficult to tell. By using two rare cutters instead of one rare and one frequent cutter, the fragment length distribution is shifted to the right. A larger fraction of the genome will be left in big chunks. That could also afect (improve?) the efficiency of the ligation step, because it reduces the molarity of not-targeted, sticky DNA ends.
 
-In conclusion, I think it's worth using two rare cutters, which allow for the selection of a wide range of fragment sizes without admitting an excessive number of fragments. See the report in `2020-12-14` for additional in silico digestions that suggest *NsiI* and *SphI* as a promissing pair of restriction enzymes.
+In conclusion, I think it's worth using two rare cutters, which allow for the selection of a wide range of fragment sizes without admitting an excessive number of fragments. See the report in `2020-12-14` for additional in silico digestions that help choose the restriction enzymes.
 
 # Choice of restriction enzyme combination
 When limiting the expected number of targeted fragments between 50000 and 65000, the combination with more unique fragments is *NsiI* and *SphI*. However, I am afraid that their products could spuriously cross-hybridize through the \textsf{CA}-3' and \textsf{TG}-3' ends of their respective overhangs. Using T7 DNA ligase, instead of T4, would increase the specificity for well paired substrate (see [NEB](https://international.neb.com/tools-and-resources/selection-charts/properties-of-dna-and-rna-ligases)). But T7 requires PEG in addition to ATP, and I don't know how PEG could affect the digestion. To simplify, we will use T4 DNA ligase.
 
 The next best combinations are *SphI* with *HindIII* ($\sim59000$ expected targeted fragments) and *BmtI* with *BamHI* ($\sim 61000 expected targeted fragments). For the moment I choose *SphI* and *HindIII*, which share a recomended diluent buffer. See the document `adapters.pdf` for the adapters design.
 
-# Overview of the protocol
+```{r digestioSphI.HindIII}
+if (file.exists('ends.RData')) {
+  load('ends.RData')
+} else {
+  # Restriction Enzyme 1 SphI
+  cs_5p1 <- "GCATG"
+  cs_3p1 <- "C"
+  # Restriction Enzyme 2 HindIII
+  cs_5p2 <- "A"
+  cs_3p2 <- "AGCTT"
+  simseq.dig <- insilico.digest(refseq, cs_5p1, cs_3p1, cs_5p2, cs_3p2, verbose=FALSE)
+  simseq.AB <- adapt.select(simseq.dig, type="AB+BA", cs_5p1, cs_3p1, cs_5p2, cs_3p2)
+  simseq.AA <- adapt.select(simseq.dig, type="AA", cs_5p1, cs_3p1, cs_5p2, cs_3p2)
+  simseq.BB <- adapt.select(simseq.dig, type="BB", cs_5p1, cs_3p1, cs_5p2, cs_3p2)
+  A_ends <- length(simseq.AB) + 2 * length(simseq.AA)
+  B_ends <- length(simseq.AB) + 2 * length(simseq.BB)
+  ReferenceLength <- nchar(refseq) * 1.0e-6  # in megabases
+  save(A_ends, B_ends, ReferenceLength, file = 'ends.RData')
+}
+```
 
+If digestion was complete with both enzymes, and the reference genome was accurate, every genome copy would generate `r sprintf("%i", A_ends)` *SphI* ends and `r sprintf("%i", B_ends)` HindIII ends. However, the reference genome is 2100 Mb long, while all *Coregonus* species in the [Animal Genome Size Database](http://www.genomesize.com) have larger genomes, roughly estimated to be between 2400 and 3500 Mb. To account for a potential underestimate of the number of fragments targeted, we can narrow their size range down a little.
+
+# Overview of the protocol
 Amparo (SCSIE) suggested to use an optimized ddRAD-seq protocol that uses Illumina indices instead of inline barcodes [@Salas-Lizana2018]. That way, it is cheaper tu multiplex when using several samples. Briefly, the protocol includes the following steps:
 
 - DNA extraction.
@@ -96,8 +121,42 @@ We will use a DNA extraction method different from the one suggested by @Salas-L
 The fourth step cleans up the digestion/ligation reaction while imposing a size threshold only on the left side of the distribution. The actual size selection step is supposed to happen after pooling the samples, at the end of the protocol. This seems to serve the purpose of minimizing the number of size-selection procedures, which could otherwise introduce variation among samples. I guess the fact of running the PCR amplification before removing larger DNA fragments is not concerning, because after all the targetted fragments being shorter, they are expected to amplify more efficiently.
 
 # DNA extraction
+Some protocols suggest a CTAB method of DNA extraction from plants and fungi [@Salas-Lizana2018; @Mastretta-Yanes2015]. Some studies on fish species use a Qiagen DNeasy kit for tissue or blood [@Feulner2019; @De-Kayne2018]. We'll use that. According to Qiagen, 20 mg of fish fin should yield 10--20 $\mu$g of DNA in an elution volume of 100-200 $\mu$l, which corresponds to at least `r 10 * 1000 / 200` ng/$\mu$l. The minimum starting DNA material required for ddRAD-seq is precisely 50 ng/$\mu$l [@Salas-Lizana2018].
+
+According to the [Animal Genome Size Database](http://www.genomesize.com), *Coregonus* genomes have a haploid size between 2.44 and 3.54 pg, which would approximately correspond with between 2400 and 3500 Mb. The reference genome is less than 2100 Mb, which warns me about an important underestimation of the number of restriction fragments that we will obtain. For the purpose of estimating the number of fragment ends per $\mu$g of DNA, I don't need to correct for this underestimation, as long as I set the genome size equal to that of the reference genome. 
+
+```{r mols}
+MegabasesPerPicogram <- 978 # see Animal Genome Size Database
+ReferenceWeight <- ReferenceLength / MegabasesPerPicogram # pg
+CopiesPerMicrogram <- 1.0e+6 / ReferenceWeight
+AvogadroNum <- 6.022141e+23
+PicomolEndsPerMicrogram <- 10^12 * CopiesPerMicrogram * c(A_ends, B_ends) / AvogadroNum
+names(PicomolEndsPerMicrogram) <- c('SphI', 'HindIII')
+```
+
+Thus, there could be up to `r PicomolEndsPerMicrogram['SphI']` pmol of *SphI* fragment ends and `r PicomolEndsPerMicrogram['HindIII']` pmol of *HindIII* fragment ends per $\mu$g of DNA.
+
+DNeasy Blood & Tissue kits exist for either individual samples or 96-wells plates. The latter facilitates high-throughput DNA extraction, but apparently requires a specific centrifuge. In any case, the extraction requires manual processing of individual samples to cut, freeze and grind the tissue. We will use the normal kit for 250 preparations (catalog number 69506).
+
+I am assuming that the fact that tissue samples are preserved in ethanol does not interfere with the DNA extraction protocol. The first buffer added to the ground tissue is ATL (180 $\mu$l), where proteinase *K* will work. All I know of ATL is that it contains SDS.
+
+See a detailed extraction protocol in document `dna_extraction.pdf`.
 
 # Annealing of adapters
+We need to order the following sequences, for the adapters to match the overhangs produced by *HindIII* and *SphI*:
+
+ Oligo                  Sequence
+ ----------------       ----------
+ *HindIII*-P1.1         `*AGCTCTGTCTCTTATACGAGAACAA`
+ *HindIII*-P1.2         `GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG`
+ *SphI*-P2.1            `GTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATG`
+ *SphI*-P2.2            `*GCTGTCTCTTATACACATCTGACGCTGCCGACGA`
+ 
+Asteriscs indicate 5\'-phosphorylation. The maximum number of samples is 753. 
+
+The oligos may be delivered dry, and need to be suspended in the appropriate volume of either water of TE buffer to reach a comfortable concentration, such as 100 $\mu$M (i.e., 100 pmol/$\mu$l). The annealing buffer stock (10$\times$) may be 100 mM Tris HCl (pH 8), 500 mM NaCl, 1 mM EDTA (see `ddRADprotocol.pdf`).
+
+After annealing the adapters, I guess is a good idea to keep them cool.
 
 
 # References
