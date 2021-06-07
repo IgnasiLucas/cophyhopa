@@ -472,6 +472,7 @@ if (file.exists('libLen.RData')) {
 <p>The other article is by <span class="citation">Crotti, Adams, and Elmer (2020)</span>. They compare ddRAD-seq to EpiRAD-seq. For ddRAD-seq, they use the exact same combination of enzymes, <em>PstI</em> and <em>MspI</em>. They select 150-300 bp fragments and found 355491 loci among 43 individuals, but only 108127 loci per individual on average. They don’t say the number of loci common to at least a few samples. The numbers are compatible with the in silico prediction of 160583 loci in the targeted size range, a random fraction of them being sequenced in any single individual.</p>
 <p>Using frequent cutters, that generate an excess of loci, is not incompatible with selecting a small number of loci, if selected sizes are long enough, because cutting frequently produce mostly very short fragments and much fewer long ones. For example, in silico digestion with <em>PstI</em> and <em>MspI</em> suggests there may be 72673 fragments between 700 and 850 bp.</p>
 <p>However, size selection is imprecise, many reads potentially being wasted in sequencing fragments from outside the range, which are not expected to be shared among libraries. How does the fragment length distribution affect the proportion of out-of-range fragments included in a library? It seems to me that the longer the range, the lower the proportion of out-of-range fragments should be retained, but it’s difficult to tell. By using two rare cutters instead of one rare and one frequent cutter, the fragment length distribution is shifted to the right. A larger fraction of the genome will be left in big chunks. That could also afect (improve?) the efficiency of the ligation step, because it reduces the molarity of not-targeted, sticky DNA ends.</p>
+<p><span class="citation">DaCosta and Sorenson (2014)</span> (page 9) do mention that using a broad size range and rare cutters can produce excellent results, even using a simple gel, instead of a Pippin Prep, for size selection. They warn of very small fragments being carried over in the gel, and eventually producing valid data. The expected bias towards shorter fragments due to PCR amplification was not too bad.</p>
 <p>In conclusion, I think it’s worth using two rare cutters, which allow for the selection of a wide range of fragment sizes without admitting an excessive number of fragments. See the report in <code>2020-12-14</code> for additional in silico digestions that help choose the restriction enzymes.</p>
 </div>
 <div id="choice-of-restriction-enzyme-combination" class="section level1">
@@ -523,9 +524,7 @@ CopiesPerMicrogram &lt;- 1.0e+6 / ReferenceWeight
 AvogadroNum &lt;- 6.022141e+23
 PicomolEndsPerMicrogram &lt;- 10^12 * CopiesPerMicrogram * c(A_ends, B_ends) / AvogadroNum
 names(PicomolEndsPerMicrogram) &lt;- c('SphI', 'HindIII')</code></pre>
-<p>Thus, there could be up to 0.6153839 pmol of <em>SphI</em> fragment ends and 0.7911442 pmol of <em>HindIII</em> fragment ends per <span class="math inline">\(\mu\)</span>g of DNA.</p>
-<p>DNeasy Blood &amp; Tissue kits exist for either individual samples or 96-wells plates. The latter facilitates high-throughput DNA extraction, but apparently requires a specific centrifuge. In any case, the extraction requires manual processing of individual samples to cut, freeze and grind the tissue. We will use the normal kit for 250 preparations (catalog number 69506).</p>
-<p>I am assuming that the fact that tissue samples are preserved in ethanol does not interfere with the DNA extraction protocol. The first buffer added to the ground tissue is ATL (180 <span class="math inline">\(\mu\)</span>l), where proteinase <em>K</em> will work. All I know of ATL is that it contains SDS.</p>
+<p>Thus, there could be up to 0.615 pmol of <em>SphI</em> fragment ends and 0.791 pmol of <em>HindIII</em> fragment ends per <span class="math inline">\(\mu\)</span>g of DNA.</p>
 <p>See a detailed extraction protocol in document <code>dna_extraction.pdf</code>.</p>
 </div>
 <div id="annealing-of-adapters" class="section level1">
@@ -561,11 +560,18 @@ names(PicomolEndsPerMicrogram) &lt;- c('SphI', 'HindIII')</code></pre>
 <p>The oligos may be delivered dry, and need to be suspended in the appropriate volume of either water of TE buffer to reach a comfortable concentration, such as 100 <span class="math inline">\(\mu\)</span>M (i.e., 100 pmol/<span class="math inline">\(\mu\)</span>l). The annealing buffer stock (10<span class="math inline">\(\times\)</span>) may be 100 mM Tris HCl (pH 8), 500 mM NaCl, 1 mM EDTA (see <code>ddRADprotocol.pdf</code>).</p>
 <p>After annealing the adapters, I guess is a good idea to keep them cool.</p>
 </div>
+<div id="double-digestion-and-simultaneous-ligation-of-adapters" class="section level1">
+<h1>Double digestion and simultaneous ligation of adapters</h1>
+<p>We plan to use both enzymes at a concentration of 20000 U/ml (20 U/<span class="math inline">\(\mu\)</span>l). I think 10 U are enough for 1 <span class="math inline">\(\mu\)</span>g of DNA, which is the upper bound of the expected yield. For 500 samples, we would end up using 5000 U of each enzyme. It is unfortunate that the chosen enzymes are not the cheapest ones. <em>SphI-HF</em>, in particular, comes in tubes of 2500 U for more than €300.00.</p>
+</div>
 <div id="references" class="section level1 unnumbered">
 <h1>References</h1>
 <div id="refs" class="references">
 <div id="ref-Crotti2020">
-<p>Crotti, Marco, Colin E. Adams, and Kathryn R. Elmer. 2020. “Population Genomic Snps from Epigenetic Rads: Gaining Genetic and Epigenetic Data from a Single Established Next-Generation Sequencing Approach.” <em>Methods in Ecology and Evolution</em> 11 (7): 839–49. <a href="https://doi.org/https://doi.org/10.1111/2041-210X.13395">https://doi.org/https://doi.org/10.1111/2041-210X.13395</a>.</p>
+<p>Crotti, Marco, Colin E. Adams, and Kathryn R. Elmer. 2020. “Population Genomic Snps from Epigenetic Rads: Gaining Genetic and Epigenetic Data from a Single Established Next-Generation Sequencing Approach.” <em>Methods in Ecology and Evolution</em> 11 (7): 839–49. <a href="https://doi.org/10.1111/2041-210X.13395">https://doi.org/10.1111/2041-210X.13395</a>.</p>
+</div>
+<div id="ref-DaCosta2014">
+<p>DaCosta, J.M., and M.D. Sorenson. 2014. “Amplification Biases and Consistent Recovery of Loci in a Double-Digest RAD-Seq Protocol.” <em>PLoS ONE</em> 9 (9): e106713. <a href="https://doi.org/10.1371/journal.pone.0106713">https://doi.org/10.1371/journal.pone.0106713</a>.</p>
 </div>
 <div id="ref-De-Kayne2018">
 <p>De-Kayne, Rishi, and Philine G. D. Feulner. 2018. “A European Whitefish Linkage Map and Its Implications for Understanding Genome-Wide Synteny Between Salmonids Following Whole Genome Duplication.” <em>G3: Genes, Genomes, Genetics</em> 8 (12): 3745–55. <a href="https://doi.org/10.1534/g3.118.200552">https://doi.org/10.1534/g3.118.200552</a>.</p>
@@ -577,13 +583,13 @@ names(PicomolEndsPerMicrogram) &lt;- c('SphI', 'HindIII')</code></pre>
 <p>Gagnaire, Pierre-Alexandre, Scott A. Pavey, Eric Normandeau, and Louis Bernatchez. 2013. “THE Genetic Architecture of Reproductive Isolation During Speciation-with-Gene-Flow in Lake Whitefish Species Pairs Assessed by Rad Sequencing.” <em>Evolution</em> 67 (9): 2483–97. <a href="https://doi.org/10.1111/evo.12075">https://doi.org/10.1111/evo.12075</a>.</p>
 </div>
 <div id="ref-Mastretta-Yanes2015">
-<p>Mastretta-Yanes, A., N. Arrigo, N. Alvarez, T. H. Jorgensen, D. Piñero, and B. C. Emerson. 2015. “Restriction Site-Associated Dna Sequencing, Genotyping Error Estimation and de Novo Assembly Optimization for Population Genetic Inference.” <em>Molecular Ecology Resources</em> 15 (1): 28–41. <a href="https://doi.org/https://doi.org/10.1111/1755-0998.12291">https://doi.org/https://doi.org/10.1111/1755-0998.12291</a>.</p>
+<p>Mastretta-Yanes, A., N. Arrigo, N. Alvarez, T. H. Jorgensen, D. Piñero, and B. C. Emerson. 2015. “Restriction Site-Associated Dna Sequencing, Genotyping Error Estimation and de Novo Assembly Optimization for Population Genetic Inference.” <em>Molecular Ecology Resources</em> 15 (1): 28–41. <a href="https://doi.org/10.1111/1755-0998.12291">https://doi.org/10.1111/1755-0998.12291</a>.</p>
 </div>
 <div id="ref-Recknagel2015">
-<p>Recknagel, Hans, Arne Jacobs, Pawel Herzyk, and Kathryn R. Elmer. 2015. “Double-Digest Rad Sequencing Using Ion Proton Semiconductor Platform (ddRADseq-Ion) with Nonmodel Organisms.” <em>Molecular Ecology Resources</em> 15 (6): 1316–29. <a href="https://doi.org/https://doi.org/10.1111/1755-0998.12406">https://doi.org/https://doi.org/10.1111/1755-0998.12406</a>.</p>
+<p>Recknagel, Hans, Arne Jacobs, Pawel Herzyk, and Kathryn R. Elmer. 2015. “Double-Digest Rad Sequencing Using Ion Proton Semiconductor Platform (ddRADseq-Ion) with Nonmodel Organisms.” <em>Molecular Ecology Resources</em> 15 (6): 1316–29. <a href="https://doi.org/10.1111/1755-0998.12406">https://doi.org/10.1111/1755-0998.12406</a>.</p>
 </div>
 <div id="ref-Salas-Lizana2018">
-<p>Salas-Lizana, Rodolfo, and Ryoko Oono. 2018. “Double-Digest Radseq Loci Using Standard Illumina Indexes Improve Deep and Shallow Phylogenetic Resolution of Lophodermium, a Widespread Fungal Endophyte of Pine Needles.” <em>Ecology and Evolution</em> 8 (13): 6638–51. <a href="https://doi.org/https://doi.org/10.1002/ece3.4147">https://doi.org/https://doi.org/10.1002/ece3.4147</a>.</p>
+<p>Salas-Lizana, Rodolfo, and Ryoko Oono. 2018. “Double-Digest Radseq Loci Using Standard Illumina Indexes Improve Deep and Shallow Phylogenetic Resolution of Lophodermium, a Widespread Fungal Endophyte of Pine Needles.” <em>Ecology and Evolution</em> 8 (13): 6638–51. <a href="https://doi.org/10.1002/ece3.4147">https://doi.org/10.1002/ece3.4147</a>.</p>
 </div>
 </div>
 </div>

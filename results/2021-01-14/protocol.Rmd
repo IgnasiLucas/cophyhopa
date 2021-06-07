@@ -75,6 +75,8 @@ Using frequent cutters, that generate an excess of loci, is not incompatible wit
 
 However, size selection is imprecise, many reads potentially being wasted in sequencing fragments from outside the range, which are not expected to be shared among libraries. How does the fragment length distribution affect the proportion of out-of-range fragments included in a library? It seems to me that the longer the range, the lower the proportion of out-of-range fragments should be retained, but it's difficult to tell. By using two rare cutters instead of one rare and one frequent cutter, the fragment length distribution is shifted to the right. A larger fraction of the genome will be left in big chunks. That could also afect (improve?) the efficiency of the ligation step, because it reduces the molarity of not-targeted, sticky DNA ends.
 
+@DaCosta2014 (page 9) do mention that using a broad size range and rare cutters can produce excellent results, even using a simple gel, instead of a Pippin Prep, for size selection. They warn of very small fragments being carried over in the gel, and eventually producing valid data. The expected bias towards shorter fragments due to PCR amplification was not too bad. 
+
 In conclusion, I think it's worth using two rare cutters, which allow for the selection of a wide range of fragment sizes without admitting an excessive number of fragments. See the report in `2020-12-14` for additional in silico digestions that help choose the restriction enzymes.
 
 # Choice of restriction enzyme combination
@@ -134,13 +136,15 @@ PicomolEndsPerMicrogram <- 10^12 * CopiesPerMicrogram * c(A_ends, B_ends) / Avog
 names(PicomolEndsPerMicrogram) <- c('SphI', 'HindIII')
 ```
 
-Thus, there could be up to `r PicomolEndsPerMicrogram['SphI']` pmol of *SphI* fragment ends and `r PicomolEndsPerMicrogram['HindIII']` pmol of *HindIII* fragment ends per $\mu$g of DNA.
+Thus, there could be up to `r round(PicomolEndsPerMicrogram['SphI'], 3)` pmol of *SphI* fragment ends and `r round(PicomolEndsPerMicrogram['HindIII'], 3)` pmol of *HindIII* fragment ends per $\mu$g of DNA. 
 
-DNeasy Blood & Tissue kits exist for either individual samples or 96-wells plates. The latter facilitates high-throughput DNA extraction, but apparently requires a specific centrifuge. In any case, the extraction requires manual processing of individual samples to cut, freeze and grind the tissue. We will use the normal kit for 250 preparations (catalog number 69506).
-
-I am assuming that the fact that tissue samples are preserved in ethanol does not interfere with the DNA extraction protocol. The first buffer added to the ground tissue is ATL (180 $\mu$l), where proteinase *K* will work. All I know of ATL is that it contains SDS.
-
-See a detailed extraction protocol in document `dna_extraction.pdf`.
+Alan started extracting DNA with Nucleospin. The yields are between 2760 and 26400 ng per sample, which are much
+higher than I expected. Assuming a 3.54 pg per haploid genome, such a range suggests the number of diploid cells
+contributing DNA to the sample could be between 0.39 and 3.7 millions, which I have a very hard time believing,
+after having seen how small the tissue sample is. In any case, there seems to be plenty of DNA and our Qubit estimates
+of concentration are the most reliable. (Nanodrop suggests even higher values). It is reasonable to balance the
+samples before digestion. I will assume the DNA amount per reaction is 1 $\mu$g, which is about half the minimum observed
+up to now.
 
 # Annealing of adapters
 We need to order the following sequences, for the adapters to match the overhangs produced by *HindIII* and *SphI*:
@@ -157,6 +161,26 @@ Asteriscs indicate 5\'-phosphorylation. The maximum number of samples is 753.
 The oligos may be delivered dry, and need to be suspended in the appropriate volume of either water of TE buffer to reach a comfortable concentration, such as 100 $\mu$M (i.e., 100 pmol/$\mu$l). The annealing buffer stock (10$\times$) may be 100 mM Tris HCl (pH 8), 500 mM NaCl, 1 mM EDTA (see `ddRADprotocol.pdf`).
 
 After annealing the adapters, I guess is a good idea to keep them cool.
+
+# Double digestion and simultaneous ligation of adapters
+We plan to use both enzymes at a concentration of 20000 U/ml (20 U/$\mu$l). I think 10 U are enough for 1 $\mu$g of DNA. For 500 samples, we would end up using 5000 U of each enzyme. It is unfortunate that the chosen enzymes are not the cheapest ones. *SphI-HF*, in particular, comes in tubes of 2500 U for more than €300.00.
+
+Depending on the real size of the genome (between 2.1 and 3.54 pg), we could find 0.37--0.62 pmol of *SphI* ends and 0.47--0.79 pmol
+*HindIII* ends in a reaction. Using 6 and 8 pmol of adapters P2 (for *SphI* ends) and P1 (for *HindIII* ends), respectively, there would be a comfortable 10 fold excess of adapters. The 25 nmol scale of synthesis is enough for all samples.
+
+To determine the units of T4 DNA ligase required in the concentration, I should know the concentration of cohesive ends.
+Considering both kinds of genomic coehsive ends, and the cohesive ends from the 10-fold excess of adapters, there
+could be `r 0.62 + 0.79 + 6.2 + 7.9` pmol of cohesive ends. If the final reaction volume was 50 $\mu$l, the concentration
+of cohesive ends would be `r (0.62 + 0.79 + 6.2 + 7.9) / 50` pmol/$\mu$l (or $\mu$M). One unit is the amount of enzyme
+required to ligate 50% of 0.12 $\mu$M cohesive ends in 20 $\mu$l of reaction during 30 minutes at 16ºC. The example of
+ligase reaction in the NEB website uses 400 units (1 $\mu$l) of ligase to ligate ends at 0.004 $\mu$M, also in 20 $\mu$l.
+Let's say I use 800 units (2 $\mu$l at 400000 units/ml) of ligase per reaction, in 50 $\mu$l volumes. That is 5 $\mu$l of 
+10X buffer per reaction. In 500 reactions, that adds up to `r 800 * 500` units or 1 ml. That is 4 times the content of
+the M0202L product from NEB.
+
+ATP is at 10 mM, and needs to be at 1 mM. 
+
+
 
 
 # References
