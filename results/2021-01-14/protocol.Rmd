@@ -11,25 +11,26 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Project size
-We attempt to prepare over 600 DNA libraries for ddRAD-seq. We plan for 3 NextSeq sequencing runs, expecting each to yield about 300 million 150-bases, single-end reads. Assuming successful sequencing, and well balanced among samples, that would produce around 1.5 million reads per sample. But that would produce a very modest mean coverage of $\sim$15 per locus if we were sequencing around 100000 loci. It is, therefore essential to limit the number of loci to not much more than 50000. Such a modest number of loci should be enough for the purpose of population clustering and phylogenetics. A tight limit in the number of loci should also help optimize the fraction of loci that get well covered in all or most of the samples: the probability of a locus getting sequenced deep enough in all samples is $p^N$, $p$ being the probability of the locus getting sequenced deep enough in one sample, and $N$, the number of samples. And in a best-case scenario, $p$ is the Poisson probability of a locus getting sequenced at least a minimum number of times given the expected average coverage. Happily assuming all loci have the same chance of being sequenced, the graph below should show the optimistically expected fraction of 600 samples getting sequenced with a minimum coverage $k$, given an assumed average coverage.
+The number of samples to be sequenced droped from over 600 to around 250, because we will focus mostly on fish samples for which we have their parasites' sequence data. In addition, we got an interesting quote to sequence the pooled libraries in a Novaseq Illumina platform, promising to deliver about 4000 million reads. That would definitely provide enough coverage for any reasonable number of loci. For example, the expected mean coverage with 250 samples and 100000 loci would be `r 4000000000 / (250 * 100000)`.
+
+The probability of a locus getting sequenced deep enough in all samples is $p^N$, $p$ being the probability of the locus getting sequenced deep enough in one sample, and $N$, the number of samples. And in a best-case scenario, $p$ is the Poisson probability of a locus getting sequenced at least a minimum number of times given the expected average coverage. Happily assuming all loci have the same chance of being sequenced, the graph below should show the optimistically expected fraction of 250 samples getting sequenced with a minimum coverage $k$, given an assumed average coverage.
 
 ```{r coverage}
-MinimumCoverage <- 1:15
-AverageCoverage <- c(10, 15, 20, 25)
+N <- 250
+MinimumCoverage <- 5:20
+AverageCoverage <- c(15, 20, 25, 30)
 FractionCovered <- lapply(AverageCoverage,
-                          function(x) (1 - ppois(MinimumCoverage, x-1))^753)
+                          function(x) (1 - ppois(MinimumCoverage, x-1))^N)
 # ppois(x,y) is P(X <= x). I subtract 1 to x to make threshold inclusive.
-plot(c(0,15), c(0,1), type = 'n', xlab = 'Minimum coverage',
+plot(c(5,20), c(0,1), type = 'n', xlab = 'Minimum coverage',
      ylab='Fraction of samples with minimum coverage')
 lines(MinimumCoverage, FractionCovered[[1]], lty = 1)
 lines(MinimumCoverage, FractionCovered[[2]], lty = 2)
 lines(MinimumCoverage, FractionCovered[[3]], lty = 3)
 lines(MinimumCoverage, FractionCovered[[4]], lty = 4)
-legend(11, 0.95, legend = as.character(AverageCoverage),
+legend(16, 0.95, legend = as.character(AverageCoverage),
        lty = 1:4, title = 'Average coverage')
 ```
-
-Adding a third sequencing run could increase the expected average coverage to between 15 and 30, depending on the number of loci targeted (between 50.000 and 100.000). We will probably need it.
 
 # State of the art
 I have not found studies using double digest RAD sequencing in European whitefish. @Feulner2019 used traditional RAD sequencing with enzyme *SbfI*, random shearing and selection of sizes between 300 and 500 bases. They sequenced 500 million reads from 180 samples, identified 125154 loci and retained only 16173, in 138 individuals, after filtering. @De-Kayne2018 also use the *SbfI* enzyme. And the same enzyme is regularly used for digestion of American whitefish [@Gagnaire2013].
@@ -105,7 +106,7 @@ if (file.exists('ends.RData')) {
 }
 ```
 
-If digestion was complete with both enzymes, and the reference genome was accurate, every genome copy would generate `r sprintf("%i", A_ends)` *SphI* ends and `r sprintf("%i", B_ends)` HindIII ends. However, the reference genome is 2100 Mb long, while all *Coregonus* species in the [Animal Genome Size Database](http://www.genomesize.com) have larger genomes, roughly estimated to be between 2400 and 3500 Mb. To account for a potential underestimate of the number of fragments targeted, we can narrow their size range down a little.
+If digestion was complete with both enzymes, and the reference genome was accurate, every genome copy would generate `r sprintf("%i", A_ends)` *SphI* ends and `r sprintf("%i", B_ends)` HindIII ends. However, the reference genome is 2100 Mb long, while all *Coregonus* species in the [Animal Genome Size Database](http://www.genomesize.com) have larger genomes, roughly estimated to be between 2400 and 3500 Mb. To account for a potential underestimate of the number of fragments targeted, we could narrow their size range down a little. But with current estimates of expected average coverage, we don't need to worry.
 
 # Overview of the protocol
 Amparo (SCSIE) suggested to use an optimized ddRAD-seq protocol that uses Illumina indices instead of inline barcodes [@Salas-Lizana2018]. That way, it is cheaper tu multiplex when using several samples. Briefly, the protocol includes the following steps:
@@ -125,7 +126,7 @@ The fourth step cleans up the digestion/ligation reaction while imposing a size 
 # DNA extraction
 Some protocols suggest a CTAB method of DNA extraction from plants and fungi [@Salas-Lizana2018; @Mastretta-Yanes2015]. Some studies on fish species use a Qiagen DNeasy kit for tissue or blood [@Feulner2019; @De-Kayne2018]. We'll use that. According to Qiagen, 20 mg of fish fin should yield 10--20 $\mu$g of DNA in an elution volume of 100-200 $\mu$l, which corresponds to at least `r 10 * 1000 / 200` ng/$\mu$l. The minimum starting DNA material required for ddRAD-seq is precisely 50 ng/$\mu$l [@Salas-Lizana2018].
 
-According to the [Animal Genome Size Database](http://www.genomesize.com), *Coregonus* genomes have a haploid size between 2.44 and 3.54 pg, which would approximately correspond with between 2400 and 3500 Mb. The reference genome is less than 2100 Mb, which warns me about an important underestimation of the number of restriction fragments that we will obtain. For the purpose of estimating the number of fragment ends per $\mu$g of DNA, I don't need to correct for this underestimation, as long as I set the genome size equal to that of the reference genome. 
+According to the [Animal Genome Size Database](http://www.genomesize.com), *Coregonus* genomes have a haploid size between 2.44 and 3.54 pg, which would approximately correspond with between 2400 and 3500 Mb. The reference genome is less than 2100 Mb, which warns me about an important underestimation of the number of restriction fragments that we will obtain. For the purpose of estimating the number of fragment ends per $\mu$g of DNA, it does not matter, if I use the estimated mass of the reference genome. 
 
 ```{r mols}
 MegabasesPerPicogram <- 978 # see Animal Genome Size Database
@@ -143,8 +144,7 @@ higher than I expected. Assuming a 3.54 pg per haploid genome, such a range sugg
 contributing DNA to the sample could be between 0.39 and 3.7 millions, which I have a very hard time believing,
 after having seen how small the tissue sample is. In any case, there seems to be plenty of DNA and our Qubit estimates
 of concentration are the most reliable. (Nanodrop suggests even higher values). It is reasonable to balance the
-samples before digestion. I will assume the DNA amount per reaction is 1 $\mu$g, which is about half the minimum observed
-up to now.
+samples before digestion. I will assume the DNA amount per reaction is 300 ng.
 
 # Annealing of adapters
 We need to order the following sequences, for the adapters to match the overhangs produced by *HindIII* and *SphI*:
@@ -156,27 +156,24 @@ We need to order the following sequences, for the adapters to match the overhang
  *SphI*-P2.1            `GTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATG`
  *SphI*-P2.2            `*GCTGTCTCTTATACACATCTGACGCTGCCGACGA`
  
-Asteriscs indicate 5\'-phosphorylation. The maximum number of samples is 753. 
+Asteriscs indicate 5\'-phosphorylation. The maximum number of samples is 300. 
 
-The oligos may be delivered dry, and need to be suspended in the appropriate volume of either water of TE buffer to reach a comfortable concentration, such as 100 $\mu$M (i.e., 100 pmol/$\mu$l). The annealing buffer stock (10$\times$) may be 100 mM Tris HCl (pH 8), 500 mM NaCl, 1 mM EDTA (see `ddRADprotocol.pdf`).
+The oligos may be delivered dry, and need to be suspended in the appropriate volume of either water of TE buffer to reach a comfortable concentration, such as 100 $\mu$M (i.e., 100 pmol/$\mu$l). The annealing buffer stock (10$\times$) may be 100 mM Tris HCl (pH 8), 500 mM NaCl, 10 mM EDTA (see `ddRADprotocol.pdf`).
 
-After annealing the adapters, I guess is a good idea to keep them cool.
+After annealing the adapters, I guess it is a good idea to keep them cool.
 
-# Double digestion and simultaneous ligation of adapters
-We plan to use both enzymes at a concentration of 20000 U/ml (20 U/$\mu$l). I think 10 U are enough for 1 $\mu$g of DNA. For 500 samples, we would end up using 5000 U of each enzyme. It is unfortunate that the chosen enzymes are not the cheapest ones. *SphI-HF*, in particular, comes in tubes of 2500 U for more than €300.00.
+# Double digestion and ligation of adapters
+We plan to use both enzymes at a concentration of 20000 U/ml (20 U/$\mu$l). I think 10 U are enough for 1 $\mu$g of DNA. For 250 samples, we would end up using 2500 U of each enzyme. It is unfortunate that the chosen enzymes are not the cheapest ones. *SphI-HF*, in particular, comes in tubes of 2500 U for more than €300.00.
 
-Depending on the real size of the genome (between 2.1 and 3.54 pg), we could find 0.37--0.62 pmol of *SphI* ends and 0.47--0.79 pmol
-*HindIII* ends in a reaction. Using 6 and 8 pmol of adapters P2 (for *SphI* ends) and P1 (for *HindIII* ends), respectively, there would be a comfortable 10 fold excess of adapters. The 25 nmol scale of synthesis is enough for all samples.
+Assuming `r round(PicomolEndsPerMicrogram['SphI'], 3)` and `r round(PicomolEndsPerMicrogram['HindIII'], 3)` pmol of *SphI* and *HindIII* ends per $\mu$g of DNA, there would be `r round(0.3 * PicomolEndsPerMicrogram['SphI'], 3)` and `r round(0.3 * PicomolEndsPerMicrogram['HindIII'], 3)` pmol of *SphI* and *HindIII* ends in 300 ng of DNA. Using 2 and 2.5 pmol of adapters P2 (for *SphI* ends) and P1 (for *HindIII* ends), respectively, there would be a comfortable 10 fold excess of adapters. Note that @Salas-Lizana2018 use 1 pmol of adapter P1 and 10 pmol of adapter P2 per reaction. The 25 nmol scale of synthesis is enough for all samples. 
 
 To determine the units of T4 DNA ligase required in the concentration, I should know the concentration of cohesive ends.
-Considering both kinds of genomic coehsive ends, and the cohesive ends from the 10-fold excess of adapters, there
-could be `r 0.62 + 0.79 + 6.2 + 7.9` pmol of cohesive ends. If the final reaction volume was 50 $\mu$l, the concentration
-of cohesive ends would be `r (0.62 + 0.79 + 6.2 + 7.9) / 50` pmol/$\mu$l (or $\mu$M). One unit is the amount of enzyme
+Considering both kinds of genomic coehsive ends, and the cohesive ends from the 10-fold excess of adapters, there could
+be `r sum(PicomolEndsPerMicrogram * 0.3) + 5` pmol of cohesive ends. If the final reaction volume was 11.7 $\mu$l, the concentration
+of cohesive ends would be `r (sum(PicomolEndsPerMicrogram * 0.3) + 5) / 11.7` pmol/$\mu$l (or $\mu$M). One unit is the amount of enzyme
 required to ligate 50% of 0.12 $\mu$M cohesive ends in 20 $\mu$l of reaction during 30 minutes at 16ºC. The example of
-ligase reaction in the NEB website uses 400 units (1 $\mu$l) of ligase to ligate ends at 0.004 $\mu$M, also in 20 $\mu$l.
-Let's say I use 800 units (2 $\mu$l at 400000 units/ml) of ligase per reaction, in 50 $\mu$l volumes. That is 5 $\mu$l of 
-10X buffer per reaction. In 500 reactions, that adds up to `r 800 * 500` units or 1 ml. That is 4 times the content of
-the M0202L product from NEB.
+ligase reaction in the NEB website uses 400 units (1 $\mu$l) of ligase to ligate ends at 0.004 $\mu$M in 20 $\mu$l. @Salas-Lizana2018 use 0.17 $\mu$l of T4 DNA ligase per reaction, in 11.7 $\mu$l volumes. It seems too little to me, but we cannot use much more, in order
+to keep glicerol concentration low (recall that restriction enzymes do not need to be heat-inactivated). 
 
 ATP is at 10 mM, and needs to be at 1 mM. 
 
