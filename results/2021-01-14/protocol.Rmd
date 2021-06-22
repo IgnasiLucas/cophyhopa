@@ -169,13 +169,11 @@ Assuming `r round(PicomolEndsPerMicrogram['SphI'], 3)` and `r round(PicomolEndsP
 
 To determine the units of T4 DNA ligase required in the concentration, I should know the concentration of cohesive ends.
 Considering both kinds of genomic coehsive ends, and the cohesive ends from the 10-fold excess of adapters, there could
-be `r sum(PicomolEndsPerMicrogram * 0.3) + 5` pmol of cohesive ends. If the final reaction volume was 11.7 $\mu$l, the concentration
-of cohesive ends would be `r (sum(PicomolEndsPerMicrogram * 0.3) + 5) / 11.7` pmol/$\mu$l (or $\mu$M). One unit is the amount of enzyme
-required to ligate 50% of 0.12 $\mu$M cohesive ends in 20 $\mu$l of reaction during 30 minutes at 16ºC. The example of
-ligase reaction in the NEB website uses 400 units (1 $\mu$l) of ligase to ligate ends at 0.004 $\mu$M in 20 $\mu$l. @Salas-Lizana2018 use 0.17 $\mu$l of T4 DNA ligase per reaction, in 11.7 $\mu$l volumes. It seems too little to me, but we cannot use much more, in order
-to keep glicerol concentration low (recall that restriction enzymes do not need to be heat-inactivated). 
+be `r round(sum(PicomolEndsPerMicrogram * 0.3) + 5, 2)` pmol of cohesive ends. If the final reaction volume was 30 $\mu$l, the concentration of cohesive ends would be `r round((sum(PicomolEndsPerMicrogram * 0.3) + 5) / 30, 2)` pmol/$\mu$l (or $\mu$M). One unit is the amount of enzyme required to ligate 50% of 0.12 $\mu$M cohesive ends in 20 $\mu$l of reaction during 30 minutes at 16ºC. The example of ligase reaction in the NEB website uses 400 units (1 $\mu$l) of ligase to ligate ends at 0.004 $\mu$M in 20 $\mu$l. @Salas-Lizana2018 use 0.17 $\mu$l of T4 DNA ligase per reaction (67 units), in 11.7 $\mu$l volumes. It is little in comparison to the reaction suggested in the NEB website, but it seems comparable to the definition of T4 DNA ligase unit. Our reaction volume will be larger than 26 $\mu$l. I would try with at least 200 units (0.5 $\mu$l).
 
-ATP is at 10 mM, and needs to be at 1 mM. 
+ATP is at 10 mM, and needs to be at 1 mM. I don't think we need to supplement any salt, because CutSmart buffer contains 10 mM Mg$^{+2}$ and 50 mM K$^{+}$. According to the [oligo analyzer by Integrated DNA Technologies](https://eu.idtdna.com/calc/analyzer), the melting temperature of the shorter adapter (with only 13 base pairings) is 39.1$^{\circ}$C.
+
+
 
 
 

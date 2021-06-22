@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Annealing of adapters
-Adapter P1 will bind *HindIII* ends, and adapter P2 will bind *SphI* ends. Both adapters need to be annealed separately. Oligos are asumed to be suspended to 100 $/mu$M concentrations. The annealing buffer stock at 10$\times$ concentration should be 100 mM Tris HCl (pH 8), 500 mM NaCl, 10 mM EDTA [@Peterson2012].
+Adapter P1 will bind *HindIII* ends, and adapter P2 will bind *SphI* ends. Both adapters need to be annealed separately. Oligos are asumed to be suspended to 100 $\mu$M concentrations. The annealing buffer stock at 10$\times$ concentration should be 100 mM Tris HCl (pH 8), 500 mM NaCl, 10 mM EDTA [@Peterson2012].
 
 ```{r AnnealingBufferStock, echo=FALSE}
 library(knitr)
@@ -26,13 +26,24 @@ kable(AnnealingBufferStock, caption='10$\\times$ Annealing Buffer Stock, 200 $\\
 
 Both adapters can be at a final concentration of 2.5 $\mu$M. We will use 1 $\mu$l per sample. We can prepare 500 $\mu$l of annealed stock of each adapter, to have them in a comfortable excess.
 
+```{r Annealed adapters, echo=FALSE, results='asis'}
+AnnealedAdapter <- data.frame(
+  Reagent = c('Top oligo 100 $\\mu$M', 'Bottom oligo 100 $\\mu$M', '10$\\times$ Annealing buffer stock', 'Water', 'Total'),
+  Amount = c(12.5, 12.5, 50, 425, 500)
+)
+kable(AnnealedAdapter, caption='\\textbf{Annealing reaction}. 500 $\\mu$l of 2.5 $\\mu$M annealed adapter. Two separate reactions must be prepared, for \\emph{HindIII} P1 and for \\emph{SphI} P2 adapters.',
+      col.names=c('Reagent', 'Amount to add ($\\mu$l)'))
+```
+
 - **Adapter P1**: Mix 12.5 $\mu$l *HindIII*-P1.1 100 $\mu$M and 12.5 $\mu$l of *HindIII*-P1.2 100 $\mu$M oligos, 50 $\mu$l of 10$\times$ annealing buffer stock (see above), and 425 $\mu$l of water.
 - **Adapter P2**: Mix 12.5 $\mu$l *SphI*-P2.1 100 $\mu$M and 12.5 $\mu$l of *SphI*-P2.2 100 $\mu$M oligos, 50 $\mu$l of 10$\times$ annealing buffer stock (see above), and 425 $\mu$l of water.
+
+Anneal oligos in a thermal cycler; 95$^{\circ}$C 5 min, followed by a 0.1$^{\circ}$C/s ramp down to 20$^{\circ}$C. Keep small aliquots of annealed adapters in the freezer.
 
 # Double digestion
 @Salas-Lizana2018 set up digestion reactions in small volumes (9 $\mu$l), where DNA constitutes 67\% of the volume (in there in TE, which contain 1 mM Na$^+$ and 10 mM Cl$^-$, I think). On top of that, they add 0.45 $\mu$l of 1 M NaCl, reaching a salt concentration above 150 mM. That is higher than the salt concentration of a NEBuffer 3.1 (100 mM NaCl), where *SphI*-HF and *HindIII*-HF have 10% activity. That is, our enzymes are much more sensitive to salt than those used by @Salas-Lizana2018. Thus, we need to increase the volume of the digestion reaction to prevent salt-inhibition of the enzymes. The recommendation is to keep DNA volume below 25% of the total volume.
 
-I assume enzymes are at 20000 U/ml. In general, 10 U of enzyme (1 $\mu$l) are supposed to be enough for 1 $\mu$g of DNA. We are using up to 300 ng of DNA in the reaction. If the number of units required are proportional to the amount of DNA, 0.3 $\mu$l of each enzyme (3 U) should be enough for 300 ng. We will use 0.5 $\mu$l.
+I assume enzymes are at 20000 U/ml. In general, 10 U of enzyme (1 $\mu$l) are supposed to be enough for 1 $\mu$g of DNA. We are using up to 300 ng of DNA in the reaction. If the number of units required are proportional to the amount of DNA, 0.3 $\mu$l of each enzyme (3 U) should be enough for 300 ng. We will use 0.5 $\mu$l. Being in 50% glicerol, that brings the final glicerol concentration to 2%, which is lower than the maximum recommended of 5%.
 
 ```{r digestion, echo=FALSE}
 DNA.volume <- 6 # µl
@@ -51,10 +62,48 @@ kable(DigestionMix, caption='Double digestion master mix. Multiply volumes by 1.
 
 1. Prepare the double digestion master mix (see table above) for 1.2$\times$ the number of samples.
 2. Mix `r TotalReactionVolume - DNA.volume` $\mu$l of double digestion master mix with 6 $\mu$l of sample DNA in each PCR tube or well.
-3. Centrifuge briefly (spin down?) and incubate at 37$^\circ{}$C for 4 hours in a thermal cycler with a heated lid. Note: both enzymes are "Time-Saver qualified" (according to NEB), so they are supposed to do the job in 15 minutes. Worth trying?
+3. Centrifuge briefly (spin down?) and incubate at 37$^\circ{}$C for 4 hours in a thermal cycler with a heated lid. Note: both enzymes are "Time-Saver qualified" (according to NEB), so they are supposed to do the job in 15 minutes.
 4. Do **not** heat inactivate the enzymes, because adapters are designed not to reconstitute the restriction target sites upon ligation.
 
 # Ligation of adapters
+We will add the ligation reaction components in two times: first the adapters and then the T4 DNA ligase. Note that @Salas-Lizana2018 put everything together in a single Ligation Master Mix. However, I want to mix the annealed adapters with the digested genomic DNA before adding the T4 DNA ligase. Otherwise, the ligase would start working on the adapters.
+
+Let ATP thaw at room temperature and keep in ice to minimize degradation. Resuspend the CutSmart buffer at room temperature as well. Keep adapters and the whole mixture cool to keep adapters annealed. Prepare the two mixtures separately. Volumes are set to ease pippetting.
+
+\newpage
+
+```{r LigationMasterMix, echo=FALSE}
+AdapterVolume  <- 5
+T4volume  <- 0.64
+LigaseVolume <- 5
+ATPvolume <- (TotalReactionVolume + AdapterVolume + LigaseVolume) / 10
+while (ATPvolume > 0.9 * LigaseVolume - T4volume) {
+  LigaseVolume <- LigaseVolume + 0.01
+  ATPvolume <- (TotalReactionVolume + AdapterVolume + LigaseVolume) / 10
+}
+water1 <- AdapterVolume - 2 - 0.1 * AdapterVolume # The 2 µl are for the adapters
+water2 <- LigaseVolume - T4volume - 0.1 * LigaseVolume - ATPvolume
+ReactionVolume <- TotalReactionVolume + AdapterVolume + LigaseVolume
+AdapterMix <- data.frame(
+  Reagent = c('HindIII-P1 adapter 2.5 $\\mu$M', 'SphI-P2 adapter 2.5 $\\mu$M', 'CutSmart buffer 10$\\times$', 'Water'),
+  Amount = c(1, 1, 0.1 * AdapterVolume, water1)
+)
+Caption <- sprintf('\\textbf{Adapter Mix}. Multiply volumes by 1.2 times the number of samples. The total volume of adapter mix per sample is %.2f $\\mu$l.', AdapterVolume)
+kable(AdapterMix, caption=Caption,
+      col.names = c('Component', 'Volume per reaction ($\\mu$l)'))
+
+LigaseMix <- data.frame(
+  Reagent = c('ATP 10 mM', 'CutSmart buffer 10$\\times$', 'T4 DNA ligase 400000 U/ml', 'Water'),
+  Amount = c(ATPvolume, 0.1 * LigaseVolume, T4volume, water2)
+)
+Caption <- sprintf('\\textbf{T4 DNA Ligase Mix}. Multiply volumes by 1.2 times the number of samples. The total volume of T4 DNA ligase mix per sample is %.2f $\\mu$l.', LigaseVolume)
+kable(LigaseMix, caption=Caption,
+      col.names = c('Component', 'Volume per reaction ($\\mu$l)'))
+```
+
+1. Add `r AdapterVolume` $\mu$l of the adapter mix to every digested sample. Mix well and incubate at room temperature for 5-10 minutes. Return to ice.
+2. Add `r LigaseVolume` $\mu$l of the T4 DNA ligase mixture to every sample. Mix well and incubate at 16$^{\circ}$C overnight (or for at least 2 hours). The total reaction volume will be `r ReactionVolume` $\mu$l.
+
 
 
 # Clean up with magnetic beads
