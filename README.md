@@ -4,7 +4,8 @@ double digestion with the expected profile from the in silico digestions. I conc
 the in vitro digestion resembles enough the in silico one to be trusted, and
 determine that the number of fragments with different ends in the size range
 that can be sequenced is not likely to be larger than expected. Thus, I am
-inclined to select as wide a size range as possible for sequencing.
+inclined to select as wide a size range as possible for sequencing. See the
+report [here](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2021-07-05/README.html)
 
 # 2021-01-14
 There is an overview of the protocol [here](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2021-01-14/protocol.html).
