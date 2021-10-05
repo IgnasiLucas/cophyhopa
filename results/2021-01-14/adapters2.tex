@@ -7,12 +7,15 @@
 \usepackage{color}
 \usepackage{fancyvrb}
 \usepackage[left=3cm]{geometry}
+\usepackage{natbib}
+\bibliographystyle{plainnat}
 \author{J. Ignacio Lucas Lledó}
 \title{ddRADseq library design}
+\date{Last update: \today}
 \begin{document}
 \maketitle
 \begin{flushleft}
-This is based on \cite{Salas-Lizana2018}. \emph{SphI} recognizes the sequence \textsf{GCATGC} and produces \textsf{CATG}-3' overhangs. And \emph{HindIII} recognizes \textsf{AAGCTT} and produces 5'-\textsf{AGCT} overhangs. Below I show the design for the adapters.
+This is based on \citet{Salas-Lizana2018}. \emph{SphI} recognizes the sequence \textsf{GCATGC} and produces \textsf{CATG}-3' overhangs. And \emph{HindIII} recognizes \textsf{AAGCTT} and produces 5'-\textsf{AGCT} overhangs. Below I show the design for the adapters.
 
 \subsection*{\emph{HindIII}-P1 adaptor}
 \begin{tabular}{l}
@@ -38,7 +41,7 @@ This is based on \cite{Salas-Lizana2018}. \emph{SphI} recognizes the sequence \t
 \vspace*{0.3cm}
 
 \subsection*{Ligated fragment}
-Note that once the adapters are ligated to the genomic fragment (blue), the restriction sites are not available any more, and the fragment would not be digested again.
+Note that once the adapters are ligated to the genomic fragment (blue), the restriction sites are not available any more, and the fragment would not be digested again. 
 
 \fvset{fontsize=\scriptsize,commandchars=\\\{\}}
 \begin{tabular}{l}
@@ -52,6 +55,8 @@ Note that once the adapters are ligated to the genomic fragment (blue), the rest
 \vspace*{0.3cm}
 
 \subsection*{Ligated fragment with amplification primers}
+We use Nextera Index Kit v2 primers to incorporate unique combinations of adapters to every sample. Below, the positions marked as \emph{[i5]} and \emph{[i7]} correspond to the 10-bases long indices. Note these are not Unique Dual Indices, because every individual primer is shared with other samples, but the combination is sample-specific. In order to reduce the chance of index hopping, we include a clean-up step before and after the PCR amplification that incorporates the indices. In addition, we include we reserved two pairs of primers to label two samples with unique individual indices, which will allow us to quantify the rate of index hopping.
+
 \fvset{fontsize=\tiny}
 \begin{tabular}{l}
 \Verb+AATGATACGGCGACCACCGAGATCTACAC[i5]TCGTCGGCAGCGTC+\\[-8pt]
@@ -69,7 +74,7 @@ Note that once the adapters are ligated to the genomic fragment (blue), the rest
 \vspace*{0.3cm}
 
 \subsection*{Amplified fragment}
-Below, the positions marked as \emph{[i5]} and \emph{[i7]} correspond to the 10-bases long indices. In all, the adapters and amplification primers will represent either 141 or 149 additional bases (145 on average), depending on whether we count overhangs or not as part of the length of the double stranded DNA fragment. Thus, aiming at an original size range of 250-650 means we should select amplified fragments in the range 395-795, or 400 to 800.
+After ligation of adapters and incorporation of indices by amplification PCR, the original DNA fragments will be almost 150 bases longer. In any case, because both enzymes are rare cutters, we will select a wide range of fragment sizes to sequence, say between 300 and 900.
 
 \begin{tabular}{l}
 \Verb+AATGATACGGCGACCACCGAGATCTACAC[i5]TCGTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATG\textcolor{blue}{CNNNNNNNNNNA}AGCTCTGTCTCTTATACACATCTCCGAGCCCACGAGAC[i7]ATCTCGTATGCCGTCTTCTGCTTG+\\[-8pt]
@@ -81,7 +86,7 @@ Below, the positions marked as \emph{[i5]} and \emph{[i7]} correspond to the 10-
 \end{tabular}
 
 \subsection*{Sequencing primers}
-The sequence of the sequencing primers only need to be edited to match the restriction site.
+The sequencing primers only need to be edited to match the restriction site. This makes the sequence read start at the unknown genomic base, to optimize the yield and increase the complexity of the signal.
 
 \begin{tabular}{l}
 \Verb+                                 TCGTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATGC+\\[-8pt]
@@ -101,5 +106,4 @@ The sequence of the sequencing primers only need to be edited to match the restr
 
 \end{flushleft}
 \bibliography{references} 
-\bibliographystyle{ieeetr}
 \end{document}
