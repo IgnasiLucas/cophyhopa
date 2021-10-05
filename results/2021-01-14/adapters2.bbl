@@ -1,9 +1,17 @@
 \begin{thebibliography}{1}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
 
-\bibitem{Salas-Lizana2018}
-R.~Salas-Lizana and R.~Oono, ``Double-digest radseq loci using standard
-  illumina indexes improve deep and shallow phylogenetic resolution of
-  lophodermium, a widespread fungal endophyte of pine needles,'' {\em Ecology
-  and Evolution}, vol.~8, no.~13, pp.~6638--6651, 2018.
+\bibitem[Salas-Lizana and Oono(2018)]{Salas-Lizana2018}
+Rodolfo Salas-Lizana and Ryoko Oono.
+\newblock Double-digest radseq loci using standard illumina indexes improve
+  deep and shallow phylogenetic resolution of lophodermium, a widespread fungal
+  endophyte of pine needles.
+\newblock \emph{Ecology and Evolution}, 8\penalty0 (13):\penalty0 6638--6651,
+  2018.
+\newblock \doi{10.1002/ece3.4147}.
 
 \end{thebibliography}
