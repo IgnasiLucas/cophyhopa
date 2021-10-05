@@ -73,8 +73,36 @@ The sequences of the Illumina amplification primers is taken from document \# 10
 \end{tabular}
 \vspace*{0.3cm}
 
+\subsection*{Amplified fragment}
+\begin{tabular}{l}
+\Verb+AATGATACGGCGACCACCGAGATCTACAC[i5]TCGTCGGCAGCGTCAGATGTGTATAAGAGACAGC\textcolor{blue}{AATTCNNNNNNNNNNNNT}TACTGTCTCTTATACACATCTCCGAGCCCACGAGAC[i7]ATCTCGTATGCCGTCTTCTGCTTG+\\[-10pt]
+\Verb+||||||||||||||||||||||||||||| || ||||||||||||||||||||||||||||||||||\textcolor{blue}{||||||||||||||||||}|||||||||||||||||||||||||||||||||||| || ||||||||||||||||||||||||+\\[-12pt]
+\begin{turn}{180}
+   \Verb+CAAGCAGAAGACGGCATACGAGAT[i7]GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG\textcolor{blue}{TAANNNNNNNNNNNNG}AATTGCTGTCTCTTATACACATCTGACGCTGCCGACGA[i5]GTGTAGATCTCGGTGGTCGCCGTATCATT+
+\end{turn}
+\\
+\end{tabular}
+\vspace*{0.3cm}
+
+\subsection*{Sequencing primers}
+\begin{tabular}{l}
+\Verb+                                 TCGTCGGCAGCGTCAGATGTGTATAAGAGACAGCAATTC+\\[-8pt]
+\Verb+AATGATACGGCGACCACCGAGATCTACAC[i5]TCGTCGGCAGCGTCAGATGTGTATAAGAGACAGC\textcolor{blue}{AATTCNNNNNNNNNNNNT}TACTGTCTCTTATACACATCTCCGAGCCCACGAGAC[i7]ATCTCGTATGCCGTCTTCTGCTTG+\\[-10pt]
+\Verb+||||||||||||||||||||||||||||| || ||||||||||||||||||||||||||||||||||\textcolor{blue}{||||||||||||||||||}|||||||||||||||||||||||||||||||||||| || ||||||||||||||||||||||||+\\[-12pt]
+\begin{turn}{180}
+   \Verb+CAAGCAGAAGACGGCATACGAGAT[i7]GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG\textcolor{blue}{TAANNNNNNNNNNNNG}AATTGCTGTCTCTTATACACATCTGACGCTGCCGACGA[i5]GTGTAGATCTCGGTGGTCGCCGTATCATT+
+\end{turn}
+\\[-8pt]
+\begin{turn}{180}
+   \Verb+GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAGTAA                                                                                    +
+\end{turn}
+\\
+\end{tabular}
+\vspace*{0.3cm}
+
+
 \section{\emph{SphI} and \emph{HindIII} combination}
-I temptatively choose this combination of results on the grounds of the analysis is folder `2020-12-14`. If the \emph{Coregonus} sp. `balchen' reference genome was accurate, we would obtain about 59000 fragments in the size range 250-650, with the two ends cut by different enzymes. \emph{SphI} recognizes the sequence \textsf{GCATGC} and produces \textsf{CATG}-3' overhangs. And \emph{HindIII} recognizes \textsf{AAGCTT} and produces 5'-\textsf{AGCT} overhangs. Below I show a possible design for the universal adapters. Note that there are two adapters, each made of two strands, and in principle I should not matter which one is specific for which enzyme.
+I tentatively choose this combination of enzymes on the grounds of the analysis in folder `2020-12-14`. If the \emph{Coregonus} sp. `balchen' reference genome was accurate, we would obtain about 59000 fragments in the size range 250-650, with the two ends cut by different enzymes. \emph{SphI} recognizes the sequence \textsf{GCATGC} and produces \textsf{CATG}-3' overhangs. And \emph{HindIII} recognizes \textsf{AAGCTT} and produces 5'-\textsf{AGCT} overhangs. Below I show a possible design for the universal adapters. Note that there are two adapters, each made of two strands, and in principle it should not matter which one is specific for which enzyme.
 
 \subsection*{\emph{HindIII}-P1 adaptor}
 \begin{tabular}{l}
@@ -132,6 +160,7 @@ Note that once the adapters are ligated to the genomic fragment (blue), the rest
 
 \subsection*{Amplified fragment}
 Below, the positions marked as \emph{[i5]} and \emph{[i7]} correspond to the 10-bases long indices. In all, the adapters and amplification primers will represent either 141 or 149 additional bases (145 on average), depending on whether we count overhangs or not as part of the length of the double stranded DNA fragment. Thus, aiming at an original size range of 250-650 means we should select amplified fragments in the range 395-795, or 400 to 800.
+
 \begin{tabular}{l}
 \Verb+AATGATACGGCGACCACCGAGATCTACAC[i5]TCGTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATG\textcolor{blue}{CNNNNNNNNNNA}AGCTCTGTCTCTTATACACATCTCCGAGCCCACGAGAC[i7]ATCTCGTATGCCGTCTTCTGCTTG+\\[-8pt]
 \Verb+||||||||||||||||||||||||||||| || ||||||||||||||||||||||||||||||||||||||\textcolor{blue}{||||||||||||}|||||||||||||||||||||||||||||||||||||| || ||||||||||||||||||||||||+\\[-10pt]
@@ -140,6 +169,25 @@ Below, the positions marked as \emph{[i5]} and \emph{[i7]} correspond to the 10-
 \end{turn}
 \\
 \end{tabular}
+
+\subsection*{Sequencing primers}
+The sequence of the sequencing primers only need to be edited to match the restriction site.
+
+\begin{tabular}{l}
+\Verb+                                 TCGTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATGC+\\[-8pt]
+\Verb+AATGATACGGCGACCACCGAGATCTACAC[i5]TCGTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATG\textcolor{blue}{CNNNNNNNNNNA}AGCTCTGTCTCTTATACACATCTCCGAGCCCACGAGAC[i7]ATCTCGTATGCCGTCTTCTGCTTG+\\[-8pt]
+\Verb+||||||||||||||||||||||||||||| || ||||||||||||||||||||||||||||||||||||||\textcolor{blue}{||||||||||||}|||||||||||||||||||||||||||||||||||||| || ||||||||||||||||||||||||+\\[-10pt]
+\begin{turn}{180}
+   \Verb+CAAGCAGAAGACGGCATACGAGAT[i7]GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG\textcolor{blue}{AGCTTNNNNNNNNNNGCATG}GCTGTCTCTTATACACATCTGACGCTGCCGACGA[i5]GTGTAGATCTCGGTGGTCGCCGTATCATT+
+\end{turn}
+\\[-8pt]
+\begin{turn}{180}
+   \Verb+GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAGAGCTT                                                                                  +
+\end{turn}
+\\
+\end{tabular}
+
+
 
 \end{flushleft}
 \bibliography{references} 

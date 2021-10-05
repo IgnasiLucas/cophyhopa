@@ -1,0 +1,105 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{rotating}
+\usepackage{color}
+\usepackage{fancyvrb}
+\usepackage[left=3cm]{geometry}
+\author{J. Ignacio Lucas Lledó}
+\title{ddRADseq library design}
+\begin{document}
+\maketitle
+\begin{flushleft}
+This is based on \cite{Salas-Lizana2018}. \emph{SphI} recognizes the sequence \textsf{GCATGC} and produces \textsf{CATG}-3' overhangs. And \emph{HindIII} recognizes \textsf{AAGCTT} and produces 5'-\textsf{AGCT} overhangs. Below I show the design for the adapters.
+
+\subsection*{\emph{HindIII}-P1 adaptor}
+\begin{tabular}{l}
+\verb+*AGCTCTGTCTCTTATACGAGAACAA+\\
+\verb+     |||||||||||||+\\[-8pt]
+   \begin{turn}{180}
+   \verb+GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG     +
+   \end{turn}
+\\
+\end{tabular}
+\vspace*{0.3cm}
+
+\subsection*{\emph{SphI}-P2 adaptor}
+
+\begin{tabular}{l}
+\verb+  GTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATG+\\
+\verb+  ||||||||||||||||||||||||||||||||+\\[-8pt]
+   \begin{turn}{180}
+   \verb+*GCTGTCTCTTATACACATCTGACGCTGCCGACGA+
+   \end{turn}
+\\
+\end{tabular}
+\vspace*{0.3cm}
+
+\subsection*{Ligated fragment}
+Note that once the adapters are ligated to the genomic fragment (blue), the restriction sites are not available any more, and the fragment would not be digested again.
+
+\fvset{fontsize=\scriptsize,commandchars=\\\{\}}
+\begin{tabular}{l}
+\Verb+  GTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATG\textcolor{blue}{CNNNNNNNNNNA}AGCTCTGTCTCTTATACGAGAACAA+\\[-6pt]
+\Verb+  ||||||||||||||||||||||||||||||||||||\textcolor{blue}{||||||||||||}|||||||||||||||||+\\[-10pt]
+   \begin{turn}{180}
+   \Verb+GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG\textcolor{blue}{AGCTTNNNNNNNNNNGCATG}GCTGTCTCTTATACACATCTGACGCTGCCGACGA+
+   \end{turn}
+\\
+\end{tabular}
+\vspace*{0.3cm}
+
+\subsection*{Ligated fragment with amplification primers}
+\fvset{fontsize=\tiny}
+\begin{tabular}{l}
+\Verb+AATGATACGGCGACCACCGAGATCTACAC[i5]TCGTCGGCAGCGTC+\\[-8pt]
+\Verb+                                   GTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATG\textcolor{blue}{CNNNNNNNNNNA}AGCTCTGTCTCTTATACGAGAACAA+\\[-6pt]
+\Verb+                                   ||||||||||||||||||||||||||||||||||||\textcolor{blue}{||||||||||||}|||||||||||||||||+\\[-10pt]
+   \begin{turn}{180}
+   \Verb+GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG\textcolor{blue}{AGCTTNNNNNNNNNNGCATG}GCTGTCTCTTATACACATCTGACGCTGCCGACGA                                 +
+   \end{turn}
+\\[-8pt]
+   \begin{turn}{180}
+   \Verb+CAAGCAGAAGACGGCATACGAGAT[i7]GTCTCGTGGGCTCGG                                                                                                          +
+   \end{turn}
+\\
+\end{tabular}
+\vspace*{0.3cm}
+
+\subsection*{Amplified fragment}
+Below, the positions marked as \emph{[i5]} and \emph{[i7]} correspond to the 10-bases long indices. In all, the adapters and amplification primers will represent either 141 or 149 additional bases (145 on average), depending on whether we count overhangs or not as part of the length of the double stranded DNA fragment. Thus, aiming at an original size range of 250-650 means we should select amplified fragments in the range 395-795, or 400 to 800.
+
+\begin{tabular}{l}
+\Verb+AATGATACGGCGACCACCGAGATCTACAC[i5]TCGTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATG\textcolor{blue}{CNNNNNNNNNNA}AGCTCTGTCTCTTATACACATCTCCGAGCCCACGAGAC[i7]ATCTCGTATGCCGTCTTCTGCTTG+\\[-8pt]
+\Verb+||||||||||||||||||||||||||||| || ||||||||||||||||||||||||||||||||||||||\textcolor{blue}{||||||||||||}|||||||||||||||||||||||||||||||||||||| || ||||||||||||||||||||||||+\\[-10pt]
+\begin{turn}{180}
+\Verb+CAAGCAGAAGACGGCATACGAGAT[i7]GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG\textcolor{blue}{AGCTTNNNNNNNNNNGCATG}GCTGTCTCTTATACACATCTGACGCTGCCGACGA[i5]GTGTAGATCTCGGTGGTCGCCGTATCATT+
+\end{turn}
+\\
+\end{tabular}
+
+\subsection*{Sequencing primers}
+The sequence of the sequencing primers only need to be edited to match the restriction site.
+
+\begin{tabular}{l}
+\Verb+                                 TCGTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATGC+\\[-8pt]
+\Verb+AATGATACGGCGACCACCGAGATCTACAC[i5]TCGTCGGCAGCGTCAGATGTGTATAAGAGACAGCCATG\textcolor{blue}{CNNNNNNNNNNA}AGCTCTGTCTCTTATACACATCTCCGAGCCCACGAGAC[i7]ATCTCGTATGCCGTCTTCTGCTTG+\\[-8pt]
+\Verb+||||||||||||||||||||||||||||| || ||||||||||||||||||||||||||||||||||||||\textcolor{blue}{||||||||||||}|||||||||||||||||||||||||||||||||||||| || ||||||||||||||||||||||||+\\[-10pt]
+\begin{turn}{180}
+   \Verb+CAAGCAGAAGACGGCATACGAGAT[i7]GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG\textcolor{blue}{AGCTTNNNNNNNNNNGCATG}GCTGTCTCTTATACACATCTGACGCTGCCGACGA[i5]GTGTAGATCTCGGTGGTCGCCGTATCATT+
+\end{turn}
+\\[-8pt]
+\begin{turn}{180}
+   \Verb+GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAGAGCTT                                                                                  +
+\end{turn}
+\\
+\end{tabular}
+
+
+
+\end{flushleft}
+\bibliography{references} 
+\bibliographystyle{ieeetr}
+\end{document}
