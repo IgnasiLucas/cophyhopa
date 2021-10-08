@@ -1,3 +1,9 @@
+# 2021-10-08
+The DNA libraries are prepared. Eleven of them were analysed in Bioanalyser for
+quality control. The concentrations of all them are also determined with Qubit.
+Here I plan to check the correlation between Qubit and Bioanalyser estimations,
+as well as to determine the amount of DNA that we need to pool per sample.
+
 # 2021-07-05
 I compare the fluorescence profile obtained with a Bioanalyser of a product of
 double digestion with the expected profile from the in silico digestions. I conclude

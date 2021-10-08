@@ -1,0 +1,57 @@
+---
+title: "Pooling"
+author: "J. Ignacio Lucas Lledó"
+date: "8/10/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## The data
+
+```{r data}
+library(ggplot2)
+Fish <- read.table('../../data/Fish_clean.tsv', header = TRUE, sep = '\t')
+Fish$Date <- as.Date(Fish$Date, "%d.%m.%Y")
+Fish$Fish_code <- as.character(Fish$Fish_code)
+row.names(Fish) <- Fish$Fish_code
+
+Smear <- read.table('../../data/20211005_smearAnalysis.tsv', header = TRUE, sep = '\t')
+
+Qubit <- read.table('../../data/clean_sample_concentrations.tsv', header = TRUE, sep = '\t')
+row.names(Qubit) <- Qubit$Sample
+Fish$Qubit <- sapply(Fish$Fish_code, function(x) Qubit[as.character(x), 'Concentration'])
+```
+
+## Confidence in Qubit's estimates
+
+```{r qubit}
+summary(lm(ng_ul ~ 0 + qubit, data = Smear))
+ggplot(data = Smear, mapping = aes(x = qubit, y = ng_ul)) + geom_point() + geom_smooth(method = 'lm')
+```
+
+The relationship is quite linear, which is good. Because for these 11 samples we have two measures
+of concentration, I should be able to estimate the standard error of the Qubit measure, and
+translate that into an expected imbalance among samples.
+
+## Pooling
+
+```{r pooling}
+Qubit$ng20 <- Qubit$Concentration * 20
+plot(ecdf(Qubit$ng20))
+MaxVolum <- 20
+Amount <- 6.00 # ng
+Qubit$Volum <- pmin(MaxVolum, Amount / Qubit$Concentration)
+Qubit$Amount <- Qubit$Volum * Qubit$Concentration
+write.table(Qubit, 'Pooling.tsv', sep='\t', quote = FALSE, row.names = FALSE)
+```
+
+I think 6.00 ng of DNA per sample are more than enough. 
+
+## Session information
+
+```{r sessioninfo}
+sessionInfo()
+```
