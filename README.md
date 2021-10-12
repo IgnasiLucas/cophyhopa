@@ -1,8 +1,17 @@
 # 2021-10-08
 The DNA libraries are prepared. Eleven of them were analysed in Bioanalyser for
 quality control. The concentrations of all them are also determined with Qubit.
-Here I plan to check the correlation between Qubit and Bioanalyser estimations,
-as well as to determine the amount of DNA that we need to pool per sample.
+A strong positive correlation exist between Qubit and Bioanalyser measures, with
+Bioanalyser being more optimistic. The average standard deviation between Qubit
+and Bioanalyser estimates of concentration is 0.27 ng/µl, which is high (the average
+concentration is almost 1 ng/µl). I realize that measuring error in Qubit and
+pipetting errors can undermine the leveling of DNA amounts among samples: even if
+we cannot get equal DNA amounts if we pool more than 4 ng per sample (4 is the minimum),
+the noise introduced by measuring errors could be more dramatic than the lack of
+enough DNA in some samples, to the point that I recommend now to use 10 ng of DNA
+per sample, or the total amount if 10 are not available. I expect to get a less
+variable distribution of coverage per sample this way. See the report at
+[here](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2021-10-08/README.html)
 
 # 2021-07-05
 I compare the fluorescence profile obtained with a Bioanalyser of a product of

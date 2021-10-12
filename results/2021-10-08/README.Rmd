@@ -10,45 +10,239 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## The data
+It's time to combine the original data on the sampled fish with the results
+from the lab: Qubit quantifications of all DNA extractions after library
+preparation, and the Bioanalyser quantifications of 11 of them. 
 
 ```{r data}
 library(ggplot2)
 Fish <- read.table('../../data/Fish_clean.tsv', header = TRUE, sep = '\t')
 Fish$Date <- as.Date(Fish$Date, "%d.%m.%Y")
-Fish$Fish_code <- as.character(Fish$Fish_code)
+Fish$Date_dissect <- as.Date(Fish$Date_dissect, "%d.%m.%Y")
+Fish$LongKept <- Fish$Date_dissect - Fish$Date  # Number of days between catchment and dissection
+Fish$Fish_code <- as.character(Fish$Fish_code)  # This is not a factor
 row.names(Fish) <- Fish$Fish_code
 
 Smear <- read.table('../../data/20211005_smearAnalysis.tsv', header = TRUE, sep = '\t')
-
 Qubit <- read.table('../../data/clean_sample_concentrations.tsv', header = TRUE, sep = '\t')
 row.names(Qubit) <- Qubit$Sample
 Fish$Qubit <- sapply(Fish$Fish_code, function(x) Qubit[as.character(x), 'Concentration'])
 ```
 
-## Confidence in Qubit's estimates
+## Data exploration
+
+```{r exploration}
+#ggplot(data = Fish, mapping = aes(y = Qubit, x = Condition)) + geom_boxplot(notch = TRUE)
+ggplot(data = Fish, mapping = aes(y = Qubit, x = LongKept, color = Condition)) +
+  geom_point()
+ggplot(data = Fish, mapping = aes(y = Qubit, x = Lake)) + geom_boxplot(notch = TRUE)
+ggplot(data = Fish, mapping = aes(y = Qubit, x = Catchment)) + geom_boxplot(notch = TRUE) +
+  facet_wrap(~Region)
+ggplot(Qubit, aes(x=Plate, y=Concentration)) + geom_boxplot()
+```
+
+All samples that were not frozen were dissected on the same day of
+catchment. The time kept frozen between catchemnt and dissection
+did not affect the yield of DNA. Average DNA concentration is not
+very different among lakes or regions.
+
+The increase in DNA concentrations in plate A (last one to be
+processed) may reflect temporal variation in sample processing skills.
+
+We miss the information of what DNA extractions come from fins and
+what from gills.
+
+## Comparison between Qubit and Bioanalyser estimates of concentration
 
 ```{r qubit}
 summary(lm(ng_ul ~ 0 + qubit, data = Smear))
-ggplot(data = Smear, mapping = aes(x = qubit, y = ng_ul)) + geom_point() + geom_smooth(method = 'lm')
+ggplot(data = Smear, mapping = aes(x = qubit, y = ng_ul)) + geom_point() +
+  geom_smooth(method = 'lm') + xlab('With Qubit (ng/µl)') + ylab('With Bioanalyser (ng/µl)')
 ```
 
-The relationship is quite linear, which is good. Because for these 11 samples we have two measures
-of concentration, I should be able to estimate the standard error of the Qubit measure, and
-translate that into an expected imbalance among samples.
+Bioanalyser gives on average higher estimates than Qubit. The good thing is that there
+is a positive linear relationship. What worries me is that dispersion is high. We can
+suspect Bioanalyser's measures to be more accurate, but we cannot know. All we have is
+two measures for 11 samples, and only one in the rest. What these 11 repeated measurements
+give us is an idea of the uncertainty in concentration. That uncertainty will translate into imbalance of total coverage per sample (see below).
 
 ## Pooling
 
+The smear analysis from Bioanalyser contains estimates of molarity (nmole/l) as well as 
+concentration (ng/µl). If all libraries have a similar distribution of fragment
+sizes, as expected from a similar digestion, ligation and PCR efficiencies, then the
+relationship between mass and number of fragments should be quite constant across
+samples. To transform from nmole/l to pmole/µl, I divide by 1000. Then, I obtain the
+number of fragments per unit of mass, in pmole/ng by dividing molarity (pmole/µl) by
+concentration (ng/µl).
+
+```{r molarity}
+Smear$pmole_ng <- Smear$nmolePerL / (1000 * Smear$ng_ul)
+Avogadro <- 6.02214076e+23
+```
+
+Thus, there must be in the order of `r round(mean(Smear$pmole_ng * Avogadro * 1.0e-12)/1000000000, 1) * 1000` milion fragments per ng of DNA. If
+we succeeded in amplifying a number of loci between 50000 and 100000, it means
+that on average a locus must be represented by a number of copies between
+`r sprintf('%.0f', round(mean(Smear$pmole_ng * Avogadro * 1.0e-12 / (100000 * 1000))) * 1000)` and
+`r sprintf('%.0f', round(mean(Smear$pmole_ng * Avogadro * 1.0e-12 / ( 50000 * 1000))) * 1000)`.
+
 ```{r pooling}
 Qubit$ng20 <- Qubit$Concentration * 20
-plot(ecdf(Qubit$ng20))
-MaxVolum <- 20
-Amount <- 6.00 # ng
-Qubit$Volum <- pmin(MaxVolum, Amount / Qubit$Concentration)
-Qubit$Amount <- Qubit$Volum * Qubit$Concentration
+plot(ecdf(Qubit$ng20), main = '', xlab = 'nanograms in 20 µl',
+     ylab = 'Proportion of samples with at least that',
+     xlim = c(3,11), ylim = c(0, 0.13))
+abline(v = 6.0, col = 'red', lty = 2)
+```
+
+I think 6.00 ng of DNA per sample should be enough. But keep reading.
+
+## Dispersion
+Ther ought to be analytical ways to estimate the effect of measuring errors in the
+variance of total coverage among samples. But that's difficult. Instead,
+just to get an idea, I will run some simulations. Our Qubit measures are distributed
+almost normally with average close to 1.0 and standard deviation 
+
+```{r dispersion}
+NumSamples <- 280
+sequencing <- function(n, ConcMean = 1.0, ConcSD = 0.4, QubitError = 0.25,
+                       PipetteError = 1, minConc = 0.1, TargetMass = 6,
+                       MaxVolume = 20, Effort = 1.0e+09, reads=FALSE){
+  Conc.Real <- rnorm(NumSamples, mean = ConcMean, sd = ConcSD)
+  # Require positive real concentrations
+  while (any(Conc.Real < minConc)) {
+    Conc.Real[Conc.Real < minConc] <- rnorm(sum(Conc.Real < minConc),
+                                            mean = ConcMean, sd = ConcSD)
+  }
+  # Estimated concentrations may be zero, not less
+  Conc.Estim <- rnorm(NumSamples, mean = Conc.Real, sd = QubitError)
+  Conc.Estim[Conc.Estim <= 0] <- 0
+#  while (any(Conc.Estim < minConc)) {
+#    Conc.Estim[Conc.Estim < minConc] <- rnorm(sum(Conc.Estim < minConc),
+#                                              mean = Conc.Real[Conc.Estim < minConc],
+#                                              sd = QubitError)
+#  }
+  Volume.Estim <- TargetMass / Conc.Estim
+  Volume.Real <- rnorm(NumSamples, mean = Volume.Estim, sd = PipetteError)
+  # DNA amount is limitting:
+  Volume.Real[Volume.Real > MaxVolume] <- MaxVolume
+  Volume.Real[Volume.Real <= 0] <- 0
+  Mass.Real <- Volume.Real * Conc.Real
+  Proportions <- Mass.Real / sum(Mass.Real)
+  NumReads <- rmultinom(1, Effort, Proportions)
+  ifelse(reads, return(NumReads), return(Proportions))
+}
+
+# Empirical mean of standard deviations between Qubit and Bioanalyser measures:
+Error1 <- mean(sapply(1:dim(Smear)[1], function(x) sd(c(Smear[x, 'ng_ul'], Smear[x,'qubit']))))
+
+CoverageSD1 <- t(
+  sapply(c(rep(0,10),rep(0.1,10),rep(0.2,10),rep(0.3,10),rep(0.4,10),rep(0.5,10)),
+         function(x) {
+           z <- sequencing(280, QubitError = x, PipetteError = 0.5, reads = TRUE)
+           return(c(mean(z), sd(z), x, 0.5))
+         })
+)
+CoverageSD2 <- t(
+  sapply(c(rep(0,10),rep(0.1,10),rep(0.2,10),rep(0.3,10),rep(0.4,10),rep(0.5,10)),
+         function(x) {
+           z <- sequencing(280, QubitError = x, PipetteError = 1.0, reads = TRUE)
+           return(c(mean(z), sd(z), x, 1.0))
+         })
+)
+CoverageSD3 <- t(
+  sapply(c(rep(0,10),rep(0.1,10),rep(0.2,10),rep(0.3,10),rep(0.4,10),rep(0.5,10)),
+         function(x) {
+           z <- sequencing(280, QubitError = x, PipetteError = 1.5, reads = TRUE)
+           return(c(mean(z), sd(z), x, 1.5))
+         })
+)
+CovSD <- as.data.frame(rbind(CoverageSD1, CoverageSD2, CoverageSD3))
+names(CovSD) <- c('Mean','SD','QubitEr','PipetteEr')
+CovSD$PipetteEr <- factor(CovSD$PipetteEr)
+ggplot(data = CovSD, mapping = aes(x = QubitEr, y = SD, color = PipetteEr)) +
+  geom_point() + geom_smooth(method = 'lm')
+
+plot(sequencing(280, QubitEr = 0.25, PipetteError = 1.0, reads = TRUE, TargetMass = 10),
+     main = 'Example of possible variation',
+     xlab = 'Sample', ylab = 'Number of reads')
+abline(h = 2.0e+06, col = 'red', lty = 2)
+```
+
+These simulations warn us that error in concentration measures and pipetting can be
+a very important source of variation in total coverage per sample. The average
+standard deviation between Qubit and Bioanalyser measures, `r round(Error1, 2)` may
+be an overestimate of the true error. And I wish pipetting errors are not above 1 µl.
+
+What is the effect of the targetted mass per sample in the dispersion of coverage?
+
+```{r targetmass}
+CovMas1 <- t(
+  sapply(rep(4:30, each = 15), function(x) {
+    z <- sequencing(280, QubitError = 0.15, PipetteError = 0.5, TargetMass = x, reads = TRUE, ConcSD = 0.4)
+    return(c(mean(z), sd(z), x, 0.15, 0.5))
+  })
+)
+CovMas2 <- t(
+  sapply(rep(4:30, each = 15), function(x) {
+    z <- sequencing(280, QubitError = 0.15, PipetteError = 2, TargetMass = x, reads = TRUE, ConcSD = 0.4)
+    return(c(mean(z), sd(z), x, 0.15, 2))
+  })
+)
+CovMas3 <- t(
+  sapply(rep(4:30, each = 15), function(x) {
+    z <- sequencing(280, QubitError = 0.25, PipetteError = 0.5, TargetMass = x, reads = TRUE, ConcSD = 0.4)
+    return(c(mean(z), sd(z), x, 0.25, 0.5))
+  })
+)
+CovMas4 <- t(
+  sapply(rep(4:30, each = 15), function(x) {
+    z <- sequencing(280, QubitError = 0.15, PipetteError = 2, TargetMass = x, reads = TRUE, ConcSD = 0.4)
+    return(c(mean(z), sd(z), x, 0.25, 2))
+  })
+)
+
+CovMass <- as.data.frame(rbind(CovMas1, CovMas2, CovMas3, CovMas4))
+names(CovMass) <- c('Mean', 'SD', 'TargetMass', 'QubitError', 'PipetteError')
+CovMass$QubitError   <- factor(CovMass$QubitError)
+CovMass$PipetteError <- factor(CovMass$PipetteError)
+
+ggplot(data = CovMass, mapping = aes(x = TargetMass, y = SD, color = PipetteError)) + 
+  geom_point() + geom_smooth() + facet_wrap(~QubitError)
+```
+
+## Conclusion
+What the curves above mean is that there is an optimal target mass per
+sample that depends on the concentration and pipetting errors, as well as
+on the original dispersion of concentrations and maximum amount of DNA
+available. The minimum is explained by two sources of variation. On one
+hand, the original variation of concentrations among samples imply that
+the less DNA we add per sample, the less variation there will be among 
+samples, because a larger fraction of them will have enough DNA. At 4 ng
+of targetted mass per sample, we would reach the lowest variation in
+total coverage among samples. But on the other hand, the imprecision in
+both pipetting and measuring concentrations make the variation among
+samples grow as we reduce the targetted mass per sample. The reason is
+that the magnitude of the variation in the amount of DNA per sample
+is not expected to scale with the amount itself, so that whatever that
+variation is, it will represent a higher proportion of the total if the
+targetted amount of DNA per sample is lower.
+
+Before realising of this, I would have chosen 6 ng per sample. Now, I
+realise it is safer to use 10 ng per sample, even if the number of samples
+that do not reach that amount is larger. Below I write down the table with
+the reccommended volumes per sample.
+
+```{r decision}
+MaxVolume <- 25  # I know it's less, but this way we can judge if we need to add the whole amount or not.
+Amount <- 10.00 # ng
+Qubit$Volume <- pmin(MaxVolume, Amount / Qubit$Concentration)
+Qubit$Amount <- Qubit$Volume * Qubit$Concentration
 write.table(Qubit, 'Pooling.tsv', sep='\t', quote = FALSE, row.names = FALSE)
 ```
 
-I think 6.00 ng of DNA per sample are more than enough. 
+
+
 
 ## Session information
 
