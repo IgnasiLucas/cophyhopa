@@ -98,7 +98,7 @@ abline(v = 6.0, col = 'red', lty = 2)
 I think 6.00 ng of DNA per sample should be enough. But keep reading.
 
 ## Dispersion
-Ther ought to be analytical ways to estimate the effect of measuring errors in the
+There ought to be analytical ways to estimate the effect of measuring errors in the
 variance of total coverage among samples. But that's difficult. Instead,
 just to get an idea, I will run some simulations. Our Qubit measures are distributed
 almost normally with average close to 1.0 and standard deviation 
