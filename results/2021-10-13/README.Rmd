@@ -1,0 +1,57 @@
+---
+title: "Index sequences"
+author: "J. Ignacio Lucas Lledó"
+date: "13/10/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This document is only intended to produce in a clear, reproducible way the assignation
+of Nextera indices (v2) to samples, according to the positions of samples in the four
+96-well plates. Sample positions are taken from a spreadsheet created by Alan (`Disseny Plaques.xlsx`).
+
+The index sequences are taken from an Illumina Document # 1000000002694 v16 (April 2021, Illumina),
+called  "Illumina Adapter Sequences" (pp 29-30). The *i7* indices have two sequences: the real onw in the adapter
+and the reverse complementary, which is the one actually read by the machine. Thus, the second column
+in *i7* is the sequence to be specified in a sample sheet. Regarding *i5* there are three columns:
+the real sequence twice and the reverse complement, because some machines read the forward and others the
+reverse strand of the adapter with the *i5* index. In the case of NextSeq2000, as for NovaSeq6000, it
+is the sequence as it appears in the adapter what is read. However, the instructions to fill up the
+sequencing request form say: "Double-check the sequence is NOT the reverse complement of the index".
+Thus, I will report only the sequences as they appear in the adapters.
+
+```{r data}
+A  <- read.table('../../data/plate_A.tsv', header = TRUE, as.is = TRUE)
+B  <- read.table('../../data/plate_B.tsv', header = TRUE, as.is = TRUE)
+C  <- read.table('../../data/plate_C.tsv', header = TRUE, as.is = TRUE)
+D  <- read.table('../../data/plate_D.tsv', header = TRUE, as.is = TRUE)
+i7 <- read.table('../../data/i7_indices.tsv', col.names = c('id', 'inAdapter', 'inSheet'), row.names = 1, as.is = TRUE)
+i5 <- read.table('../../data/i5_indices.tsv', col.names = c('id', 'inAdapter', 'inSheet1', 'inSheet2'), row.names = 1, as.is = TRUE)
+stopifnot(all.equal(rownames(A), rownames(B)))
+stopifnot(all.equal(rownames(C), rownames(D)))
+stopifnot(all.equal(colnames(A), colnames(C)))
+stopifnot(all.equal(colnames(B), colnames(D)))
+
+AllSamples <- as.matrix(rbind(cbind(A,B), cbind(C,D)))
+
+IndexSample <- do.call(
+  rbind,
+  lapply(colnames(AllSamples), function(x) {
+    t(sapply(rownames(AllSamples), function(y, i=x) c(AllSamples[y, i], i, i7[i, 'inAdapter'], y, i5[y, 'inAdapter']), USE.NAMES = FALSE))
+  })
+)
+
+colnames(IndexSample) <- c('Sample','i7','i7seq','i5','i5seq')
+IndexSample <- IndexSample[! is.na(IndexSample[,'Sample']),]
+write.table(IndexSample, file = 'SampleIndexSeq.tsv', sep = '\t', row.names = FALSE)
+```
+
+## Sesion Info
+
+```{r sessionInfo}
+sessionInfo()
+```
+
