@@ -418,7 +418,7 @@ summary {
 
 
 <p>This document is only intended to produce in a clear, reproducible way the assignation of Nextera indices (v2) to samples, according to the positions of samples in the four 96-well plates. Sample positions are taken from a spreadsheet created by Alan (<code>Disseny Plaques.xlsx</code>).</p>
-<p>The index sequences are taken from an Illumina Document # 1000000002694 v16 (April 2021, Illumina), called “Illumina Adapter Sequences” (pp 29-30). The <em>i7</em> indices have two sequences: the real onw in the adapter and the reverse complementary, which is the one actually read by the machine. Thus, the second column in <em>i7</em> is the sequence to be specified in a sample sheet. Regarding <em>i5</em> there are three columns: the real sequence twice and the reverse complement, because some machines read the forward and others the reverse strand of the adapter with the <em>i5</em> index. In the case of NextSeq2000, as for NovaSeq6000, it is the sequence as it appears in the adapter what is read. However, the instructions to fill up the sequencing request form say: “Double-check the sequence is NOT the reverse complement of the index”. Thus, I will report only the sequences as they appear in the adapters.</p>
+<p>The index sequences are taken from an Illumina Document # 1000000002694 v16 (April 2021, Illumina), called “Illumina Adapter Sequences” (pp 29-30). The <em>i7</em> indices have two sequences: the real one in the adapter and the reverse complementary, which is the one actually read by the machine. Thus, the second column in <em>i7</em> is the sequence to be specified in a sample sheet. Regarding <em>i5</em> there are three columns: the real sequence twice and the reverse complement, because some machines read the forward and others the reverse strand of the adapter with the <em>i5</em> index. In the case of NextSeq2000, as for NovaSeq6000, it is the sequence as it appears in the adapter what is read. Indeed, the instructions to fill up the sequencing request form say: “Double-check the sequence is NOT the reverse complement of the index”. Thus, I will report only the sequences as they appear in the adapters.</p>
 <pre class="r"><code>A  &lt;- read.table('../../data/plate_A.tsv', header = TRUE, as.is = TRUE)
 B  &lt;- read.table('../../data/plate_B.tsv', header = TRUE, as.is = TRUE)
 C  &lt;- read.table('../../data/plate_C.tsv', header = TRUE, as.is = TRUE)
@@ -440,8 +440,2968 @@ IndexSample &lt;- do.call(
 )
 
 colnames(IndexSample) &lt;- c('Sample','i7','i7seq','i5','i5seq')
+IndexSample &lt;- as.data.frame(IndexSample)
+IndexSample$Sample &lt;- as.character(IndexSample$Sample)
+RealSamples &lt;- ! is.na(IndexSample$Sample)
+
+stopifnot(sum(startsWith(IndexSample$Sample, 'HOP'), na.rm = TRUE) == 0)
+
+IndexSample[is.na(IndexSample$Sample), 'Sample'] &lt;- sprintf(&quot;HOP%03i&quot;, 1:sum(is.na(IndexSample$Sample)))
+
 IndexSample &lt;- IndexSample[! is.na(IndexSample[,'Sample']),]
-write.table(IndexSample, file = 'SampleIndexSeq.tsv', sep = '\t', row.names = FALSE)</code></pre>
+write.table(IndexSample, file = 'SampleIndexSeq.tsv', sep = '\t', row.names = FALSE)
+
+kable(IndexSample)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Sample</th>
+<th align="left">i7</th>
+<th align="left">i7seq</th>
+<th align="left">i5</th>
+<th align="left">i5seq</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">BIE002</td>
+<td align="left">N701</td>
+<td align="left">TCGCCTTA</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ001</td>
+<td align="left">N701</td>
+<td align="left">TCGCCTTA</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">THU001</td>
+<td align="left">N701</td>
+<td align="left">TCGCCTTA</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">WAL003</td>
+<td align="left">N701</td>
+<td align="left">TCGCCTTA</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN005</td>
+<td align="left">N701</td>
+<td align="left">TCGCCTTA</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">SUO001</td>
+<td align="left">N701</td>
+<td align="left">TCGCCTTA</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ004</td>
+<td align="left">N701</td>
+<td align="left">TCGCCTTA</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">THU002</td>
+<td align="left">N701</td>
+<td align="left">TCGCCTTA</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN098</td>
+<td align="left">N701</td>
+<td align="left">TCGCCTTA</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO095</td>
+<td align="left">N701</td>
+<td align="left">TCGCCTTA</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ115</td>
+<td align="left">N701</td>
+<td align="left">TCGCCTTA</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">THU119</td>
+<td align="left">N701</td>
+<td align="left">TCGCCTTA</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">WAL079</td>
+<td align="left">N701</td>
+<td align="left">TCGCCTTA</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">LAN099</td>
+<td align="left">N701</td>
+<td align="left">TCGCCTTA</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP001</td>
+<td align="left">N701</td>
+<td align="left">TCGCCTTA</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP002</td>
+<td align="left">N701</td>
+<td align="left">TCGCCTTA</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN017</td>
+<td align="left">N702</td>
+<td align="left">CTAGTACG</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO002</td>
+<td align="left">N702</td>
+<td align="left">CTAGTACG</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">BIE004</td>
+<td align="left">N702</td>
+<td align="left">CTAGTACG</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ005</td>
+<td align="left">N702</td>
+<td align="left">CTAGTACG</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">THU004</td>
+<td align="left">N702</td>
+<td align="left">CTAGTACG</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">WAL004</td>
+<td align="left">N702</td>
+<td align="left">CTAGTACG</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN018</td>
+<td align="left">N702</td>
+<td align="left">CTAGTACG</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO003</td>
+<td align="left">N702</td>
+<td align="left">CTAGTACG</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">THU120</td>
+<td align="left">N702</td>
+<td align="left">CTAGTACG</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">LAN102</td>
+<td align="left">N702</td>
+<td align="left">CTAGTACG</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO099</td>
+<td align="left">N702</td>
+<td align="left">CTAGTACG</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">THU124</td>
+<td align="left">N702</td>
+<td align="left">CTAGTACG</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">WAL084</td>
+<td align="left">N702</td>
+<td align="left">CTAGTACG</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">LAN103</td>
+<td align="left">N702</td>
+<td align="left">CTAGTACG</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP003</td>
+<td align="left">N702</td>
+<td align="left">CTAGTACG</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP004</td>
+<td align="left">N702</td>
+<td align="left">CTAGTACG</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ006</td>
+<td align="left">N703</td>
+<td align="left">TTCTGCCT</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">THU005</td>
+<td align="left">N703</td>
+<td align="left">TTCTGCCT</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN019</td>
+<td align="left">N703</td>
+<td align="left">TTCTGCCT</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO004</td>
+<td align="left">N703</td>
+<td align="left">TTCTGCCT</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">BIE005</td>
+<td align="left">N703</td>
+<td align="left">TTCTGCCT</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ008</td>
+<td align="left">N703</td>
+<td align="left">TTCTGCCT</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">THU007</td>
+<td align="left">N703</td>
+<td align="left">TTCTGCCT</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">WAL006</td>
+<td align="left">N703</td>
+<td align="left">TTCTGCCT</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">THU127</td>
+<td align="left">N703</td>
+<td align="left">TTCTGCCT</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">LAN111</td>
+<td align="left">N703</td>
+<td align="left">TTCTGCCT</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO101</td>
+<td align="left">N703</td>
+<td align="left">TTCTGCCT</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">THU128</td>
+<td align="left">N703</td>
+<td align="left">TTCTGCCT</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">WAL086</td>
+<td align="left">N703</td>
+<td align="left">TTCTGCCT</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">LAN113</td>
+<td align="left">N703</td>
+<td align="left">TTCTGCCT</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP005</td>
+<td align="left">N703</td>
+<td align="left">TTCTGCCT</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP006</td>
+<td align="left">N703</td>
+<td align="left">TTCTGCCT</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN022</td>
+<td align="left">N704</td>
+<td align="left">GCTCAGGA</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO005</td>
+<td align="left">N704</td>
+<td align="left">GCTCAGGA</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ011</td>
+<td align="left">N704</td>
+<td align="left">GCTCAGGA</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">THU010</td>
+<td align="left">N704</td>
+<td align="left">GCTCAGGA</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN029</td>
+<td align="left">N704</td>
+<td align="left">GCTCAGGA</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">SUO006</td>
+<td align="left">N704</td>
+<td align="left">GCTCAGGA</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">BIE006</td>
+<td align="left">N704</td>
+<td align="left">GCTCAGGA</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ013</td>
+<td align="left">N704</td>
+<td align="left">GCTCAGGA</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">THU143</td>
+<td align="left">N704</td>
+<td align="left">GCTCAGGA</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">LAN114</td>
+<td align="left">N704</td>
+<td align="left">GCTCAGGA</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO104</td>
+<td align="left">N704</td>
+<td align="left">GCTCAGGA</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">THU164</td>
+<td align="left">N704</td>
+<td align="left">GCTCAGGA</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">WAL088</td>
+<td align="left">N704</td>
+<td align="left">GCTCAGGA</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">LAN115</td>
+<td align="left">N704</td>
+<td align="left">GCTCAGGA</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP007</td>
+<td align="left">N704</td>
+<td align="left">GCTCAGGA</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP008</td>
+<td align="left">N704</td>
+<td align="left">GCTCAGGA</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">THU011</td>
+<td align="left">N705</td>
+<td align="left">AGGAGTCC</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">WAL007</td>
+<td align="left">N705</td>
+<td align="left">AGGAGTCC</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN033</td>
+<td align="left">N705</td>
+<td align="left">AGGAGTCC</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO009</td>
+<td align="left">N705</td>
+<td align="left">AGGAGTCC</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ014</td>
+<td align="left">N705</td>
+<td align="left">AGGAGTCC</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">THU014</td>
+<td align="left">N705</td>
+<td align="left">AGGAGTCC</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN038</td>
+<td align="left">N705</td>
+<td align="left">AGGAGTCC</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO011</td>
+<td align="left">N705</td>
+<td align="left">AGGAGTCC</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">THU165</td>
+<td align="left">N705</td>
+<td align="left">AGGAGTCC</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">LAN117</td>
+<td align="left">N705</td>
+<td align="left">AGGAGTCC</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO108</td>
+<td align="left">N705</td>
+<td align="left">AGGAGTCC</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">THU168</td>
+<td align="left">N705</td>
+<td align="left">AGGAGTCC</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO111</td>
+<td align="left">N705</td>
+<td align="left">AGGAGTCC</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">THU173</td>
+<td align="left">N705</td>
+<td align="left">AGGAGTCC</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP009</td>
+<td align="left">N705</td>
+<td align="left">AGGAGTCC</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP010</td>
+<td align="left">N705</td>
+<td align="left">AGGAGTCC</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">BIE007</td>
+<td align="left">N706</td>
+<td align="left">CATGCCTA</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ015</td>
+<td align="left">N706</td>
+<td align="left">CATGCCTA</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">THU019</td>
+<td align="left">N706</td>
+<td align="left">CATGCCTA</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">WAL009</td>
+<td align="left">N706</td>
+<td align="left">CATGCCTA</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN039</td>
+<td align="left">N706</td>
+<td align="left">CATGCCTA</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">SUO012</td>
+<td align="left">N706</td>
+<td align="left">CATGCCTA</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ019</td>
+<td align="left">N706</td>
+<td align="left">CATGCCTA</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">THU027</td>
+<td align="left">N706</td>
+<td align="left">CATGCCTA</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO112</td>
+<td align="left">N706</td>
+<td align="left">CATGCCTA</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">THU177</td>
+<td align="left">N706</td>
+<td align="left">CATGCCTA</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO114</td>
+<td align="left">N706</td>
+<td align="left">CATGCCTA</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">THU179</td>
+<td align="left">N706</td>
+<td align="left">CATGCCTA</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN130</td>
+<td align="left">N706</td>
+<td align="left">CATGCCTA</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO115</td>
+<td align="left">N706</td>
+<td align="left">CATGCCTA</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP011</td>
+<td align="left">N706</td>
+<td align="left">CATGCCTA</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP012</td>
+<td align="left">N706</td>
+<td align="left">CATGCCTA</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN040</td>
+<td align="left">N707</td>
+<td align="left">GTAGAGAG</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO016</td>
+<td align="left">N707</td>
+<td align="left">GTAGAGAG</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">BIE008</td>
+<td align="left">N707</td>
+<td align="left">GTAGAGAG</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ020</td>
+<td align="left">N707</td>
+<td align="left">GTAGAGAG</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">THU038</td>
+<td align="left">N707</td>
+<td align="left">GTAGAGAG</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">WAL010</td>
+<td align="left">N707</td>
+<td align="left">GTAGAGAG</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN041</td>
+<td align="left">N707</td>
+<td align="left">GTAGAGAG</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO019</td>
+<td align="left">N707</td>
+<td align="left">GTAGAGAG</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO116</td>
+<td align="left">N707</td>
+<td align="left">GTAGAGAG</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">THU183</td>
+<td align="left">N707</td>
+<td align="left">GTAGAGAG</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN131</td>
+<td align="left">N707</td>
+<td align="left">GTAGAGAG</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO117</td>
+<td align="left">N707</td>
+<td align="left">GTAGAGAG</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">THU185</td>
+<td align="left">N707</td>
+<td align="left">GTAGAGAG</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO119</td>
+<td align="left">N707</td>
+<td align="left">GTAGAGAG</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP013</td>
+<td align="left">N707</td>
+<td align="left">GTAGAGAG</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP014</td>
+<td align="left">N707</td>
+<td align="left">GTAGAGAG</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ021</td>
+<td align="left">N710</td>
+<td align="left">CAGCCTCG</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">THU039</td>
+<td align="left">N710</td>
+<td align="left">CAGCCTCG</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN042</td>
+<td align="left">N710</td>
+<td align="left">CAGCCTCG</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO020</td>
+<td align="left">N710</td>
+<td align="left">CAGCCTCG</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">BIE028</td>
+<td align="left">N710</td>
+<td align="left">CAGCCTCG</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ025</td>
+<td align="left">N710</td>
+<td align="left">CAGCCTCG</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">THU056</td>
+<td align="left">N710</td>
+<td align="left">CAGCCTCG</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">WAL014</td>
+<td align="left">N710</td>
+<td align="left">CAGCCTCG</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN132</td>
+<td align="left">N710</td>
+<td align="left">CAGCCTCG</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO118</td>
+<td align="left">N710</td>
+<td align="left">CAGCCTCG</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">THU190</td>
+<td align="left">N710</td>
+<td align="left">CAGCCTCG</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO120</td>
+<td align="left">N710</td>
+<td align="left">CAGCCTCG</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">THU197</td>
+<td align="left">N710</td>
+<td align="left">CAGCCTCG</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO122</td>
+<td align="left">N710</td>
+<td align="left">CAGCCTCG</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP015</td>
+<td align="left">N710</td>
+<td align="left">CAGCCTCG</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP016</td>
+<td align="left">N710</td>
+<td align="left">CAGCCTCG</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN043</td>
+<td align="left">N711</td>
+<td align="left">TGCCTCTT</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO022</td>
+<td align="left">N711</td>
+<td align="left">TGCCTCTT</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ026</td>
+<td align="left">N711</td>
+<td align="left">TGCCTCTT</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">THU060</td>
+<td align="left">N711</td>
+<td align="left">TGCCTCTT</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN044</td>
+<td align="left">N711</td>
+<td align="left">TGCCTCTT</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">SUO023</td>
+<td align="left">N711</td>
+<td align="left">TGCCTCTT</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">BIE030</td>
+<td align="left">N711</td>
+<td align="left">TGCCTCTT</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ027</td>
+<td align="left">N711</td>
+<td align="left">TGCCTCTT</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO124</td>
+<td align="left">N711</td>
+<td align="left">TGCCTCTT</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">THU198</td>
+<td align="left">N711</td>
+<td align="left">TGCCTCTT</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO125</td>
+<td align="left">N711</td>
+<td align="left">TGCCTCTT</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">LAN134</td>
+<td align="left">N711</td>
+<td align="left">TGCCTCTT</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO126</td>
+<td align="left">N711</td>
+<td align="left">TGCCTCTT</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">THU199</td>
+<td align="left">N711</td>
+<td align="left">TGCCTCTT</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP017</td>
+<td align="left">N711</td>
+<td align="left">TGCCTCTT</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP018</td>
+<td align="left">N711</td>
+<td align="left">TGCCTCTT</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">THU061</td>
+<td align="left">N712</td>
+<td align="left">TCCTCTAC</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">WAL016</td>
+<td align="left">N712</td>
+<td align="left">TCCTCTAC</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN045</td>
+<td align="left">N712</td>
+<td align="left">TCCTCTAC</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO027</td>
+<td align="left">N712</td>
+<td align="left">TCCTCTAC</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ028</td>
+<td align="left">N712</td>
+<td align="left">TCCTCTAC</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">THU066</td>
+<td align="left">N712</td>
+<td align="left">TCCTCTAC</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN047</td>
+<td align="left">N712</td>
+<td align="left">TCCTCTAC</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO030</td>
+<td align="left">N712</td>
+<td align="left">TCCTCTAC</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">ZUR011</td>
+<td align="left">N712</td>
+<td align="left">TCCTCTAC</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO127</td>
+<td align="left">N712</td>
+<td align="left">TCCTCTAC</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">ZUR018</td>
+<td align="left">N712</td>
+<td align="left">TCCTCTAC</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">LAN049</td>
+<td align="left">N712</td>
+<td align="left">TCCTCTAC</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">175600</td>
+<td align="left">N712</td>
+<td align="left">TCCTCTAC</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO034</td>
+<td align="left">N712</td>
+<td align="left">TCCTCTAC</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP019</td>
+<td align="left">N712</td>
+<td align="left">TCCTCTAC</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP020</td>
+<td align="left">N712</td>
+<td align="left">TCCTCTAC</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">BIE044</td>
+<td align="left">N714</td>
+<td align="left">TCATGAGC</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ031</td>
+<td align="left">N714</td>
+<td align="left">TCATGAGC</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">THU067</td>
+<td align="left">N714</td>
+<td align="left">TCATGAGC</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">WAL021</td>
+<td align="left">N714</td>
+<td align="left">TCATGAGC</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN048</td>
+<td align="left">N714</td>
+<td align="left">TCATGAGC</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">SUO031</td>
+<td align="left">N714</td>
+<td align="left">TCATGAGC</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ033</td>
+<td align="left">N714</td>
+<td align="left">TCATGAGC</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">THU073</td>
+<td align="left">N714</td>
+<td align="left">TCATGAGC</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">BIE045</td>
+<td align="left">N714</td>
+<td align="left">TCATGAGC</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">175601</td>
+<td align="left">N714</td>
+<td align="left">TCATGAGC</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO097</td>
+<td align="left">N714</td>
+<td align="left">TCATGAGC</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">175602</td>
+<td align="left">N714</td>
+<td align="left">TCATGAGC</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ034</td>
+<td align="left">N714</td>
+<td align="left">TCATGAGC</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">175603</td>
+<td align="left">N714</td>
+<td align="left">TCATGAGC</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP021</td>
+<td align="left">N714</td>
+<td align="left">TCATGAGC</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP022</td>
+<td align="left">N714</td>
+<td align="left">TCATGAGC</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP023</td>
+<td align="left">N715</td>
+<td align="left">CCTGAGAT</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">HOP024</td>
+<td align="left">N715</td>
+<td align="left">CCTGAGAT</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP025</td>
+<td align="left">N715</td>
+<td align="left">CCTGAGAT</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">HOP026</td>
+<td align="left">N715</td>
+<td align="left">CCTGAGAT</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP027</td>
+<td align="left">N715</td>
+<td align="left">CCTGAGAT</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP028</td>
+<td align="left">N715</td>
+<td align="left">CCTGAGAT</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP029</td>
+<td align="left">N715</td>
+<td align="left">CCTGAGAT</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">HOP030</td>
+<td align="left">N715</td>
+<td align="left">CCTGAGAT</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP031</td>
+<td align="left">N715</td>
+<td align="left">CCTGAGAT</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">HOP032</td>
+<td align="left">N715</td>
+<td align="left">CCTGAGAT</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP033</td>
+<td align="left">N715</td>
+<td align="left">CCTGAGAT</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">HOP034</td>
+<td align="left">N715</td>
+<td align="left">CCTGAGAT</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP035</td>
+<td align="left">N715</td>
+<td align="left">CCTGAGAT</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">HOP036</td>
+<td align="left">N715</td>
+<td align="left">CCTGAGAT</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP037</td>
+<td align="left">N715</td>
+<td align="left">CCTGAGAT</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">175620</td>
+<td align="left">N715</td>
+<td align="left">CCTGAGAT</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ039</td>
+<td align="left">N716</td>
+<td align="left">TAGCGAGT</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">THU079</td>
+<td align="left">N716</td>
+<td align="left">TAGCGAGT</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN052</td>
+<td align="left">N716</td>
+<td align="left">TAGCGAGT</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO047</td>
+<td align="left">N716</td>
+<td align="left">TAGCGAGT</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">BIE048</td>
+<td align="left">N716</td>
+<td align="left">TAGCGAGT</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ040</td>
+<td align="left">N716</td>
+<td align="left">TAGCGAGT</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">THU080</td>
+<td align="left">N716</td>
+<td align="left">TAGCGAGT</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">WAL024</td>
+<td align="left">N716</td>
+<td align="left">TAGCGAGT</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">175604</td>
+<td align="left">N716</td>
+<td align="left">TAGCGAGT</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO100</td>
+<td align="left">N716</td>
+<td align="left">TAGCGAGT</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">175605</td>
+<td align="left">N716</td>
+<td align="left">TAGCGAGT</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO043</td>
+<td align="left">N716</td>
+<td align="left">TAGCGAGT</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">175606</td>
+<td align="left">N716</td>
+<td align="left">TAGCGAGT</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO102</td>
+<td align="left">N716</td>
+<td align="left">TAGCGAGT</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP038</td>
+<td align="left">N716</td>
+<td align="left">TAGCGAGT</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP039</td>
+<td align="left">N716</td>
+<td align="left">TAGCGAGT</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN059</td>
+<td align="left">N718</td>
+<td align="left">GTAGCTCC</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO048</td>
+<td align="left">N718</td>
+<td align="left">GTAGCTCC</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ041</td>
+<td align="left">N718</td>
+<td align="left">GTAGCTCC</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">THU081</td>
+<td align="left">N718</td>
+<td align="left">GTAGCTCC</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN060</td>
+<td align="left">N718</td>
+<td align="left">GTAGCTCC</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">SUO049</td>
+<td align="left">N718</td>
+<td align="left">GTAGCTCC</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">BIE049</td>
+<td align="left">N718</td>
+<td align="left">GTAGCTCC</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ044</td>
+<td align="left">N718</td>
+<td align="left">GTAGCTCC</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">THU077</td>
+<td align="left">N718</td>
+<td align="left">GTAGCTCC</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">175607</td>
+<td align="left">N718</td>
+<td align="left">GTAGCTCC</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">WAL022</td>
+<td align="left">N718</td>
+<td align="left">GTAGCTCC</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">175608</td>
+<td align="left">N718</td>
+<td align="left">GTAGCTCC</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO105</td>
+<td align="left">N718</td>
+<td align="left">GTAGCTCC</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">175609</td>
+<td align="left">N718</td>
+<td align="left">GTAGCTCC</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP040</td>
+<td align="left">N718</td>
+<td align="left">GTAGCTCC</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP041</td>
+<td align="left">N718</td>
+<td align="left">GTAGCTCC</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">THU082</td>
+<td align="left">N719</td>
+<td align="left">TACTACGC</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">WAL030</td>
+<td align="left">N719</td>
+<td align="left">TACTACGC</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN061</td>
+<td align="left">N719</td>
+<td align="left">TACTACGC</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO056</td>
+<td align="left">N719</td>
+<td align="left">TACTACGC</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ045</td>
+<td align="left">N719</td>
+<td align="left">TACTACGC</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">THU083</td>
+<td align="left">N719</td>
+<td align="left">TACTACGC</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN062</td>
+<td align="left">N719</td>
+<td align="left">TACTACGC</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO058</td>
+<td align="left">N719</td>
+<td align="left">TACTACGC</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">175610</td>
+<td align="left">N719</td>
+<td align="left">TACTACGC</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">LAN119</td>
+<td align="left">N719</td>
+<td align="left">TACTACGC</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">175611</td>
+<td align="left">N719</td>
+<td align="left">TACTACGC</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">THU182</td>
+<td align="left">N719</td>
+<td align="left">TACTACGC</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">175612</td>
+<td align="left">N719</td>
+<td align="left">TACTACGC</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">LAN133</td>
+<td align="left">N719</td>
+<td align="left">TACTACGC</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP042</td>
+<td align="left">N719</td>
+<td align="left">TACTACGC</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP043</td>
+<td align="left">N719</td>
+<td align="left">TACTACGC</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">BIE050</td>
+<td align="left">N720</td>
+<td align="left">AGGCTCCG</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ046</td>
+<td align="left">N720</td>
+<td align="left">AGGCTCCG</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">THU084</td>
+<td align="left">N720</td>
+<td align="left">AGGCTCCG</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">WAL031</td>
+<td align="left">N720</td>
+<td align="left">AGGCTCCG</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN063</td>
+<td align="left">N720</td>
+<td align="left">AGGCTCCG</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">SUO059</td>
+<td align="left">N720</td>
+<td align="left">AGGCTCCG</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ047</td>
+<td align="left">N720</td>
+<td align="left">AGGCTCCG</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">THU086</td>
+<td align="left">N720</td>
+<td align="left">AGGCTCCG</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">THU187</td>
+<td align="left">N720</td>
+<td align="left">AGGCTCCG</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">175613</td>
+<td align="left">N720</td>
+<td align="left">AGGCTCCG</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO092</td>
+<td align="left">N720</td>
+<td align="left">AGGCTCCG</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">175614</td>
+<td align="left">N720</td>
+<td align="left">AGGCTCCG</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN135</td>
+<td align="left">N720</td>
+<td align="left">AGGCTCCG</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">175615</td>
+<td align="left">N720</td>
+<td align="left">AGGCTCCG</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP044</td>
+<td align="left">N720</td>
+<td align="left">AGGCTCCG</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP045</td>
+<td align="left">N720</td>
+<td align="left">AGGCTCCG</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN064</td>
+<td align="left">N721</td>
+<td align="left">GCAGCGTA</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO060</td>
+<td align="left">N721</td>
+<td align="left">GCAGCGTA</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">BIE092</td>
+<td align="left">N721</td>
+<td align="left">GCAGCGTA</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ052</td>
+<td align="left">N721</td>
+<td align="left">GCAGCGTA</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">THU087</td>
+<td align="left">N721</td>
+<td align="left">GCAGCGTA</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">WAL033</td>
+<td align="left">N721</td>
+<td align="left">GCAGCGTA</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN065</td>
+<td align="left">N721</td>
+<td align="left">GCAGCGTA</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO061</td>
+<td align="left">N721</td>
+<td align="left">GCAGCGTA</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">175616</td>
+<td align="left">N721</td>
+<td align="left">GCAGCGTA</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ111</td>
+<td align="left">N721</td>
+<td align="left">GCAGCGTA</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">175617</td>
+<td align="left">N721</td>
+<td align="left">GCAGCGTA</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">THU114</td>
+<td align="left">N721</td>
+<td align="left">GCAGCGTA</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">175618</td>
+<td align="left">N721</td>
+<td align="left">GCAGCGTA</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">WAL078</td>
+<td align="left">N721</td>
+<td align="left">GCAGCGTA</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP046</td>
+<td align="left">N721</td>
+<td align="left">GCAGCGTA</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP047</td>
+<td align="left">N721</td>
+<td align="left">GCAGCGTA</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ054</td>
+<td align="left">N722</td>
+<td align="left">CTGCGCAT</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">THU091</td>
+<td align="left">N722</td>
+<td align="left">CTGCGCAT</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN067</td>
+<td align="left">N722</td>
+<td align="left">CTGCGCAT</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO076</td>
+<td align="left">N722</td>
+<td align="left">CTGCGCAT</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ057</td>
+<td align="left">N722</td>
+<td align="left">CTGCGCAT</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">THU097</td>
+<td align="left">N722</td>
+<td align="left">CTGCGCAT</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">WAL036</td>
+<td align="left">N722</td>
+<td align="left">CTGCGCAT</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">LAN071</td>
+<td align="left">N722</td>
+<td align="left">CTGCGCAT</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN097</td>
+<td align="left">N722</td>
+<td align="left">CTGCGCAT</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">175619</td>
+<td align="left">N722</td>
+<td align="left">CTGCGCAT</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO094</td>
+<td align="left">N722</td>
+<td align="left">CTGCGCAT</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">THU118</td>
+<td align="left">N722</td>
+<td align="left">CTGCGCAT</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ114</td>
+<td align="left">N722</td>
+<td align="left">CTGCGCAT</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">LAN050</td>
+<td align="left">N722</td>
+<td align="left">CTGCGCAT</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP048</td>
+<td align="left">N722</td>
+<td align="left">CTGCGCAT</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP049</td>
+<td align="left">N722</td>
+<td align="left">CTGCGCAT</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO077</td>
+<td align="left">N723</td>
+<td align="left">GAGCGCTA</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ066</td>
+<td align="left">N723</td>
+<td align="left">GAGCGCTA</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">THU099</td>
+<td align="left">N723</td>
+<td align="left">GAGCGCTA</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">LAN072</td>
+<td align="left">N723</td>
+<td align="left">GAGCGCTA</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO080</td>
+<td align="left">N723</td>
+<td align="left">GAGCGCTA</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ068</td>
+<td align="left">N723</td>
+<td align="left">GAGCGCTA</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">THU104</td>
+<td align="left">N723</td>
+<td align="left">GAGCGCTA</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">WAL040</td>
+<td align="left">N723</td>
+<td align="left">GAGCGCTA</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ108</td>
+<td align="left">N723</td>
+<td align="left">GAGCGCTA</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">THU111</td>
+<td align="left">N723</td>
+<td align="left">GAGCGCTA</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">WAL045</td>
+<td align="left">N723</td>
+<td align="left">GAGCGCTA</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">LAN093</td>
+<td align="left">N723</td>
+<td align="left">GAGCGCTA</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO090</td>
+<td align="left">N723</td>
+<td align="left">GAGCGCTA</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ110</td>
+<td align="left">N723</td>
+<td align="left">GAGCGCTA</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP050</td>
+<td align="left">N723</td>
+<td align="left">GAGCGCTA</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP051</td>
+<td align="left">N723</td>
+<td align="left">GAGCGCTA</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN074</td>
+<td align="left">N724</td>
+<td align="left">CGCTCAGT</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO081</td>
+<td align="left">N724</td>
+<td align="left">CGCTCAGT</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ070</td>
+<td align="left">N724</td>
+<td align="left">CGCTCAGT</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">THU106</td>
+<td align="left">N724</td>
+<td align="left">CGCTCAGT</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN087</td>
+<td align="left">N724</td>
+<td align="left">CGCTCAGT</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">SUO082</td>
+<td align="left">N724</td>
+<td align="left">CGCTCAGT</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ071</td>
+<td align="left">N724</td>
+<td align="left">CGCTCAGT</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">THU107</td>
+<td align="left">N724</td>
+<td align="left">CGCTCAGT</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">THU113</td>
+<td align="left">N724</td>
+<td align="left">CGCTCAGT</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">LAN095</td>
+<td align="left">N724</td>
+<td align="left">CGCTCAGT</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP052</td>
+<td align="left">N724</td>
+<td align="left">CGCTCAGT</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">HOP053</td>
+<td align="left">N724</td>
+<td align="left">CGCTCAGT</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP054</td>
+<td align="left">N724</td>
+<td align="left">CGCTCAGT</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">HOP055</td>
+<td align="left">N724</td>
+<td align="left">CGCTCAGT</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP056</td>
+<td align="left">N724</td>
+<td align="left">CGCTCAGT</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP057</td>
+<td align="left">N724</td>
+<td align="left">CGCTCAGT</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">WAL041</td>
+<td align="left">N726</td>
+<td align="left">GTCTTAGG</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">LAN088</td>
+<td align="left">N726</td>
+<td align="left">GTCTTAGG</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO083</td>
+<td align="left">N726</td>
+<td align="left">GTCTTAGG</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ083</td>
+<td align="left">N726</td>
+<td align="left">GTCTTAGG</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">THU108</td>
+<td align="left">N726</td>
+<td align="left">GTCTTAGG</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">LAN089</td>
+<td align="left">N726</td>
+<td align="left">GTCTTAGG</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">SUO084</td>
+<td align="left">N726</td>
+<td align="left">GTCTTAGG</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">BRZ099</td>
+<td align="left">N726</td>
+<td align="left">GTCTTAGG</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP058</td>
+<td align="left">N726</td>
+<td align="left">GTCTTAGG</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">HOP059</td>
+<td align="left">N726</td>
+<td align="left">GTCTTAGG</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP060</td>
+<td align="left">N726</td>
+<td align="left">GTCTTAGG</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">HOP061</td>
+<td align="left">N726</td>
+<td align="left">GTCTTAGG</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP062</td>
+<td align="left">N726</td>
+<td align="left">GTCTTAGG</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">HOP063</td>
+<td align="left">N726</td>
+<td align="left">GTCTTAGG</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP064</td>
+<td align="left">N726</td>
+<td align="left">GTCTTAGG</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP065</td>
+<td align="left">N726</td>
+<td align="left">GTCTTAGG</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">THU109</td>
+<td align="left">N727</td>
+<td align="left">ACTGATCG</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">WAL042</td>
+<td align="left">N727</td>
+<td align="left">ACTGATCG</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN090</td>
+<td align="left">N727</td>
+<td align="left">ACTGATCG</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">SUO087</td>
+<td align="left">N727</td>
+<td align="left">ACTGATCG</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">BRZ107</td>
+<td align="left">N727</td>
+<td align="left">ACTGATCG</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">THU110</td>
+<td align="left">N727</td>
+<td align="left">ACTGATCG</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">LAN092</td>
+<td align="left">N727</td>
+<td align="left">ACTGATCG</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">SUO088</td>
+<td align="left">N727</td>
+<td align="left">ACTGATCG</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP066</td>
+<td align="left">N727</td>
+<td align="left">ACTGATCG</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">HOP067</td>
+<td align="left">N727</td>
+<td align="left">ACTGATCG</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP068</td>
+<td align="left">N727</td>
+<td align="left">ACTGATCG</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">HOP069</td>
+<td align="left">N727</td>
+<td align="left">ACTGATCG</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP070</td>
+<td align="left">N727</td>
+<td align="left">ACTGATCG</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">HOP071</td>
+<td align="left">N727</td>
+<td align="left">ACTGATCG</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP072</td>
+<td align="left">N727</td>
+<td align="left">ACTGATCG</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP073</td>
+<td align="left">N727</td>
+<td align="left">ACTGATCG</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP074</td>
+<td align="left">N728</td>
+<td align="left">TAGCTGCA</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">HOP075</td>
+<td align="left">N728</td>
+<td align="left">TAGCTGCA</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP076</td>
+<td align="left">N728</td>
+<td align="left">TAGCTGCA</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">HOP077</td>
+<td align="left">N728</td>
+<td align="left">TAGCTGCA</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP078</td>
+<td align="left">N728</td>
+<td align="left">TAGCTGCA</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP079</td>
+<td align="left">N728</td>
+<td align="left">TAGCTGCA</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP080</td>
+<td align="left">N728</td>
+<td align="left">TAGCTGCA</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">HOP081</td>
+<td align="left">N728</td>
+<td align="left">TAGCTGCA</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP082</td>
+<td align="left">N728</td>
+<td align="left">TAGCTGCA</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">HOP083</td>
+<td align="left">N728</td>
+<td align="left">TAGCTGCA</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP084</td>
+<td align="left">N728</td>
+<td align="left">TAGCTGCA</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">HOP085</td>
+<td align="left">N728</td>
+<td align="left">TAGCTGCA</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP086</td>
+<td align="left">N728</td>
+<td align="left">TAGCTGCA</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">HOP087</td>
+<td align="left">N728</td>
+<td align="left">TAGCTGCA</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">175621</td>
+<td align="left">N728</td>
+<td align="left">TAGCTGCA</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP088</td>
+<td align="left">N728</td>
+<td align="left">TAGCTGCA</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP089</td>
+<td align="left">N729</td>
+<td align="left">GACGTCGA</td>
+<td align="left">S502</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">HOP090</td>
+<td align="left">N729</td>
+<td align="left">GACGTCGA</td>
+<td align="left">S503</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP091</td>
+<td align="left">N729</td>
+<td align="left">GACGTCGA</td>
+<td align="left">S505</td>
+<td align="left">GTAAGGAG</td>
+</tr>
+<tr class="even">
+<td align="left">HOP092</td>
+<td align="left">N729</td>
+<td align="left">GACGTCGA</td>
+<td align="left">S506</td>
+<td align="left">ACTGCATA</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP093</td>
+<td align="left">N729</td>
+<td align="left">GACGTCGA</td>
+<td align="left">S507</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP094</td>
+<td align="left">N729</td>
+<td align="left">GACGTCGA</td>
+<td align="left">S508</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP095</td>
+<td align="left">N729</td>
+<td align="left">GACGTCGA</td>
+<td align="left">S510</td>
+<td align="left">CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">HOP096</td>
+<td align="left">N729</td>
+<td align="left">GACGTCGA</td>
+<td align="left">S511</td>
+<td align="left">TCTCTCCG</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP097</td>
+<td align="left">N729</td>
+<td align="left">GACGTCGA</td>
+<td align="left">S513</td>
+<td align="left">TCGACTAG</td>
+</tr>
+<tr class="even">
+<td align="left">HOP098</td>
+<td align="left">N729</td>
+<td align="left">GACGTCGA</td>
+<td align="left">S515</td>
+<td align="left">TTCTAGCT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP099</td>
+<td align="left">N729</td>
+<td align="left">GACGTCGA</td>
+<td align="left">S516</td>
+<td align="left">CCTAGAGT</td>
+</tr>
+<tr class="even">
+<td align="left">HOP100</td>
+<td align="left">N729</td>
+<td align="left">GACGTCGA</td>
+<td align="left">S517</td>
+<td align="left">GCGTAAGA</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP101</td>
+<td align="left">N729</td>
+<td align="left">GACGTCGA</td>
+<td align="left">S518</td>
+<td align="left">CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">HOP102</td>
+<td align="left">N729</td>
+<td align="left">GACGTCGA</td>
+<td align="left">S520</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">HOP103</td>
+<td align="left">N729</td>
+<td align="left">GACGTCGA</td>
+<td align="left">S521</td>
+<td align="left">GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">HOP104</td>
+<td align="left">N729</td>
+<td align="left">GACGTCGA</td>
+<td align="left">S522</td>
+<td align="left">TTATGCGA</td>
+</tr>
+</tbody>
+</table>
+<p>The table above can be used to fill up the sample sheet for the sequencing service. Because samples are tagged with Illumina indices, rather than inline barcodes, we are at the machine’s mercy when it comes to demultiplexing. Would I be able to know what or how many reads were attributed to a particular combination of indices without a real sample assigned to it? Probably not, unless I tell the machine that such combination is actually assigned to a (<em>virtual</em>) sample. For this reason, I include in the data sheet all actually not used combinations as assigned to as many non-existent, virtual samples the names of which start with <em>HOP</em>.</p>
+<p>Below I check the Hamming distances among them, using an algorithm suggested by <a href="https://stackoverflow.com/users/4891738/zheyuan-li">Zheyuan Li</a>.</p>
+<pre class="r"><code># The following is adapted from https://stackoverflow.com/a/51918595
+i7.used &lt;- unique(as.character(IndexSample[RealSamples,'i7seq']))
+MinHamming.i7 &lt;- do.call(
+  rbind,
+  lapply(i7.used, function(x, y = i7.used){
+    A &lt;- strsplit(x, split = '')[[1]]
+    B &lt;- do.call(cbind, strsplit(y, split = ''))
+    H &lt;- colSums(A != B)
+    minH &lt;- min(H[H &gt; 0])
+    whichMinH &lt;- which(H == minH)
+    whatMinH  &lt;- paste(y[whichMinH], collapse = ',')
+    return(data.frame(Index = x, MinHamming = minH, Closest = whatMinH))
+  })
+)
+kable(MinHamming.i7)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Index</th>
+<th align="right">MinHamming</th>
+<th align="left">Closest</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">TCGCCTTA</td>
+<td align="right">4</td>
+<td align="left">CAGCCTCG,TCCTCTAC,GCAGCGTA,GAGCGCTA,TAGCTGCA</td>
+</tr>
+<tr class="even">
+<td align="left">CTAGTACG</td>
+<td align="right">4</td>
+<td align="left">GTAGAGAG,GTAGCTCC,GTCTTAGG</td>
+</tr>
+<tr class="odd">
+<td align="left">TTCTGCCT</td>
+<td align="right">4</td>
+<td align="left">TGCCTCTT,TACTACGC,CTGCGCAT</td>
+</tr>
+<tr class="even">
+<td align="left">GCTCAGGA</td>
+<td align="right">4</td>
+<td align="left">CCTGAGAT,GCAGCGTA</td>
+</tr>
+<tr class="odd">
+<td align="left">AGGAGTCC</td>
+<td align="right">4</td>
+<td align="left">AGGCTCCG</td>
+</tr>
+<tr class="even">
+<td align="left">CATGCCTA</td>
+<td align="right">4</td>
+<td align="left">GCAGCGTA,GAGCGCTA</td>
+</tr>
+<tr class="odd">
+<td align="left">GTAGAGAG</td>
+<td align="right">4</td>
+<td align="left">CTAGTACG,CCTGAGAT,GTAGCTCC,GCAGCGTA</td>
+</tr>
+<tr class="even">
+<td align="left">CAGCCTCG</td>
+<td align="right">4</td>
+<td align="left">TCGCCTTA,AGGCTCCG,TAGCTGCA</td>
+</tr>
+<tr class="odd">
+<td align="left">TGCCTCTT</td>
+<td align="right">4</td>
+<td align="left">TTCTGCCT,AGGCTCCG</td>
+</tr>
+<tr class="even">
+<td align="left">TCCTCTAC</td>
+<td align="right">4</td>
+<td align="left">TCGCCTTA,TCATGAGC,TACTACGC</td>
+</tr>
+<tr class="odd">
+<td align="left">TCATGAGC</td>
+<td align="right">4</td>
+<td align="left">TCCTCTAC,TAGCGAGT,TACTACGC</td>
+</tr>
+<tr class="even">
+<td align="left">CCTGAGAT</td>
+<td align="right">4</td>
+<td align="left">GCTCAGGA,GTAGAGAG,ACTGATCG</td>
+</tr>
+<tr class="odd">
+<td align="left">TAGCGAGT</td>
+<td align="right">4</td>
+<td align="left">TCATGAGC,CTGCGCAT,GAGCGCTA,TAGCTGCA</td>
+</tr>
+<tr class="even">
+<td align="left">GTAGCTCC</td>
+<td align="right">4</td>
+<td align="left">CTAGTACG,GTAGAGAG,GCAGCGTA</td>
+</tr>
+<tr class="odd">
+<td align="left">TACTACGC</td>
+<td align="right">4</td>
+<td align="left">TTCTGCCT,TCCTCTAC,TCATGAGC</td>
+</tr>
+<tr class="even">
+<td align="left">AGGCTCCG</td>
+<td align="right">4</td>
+<td align="left">AGGAGTCC,CAGCCTCG,TGCCTCTT,TAGCTGCA</td>
+</tr>
+<tr class="odd">
+<td align="left">GCAGCGTA</td>
+<td align="right">4</td>
+<td align="left">TCGCCTTA,GCTCAGGA,CATGCCTA,GTAGAGAG,GTAGCTCC</td>
+</tr>
+<tr class="even">
+<td align="left">CTGCGCAT</td>
+<td align="right">4</td>
+<td align="left">TTCTGCCT,TAGCGAGT,GAGCGCTA</td>
+</tr>
+<tr class="odd">
+<td align="left">GAGCGCTA</td>
+<td align="right">4</td>
+<td align="left">TCGCCTTA,CATGCCTA,TAGCGAGT,CTGCGCAT,TAGCTGCA</td>
+</tr>
+<tr class="even">
+<td align="left">CGCTCAGT</td>
+<td align="right">4</td>
+<td align="left">GTCTTAGG</td>
+</tr>
+<tr class="odd">
+<td align="left">GTCTTAGG</td>
+<td align="right">4</td>
+<td align="left">CTAGTACG,CGCTCAGT</td>
+</tr>
+<tr class="even">
+<td align="left">ACTGATCG</td>
+<td align="right">4</td>
+<td align="left">CCTGAGAT</td>
+</tr>
+<tr class="odd">
+<td align="left">TAGCTGCA</td>
+<td align="right">4</td>
+<td align="left">TCGCCTTA,CAGCCTCG,TAGCGAGT,AGGCTCCG,GAGCGCTA</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>i5.used &lt;- unique(as.character(IndexSample[RealSamples, 'i5seq']))
+MinHamming.i5 &lt;- do.call(
+  rbind,
+  lapply(i5.used, function(x, y = i5.used){
+    A &lt;- strsplit(x, split = '')[[1]]
+    B &lt;- do.call(cbind, strsplit(y, split = ''))
+    H &lt;- colSums(A != B)
+    minH &lt;- min(H[H &gt; 0])
+    whichMinH &lt;- which(H == minH)
+    whatMinH  &lt;- paste(y[whichMinH], collapse = ',')
+    return(data.frame(Index = x, MinHamming = minH, Closest = whatMinH))
+  })
+)
+kable(MinHamming.i5)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Index</th>
+<th align="right">MinHamming</th>
+<th align="left">Closest</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">CTCTCTAT</td>
+<td align="right">4</td>
+<td align="left">TTCTAGCT,CTATTAAG,AAGGCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">TATCCTCT</td>
+<td align="right">4</td>
+<td align="left">TCTCTCCG,AAGGCTAT,GAGCCTTA</td>
+</tr>
+<tr class="odd">
+<td align="left">GTAAGGAG</td>
+<td align="right">4</td>
+<td align="left">CTAAGCCT,CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">ACTGCATA</td>
+<td align="right">4</td>
+<td align="left">AAGGAGTA</td>
+</tr>
+<tr class="odd">
+<td align="left">AAGGAGTA</td>
+<td align="right">4</td>
+<td align="left">ACTGCATA,AAGGCTAT,GAGCCTTA</td>
+</tr>
+<tr class="even">
+<td align="left">CTAAGCCT</td>
+<td align="right">4</td>
+<td align="left">GTAAGGAG,CCTAGAGT,TTATGCGA</td>
+</tr>
+<tr class="odd">
+<td align="left">CGTCTAAT</td>
+<td align="right">4</td>
+<td align="left">CCTAGAGT,CTATTAAG</td>
+</tr>
+<tr class="even">
+<td align="left">TCTCTCCG</td>
+<td align="right">4</td>
+<td align="left">TATCCTCT</td>
+</tr>
+<tr class="odd">
+<td align="left">TCGACTAG</td>
+<td align="right">4</td>
+<td align="left">AAGGCTAT</td>
+</tr>
+<tr class="even">
+<td align="left">TTCTAGCT</td>
+<td align="right">4</td>
+<td align="left">CTCTCTAT</td>
+</tr>
+<tr class="odd">
+<td align="left">CCTAGAGT</td>
+<td align="right">4</td>
+<td align="left">CTAAGCCT,CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">GCGTAAGA</td>
+<td align="right">5</td>
+<td align="left">ACTGCATA,AAGGAGTA,CCTAGAGT,TTATGCGA,GAGCCTTA</td>
+</tr>
+<tr class="odd">
+<td align="left">CTATTAAG</td>
+<td align="right">4</td>
+<td align="left">CTCTCTAT,GTAAGGAG,CGTCTAAT</td>
+</tr>
+<tr class="even">
+<td align="left">AAGGCTAT</td>
+<td align="right">4</td>
+<td align="left">CTCTCTAT,TATCCTCT,AAGGAGTA,TCGACTAG,GAGCCTTA</td>
+</tr>
+<tr class="odd">
+<td align="left">TTATGCGA</td>
+<td align="right">4</td>
+<td align="left">CTAAGCCT</td>
+</tr>
+<tr class="even">
+<td align="left">GAGCCTTA</td>
+<td align="right">4</td>
+<td align="left">TATCCTCT,AAGGAGTA,AAGGCTAT</td>
+</tr>
+</tbody>
+</table>
+<p>Index S517 is at Hamming distance of at least 5 from any other. Thus, it’s the only one that can be read with up to 2 errors.</p>
 <div id="sesion-info" class="section level2">
 <h2>Sesion Info</h2>
 <pre class="r"><code>sessionInfo()</code></pre>
@@ -464,9 +3424,12 @@ write.table(IndexSample, file = 'SampleIndexSeq.tsv', sep = '\t', row.names = FA
 ## attached base packages:
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
+## other attached packages:
+## [1] knitr_1.30
+## 
 ## loaded via a namespace (and not attached):
 ##  [1] compiler_3.6.3  magrittr_2.0.1  tools_3.6.3     htmltools_0.5.0
-##  [5] yaml_2.2.1      stringi_1.5.3   rmarkdown_2.5   knitr_1.30     
+##  [5] yaml_2.2.1      stringi_1.5.3   rmarkdown_2.5   highr_0.8      
 ##  [9] stringr_1.4.0   xfun_0.19       digest_0.6.27   rlang_0.4.9    
 ## [13] evaluate_0.14</code></pre>
 </div>

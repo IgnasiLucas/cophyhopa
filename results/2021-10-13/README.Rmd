@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
 ```
 
 This document is only intended to produce in a clear, reproducible way the assignation
@@ -14,12 +15,12 @@ of Nextera indices (v2) to samples, according to the positions of samples in the
 96-well plates. Sample positions are taken from a spreadsheet created by Alan (`Disseny Plaques.xlsx`).
 
 The index sequences are taken from an Illumina Document # 1000000002694 v16 (April 2021, Illumina),
-called  "Illumina Adapter Sequences" (pp 29-30). The *i7* indices have two sequences: the real onw in the adapter
+called  "Illumina Adapter Sequences" (pp 29-30). The *i7* indices have two sequences: the real one in the adapter
 and the reverse complementary, which is the one actually read by the machine. Thus, the second column
 in *i7* is the sequence to be specified in a sample sheet. Regarding *i5* there are three columns:
 the real sequence twice and the reverse complement, because some machines read the forward and others the
 reverse strand of the adapter with the *i5* index. In the case of NextSeq2000, as for NovaSeq6000, it
-is the sequence as it appears in the adapter what is read. However, the instructions to fill up the
+is the sequence as it appears in the adapter what is read. Indeed, the instructions to fill up the
 sequencing request form say: "Double-check the sequence is NOT the reverse complement of the index".
 Thus, I will report only the sequences as they appear in the adapters.
 
@@ -45,9 +46,66 @@ IndexSample <- do.call(
 )
 
 colnames(IndexSample) <- c('Sample','i7','i7seq','i5','i5seq')
+IndexSample <- as.data.frame(IndexSample)
+IndexSample$Sample <- as.character(IndexSample$Sample)
+RealSamples <- ! is.na(IndexSample$Sample)
+
+stopifnot(sum(startsWith(IndexSample$Sample, 'HOP'), na.rm = TRUE) == 0)
+
+IndexSample[is.na(IndexSample$Sample), 'Sample'] <- sprintf("HOP%03i", 1:sum(is.na(IndexSample$Sample)))
+
 IndexSample <- IndexSample[! is.na(IndexSample[,'Sample']),]
 write.table(IndexSample, file = 'SampleIndexSeq.tsv', sep = '\t', row.names = FALSE)
+
+kable(IndexSample)
 ```
+
+The table above can be used to fill up the sample sheet for the sequencing service. Because samples
+are tagged with Illumina indices, rather than inline barcodes, we are at the machine's mercy
+when it comes to demultiplexing. Would I be able to know what or how many reads were attributed
+to a particular combination of indices without a real sample assigned to it? Probably not, unless
+I tell the machine that such combination is actually assigned to a (*virtual*) sample. For this reason,
+I include in the data sheet all actually not used combinations as assigned to as many non-existent, virtual
+samples the names of which start with *HOP*.
+
+Below I check the Hamming distances among them, using
+an algorithm suggested by [Zheyuan Li](https://stackoverflow.com/users/4891738/zheyuan-li).
+
+```{r hamming}
+# The following is adapted from https://stackoverflow.com/a/51918595
+i7.used <- unique(as.character(IndexSample[RealSamples,'i7seq']))
+MinHamming.i7 <- do.call(
+  rbind,
+  lapply(i7.used, function(x, y = i7.used){
+    A <- strsplit(x, split = '')[[1]]
+    B <- do.call(cbind, strsplit(y, split = ''))
+    H <- colSums(A != B)
+    minH <- min(H[H > 0])
+    whichMinH <- which(H == minH)
+    whatMinH  <- paste(y[whichMinH], collapse = ',')
+    return(data.frame(Index = x, MinHamming = minH, Closest = whatMinH))
+  })
+)
+kable(MinHamming.i7)
+
+i5.used <- unique(as.character(IndexSample[RealSamples, 'i5seq']))
+MinHamming.i5 <- do.call(
+  rbind,
+  lapply(i5.used, function(x, y = i5.used){
+    A <- strsplit(x, split = '')[[1]]
+    B <- do.call(cbind, strsplit(y, split = ''))
+    H <- colSums(A != B)
+    minH <- min(H[H > 0])
+    whichMinH <- which(H == minH)
+    whatMinH  <- paste(y[whichMinH], collapse = ',')
+    return(data.frame(Index = x, MinHamming = minH, Closest = whatMinH))
+  })
+)
+kable(MinHamming.i5)
+```
+
+Index S517 is at Hamming distance of at least 5 from any other. Thus, it's the only
+one that can be read with up to 2 errors.
 
 ## Sesion Info
 
