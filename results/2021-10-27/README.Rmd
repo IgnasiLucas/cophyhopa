@@ -1,0 +1,76 @@
+---
+title: "Size selection results"
+author: "J. Ignacio Lucas Lledó"
+date: "27/10/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(knitr)
+```
+
+The genomics unit at the University of Valencia delivered the five pools and their quantification
+with Bioanalyser. The image below shows the fragment size profiles, in order.
+
+![](../../data/Bioanalyser_20211027_summary.png)
+
+The profiles are remarkably similar, which suggests an overall success in library construction.
+The aparently longer tail on the left margin of the size distribution may be an effect of the
+axis scale. Fragments below 300 bp, which will be for the most part assembled from the two reads
+are the random remains of what the Blue Pippin could not remove. Thus, they are not expected
+to be shared among samples, and will be discarded.
+
+On the right margin, I expected fragments up to 1000 bp, and I wonder if the operation of the
+BluePippin did not match the exact specification. The abrupt cut at 800 bp makes me suspect so.
+In any case, it is too late to lament.
+
+About concentrations:
+
+```{r pools}
+pools <- read.table('../../data/FinalPoolConcentrations.tsv', header = TRUE)
+kable(pools, col.names = c('Pool','Total conc. (ng/µl)', 'Total Molarity (nmol/l)',
+                           'Conc. 300-1000 bp (ng/µl)', 'Molarity 300-1000 (nmol/l)',
+                           'Average size (bp)'))
+```
+They are quite even, but they can be better balanced. Thus, I decide to equilibrate the five
+pools. Total volumes seem to range between 40 and 45 µl. The question is if I should balance
+the total concentration or the concentration in the 300 to 1000 bp range. I decide to
+balance molarity in the target range, with the hope of getting a similar amount of useful
+reads among pools.
+
+```{r amounts}
+Amounts <- data.frame(
+  Volume     = rep(25:45, 5),
+  Pool       = factor(rep(1:5, each = 21)),
+  Tot.ng     = do.call(c, lapply(1:5, function(x) pools[x, 'total.ng.ul']  * (25:45))),
+  Tot.pmol   = do.call(c, lapply(1:5, function(x) pools[x, 'total.nmol.l'] * 1.0e-03 * (25:45))),
+  Range.ng   = do.call(c, lapply(1:5, function(x) pools[x, 'range.ng.ul']  * (25:45))),
+  Range.pmol = do.call(c, lapply(1:5, function(x) pools[x, 'range.nmol.l'] * 1.0e-03 * (25:45)))
+)
+
+Target.pmol <- 40 * pools[1, 'range.nmol.l'] * 1.0e-03
+Target.volume <- Target.pmol / (pools[,'range.nmol.l'] * 1.0e-03)
+
+ggplot(data = Amounts, mapping = aes(x = Volume, y = Range.pmol, color = Pool)) +
+  geom_line() + geom_hline(yintercept = Target.pmol) +
+  xlab("Volume (µl)") + ylab("pmol 300 - 1000 bp")
+
+kable(data.frame(Pool = 1:5, Volume = Target.volume))
+```
+
+Pool number 1 is the less concentrated one, and it determines the amounts required from
+the other pools to reach the same molarity in the size range between 300 and 1000 bp. The
+volumes above are the ones used from each partial pool to create the final pool. Thus, the
+final volume is `r round(sum(Target.volume), 1)` $\mu$l, it must contain
+`r round(Target.pmol * 5, 2)` pmol in all, and its concentration must therefore be
+`r round(5.0 * Target.pmol * 1.0e+3 / sum(Target.volume), 2)` nmol/l.
+
+The pool and the sequencing primers were delivered in the sequencing center on October
+28th, 2021.
+
+## Session info
+```{r SessionInfo}
+sessionInfo()
+```
