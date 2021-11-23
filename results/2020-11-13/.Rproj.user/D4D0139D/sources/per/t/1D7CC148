@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1615824827659.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3043258925",
+    "id" : "1D7CC148",
+    "lastKnownWriteTime" : 1615824773,
+    "last_content_update" : 1615824773,
+    "path" : "~/cophyhopa/results/2020-11-13/insilico_digest.Rmd",
+    "project_path" : "insilico_digest.Rmd",
+    "properties" : {
+        "cursorPosition" : "17,55",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
