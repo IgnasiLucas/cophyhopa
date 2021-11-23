@@ -1,0 +1,12 @@
+> ## Load libraries and reference genome
+> 
+> #install.packages("SimRAD")
+> #if (!requireNamespace("BiocManager", quietly = TRUE))
+> #install.packages("BiocManager")
+> #BiocManager::install("Biostrings")
+> #BiocManager::install("ShortRead")
+> 
+> library(parallel)
+> 
+> library(SimRAD)
+> library(dplyr)
