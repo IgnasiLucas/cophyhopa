@@ -1,0 +1,186 @@
+> 
+> library(SimRAD)
+> library(dplyr)
+> 
+> args <- commandArgs(trailingOnly = TRUE)
+> combinacions <- read.table("combinacions.txt", header = TRUE, as.is = TRUE)
+> combinacions <- combinacions[args[1]:args[2],]
+> 
+> 
+> 
+> ## Crear la funció que digereixi i seeccioni els fragments
+> refseq <- SimRAD::ref.DNAseq("~/cophyhopa/data/reference.fa", subselect.contigs = FALSE)
+> 
+> digest_select <- function(x) {
++   digestio <- SimRAD::insilico.digest(refseq, x[["cs_5p1"]], x[["cs_3p1"]], x[["cs_5p2"]], x[["cs_3p2"]])
++   seleccio1 <- SimRAD::adapt.select(digestio, type='AB+BA', x[["cs_5p1"]], x[["cs_3p1"]], x[["cs_5p2"]], x[["cs_3p2"]])
++   seleccio2 <- SimRAD::size.select(seleccio1, min.size=500, max.size=1000, graph=FALSE, verbose=FALSE)
++   length.select <- length(seleccio2)
++   return(length.select)
++ }
+> 
+> 
+> list_cs2 <- lapply(1:dim(combinacions)[1], function(x) combinacions[x,])
+> 
+> digestions <- lapply(list_cs2, digest_select)
+Number of restriction sites for the first enzyme: 184394
+Number of restriction sites for the second enzyme: 403252
+Number of type AB and BA fragments:516536
+Number of type AA fragments:184394
+Number of type BB fragments:290903
+Number of restriction sites for the first enzyme: 184394
+Number of restriction sites for the second enzyme: 1374589
+Number of type AB and BA fragments:283498
+Number of type AA fragments:42645
+Number of type BB fragments:1232840
+Number of restriction sites for the first enzyme: 184394
+Number of restriction sites for the second enzyme: 835888
+Number of type AB and BA fragments:321230
+Number of type AA fragments:49280
+Number of type BB fragments:835888
+Number of restriction sites for the first enzyme: 184394
+Number of restriction sites for the second enzyme: 5334143
+Number of type AB and BA fragments:330091
+Number of type AA fragments:19349
+Number of type BB fragments:5169097
+Number of restriction sites for the first enzyme: 184394
+Number of restriction sites for the second enzyme: 2103995
+Number of type AB and BA fragments:316880
+Number of type AA fragments:25954
+Number of type BB fragments:1945555
+Number of restriction sites for the first enzyme: 184394
+Number of restriction sites for the second enzyme: 5467804
+Number of type AB and BA fragments:332705
+Number of type AA fragments:18042
+Number of type BB fragments:5301451
+Number of restriction sites for the first enzyme: 184394
+Number of restriction sites for the second enzyme: 10357008
+Number of type AB and BA fragments:360567
+Number of type AA fragments:18662
+Number of type BB fragments:10357007
+Number of restriction sites for the first enzyme: 184394
+Number of restriction sites for the second enzyme: 506673
+Number of type AB and BA fragments:615439
+Number of type AA fragments:184394
+Number of type BB fragments:398276
+Number of restriction sites for the first enzyme: 184394
+Number of restriction sites for the second enzyme: 463325
+Number of type AB and BA fragments:647719
+Number of type AA fragments:184394
+Number of type BB fragments:463325
+Number of restriction sites for the first enzyme: 184394
+Number of restriction sites for the second enzyme: 391827
+Number of type AB and BA fragments:576221
+Number of type AA fragments:184394
+Number of type BB fragments:391827
+Number of restriction sites for the first enzyme: 184394
+Number of restriction sites for the second enzyme: 419355
+Number of type AB and BA fragments:717180
+Number of type AA fragments:184394
+Number of type BB fragments:419355
+Number of restriction sites for the first enzyme: 198718
+Number of restriction sites for the second enzyme: 813416
+Number of type AB and BA fragments:271664
+Number of type AA fragments:62886
+Number of type BB fragments:677583
+Number of restriction sites for the first enzyme: 198718
+Number of restriction sites for the second enzyme: 5334143
+Number of type AB and BA fragments:352886
+Number of type AA fragments:22275
+Number of type BB fragments:5149310
+Number of restriction sites for the first enzyme: 198718
+Number of restriction sites for the second enzyme: 2103995
+Number of type AB and BA fragments:333495
+Number of type AA fragments:31970
+Number of type BB fragments:1937247
+Number of restriction sites for the first enzyme: 198718
+Number of restriction sites for the second enzyme: 6296755
+Number of type AB and BA fragments:445055
+Number of type AA fragments:25853
+Number of type BB fragments:6296755
+Number of restriction sites for the first enzyme: 198718
+Number of restriction sites for the second enzyme: 2103995
+Number of type AB and BA fragments:373970
+Number of type AA fragments:33632
+Number of type BB fragments:2103995
+Number of restriction sites for the first enzyme: 198718
+Number of restriction sites for the second enzyme: 5467804
+Number of type AB and BA fragments:340562
+Number of type AA fragments:28437
+Number of type BB fragments:5297522
+Number of restriction sites for the first enzyme: 198718
+Number of restriction sites for the second enzyme: 3468568
+Number of type AB and BA fragments:338432
+Number of type AA fragments:28845
+Number of type BB fragments:3297778
+Number of restriction sites for the first enzyme: 198718
+Number of restriction sites for the second enzyme: 463325
+Number of type AB and BA fragments:780190
+Number of type AA fragments:198718
+Number of type BB fragments:463325
+Number of restriction sites for the first enzyme: 198718
+Number of restriction sites for the second enzyme: 436575
+Number of type AB and BA fragments:553312
+Number of type AA fragments:198697
+Number of type BB fragments:326224
+Number of restriction sites for the first enzyme: 198718
+Number of restriction sites for the second enzyme: 419355
+Number of type AB and BA fragments:618072
+Number of type AA fragments:198717
+Number of type BB fragments:419355
+Number of restriction sites for the first enzyme: 403252
+Number of restriction sites for the second enzyme: 286669
+Number of type AB and BA fragments:324196
+Number of type AA fragments:241154
+Number of type BB fragments:124570
+Number of restriction sites for the first enzyme: 403252
+Number of restriction sites for the second enzyme: 225961
+Number of type AB and BA fragments:544800
+Number of type AA fragments:304485
+Number of type BB fragments:225961
+Number of restriction sites for the first enzyme: 403252
+Number of restriction sites for the second enzyme: 305768
+Number of type AB and BA fragments:537685
+Number of type AA fragments:270938
+Number of type BB fragments:305768
+Number of restriction sites for the first enzyme: 403252
+Number of restriction sites for the second enzyme: 446874
+Number of type AB and BA fragments:378705
+Number of type AA fragments:213899
+Number of type BB fragments:257521
+Number of restriction sites for the first enzyme: 403252
+Number of restriction sites for the second enzyme: 614100
+Number of type AB and BA fragments:449200
+Number of type AA fragments:178652
+Number of type BB fragments:389499
+Number of restriction sites for the first enzyme: 403252
+Number of restriction sites for the second enzyme: 288415
+Number of type AB and BA fragments:550872
+Number of type AA fragments:260117
+Number of type BB fragments:288415
+Number of restriction sites for the first enzyme: 403252
+Number of restriction sites for the second enzyme: 736231
+Number of type AB and BA fragments:462852
+Number of type AA fragments:170958
+Number of type BB fragments:503085
+Number of restriction sites for the first enzyme: 403252
+Number of restriction sites for the second enzyme: 463325
+Number of type AB and BA fragments:584564
+Number of type AA fragments:224214
+Number of type BB fragments:463325
+Number of restriction sites for the first enzyme: 403252
+Number of restriction sites for the second enzyme: 337804
+Number of type AB and BA fragments:604497
+Number of type AA fragments:288775
+Number of type BB fragments:337804
+> 
+> 
+> write.table(digestions, file= paste("digestions", args[1], ".txt", sep = ""), 
++             row.names=FALSE, col.names=FALSE, sep= " / ")
+> 
+> #max_length <- which(digestions_51 == max(unlist(digestions)))
+> 
+> 
+> 
+> 
+> 

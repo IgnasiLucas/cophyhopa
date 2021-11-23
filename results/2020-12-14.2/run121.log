@@ -1,0 +1,186 @@
+> 
+> library(SimRAD)
+> library(dplyr)
+> 
+> args <- commandArgs(trailingOnly = TRUE)
+> combinacions <- read.table("combinacions.txt", header = TRUE, as.is = TRUE)
+> combinacions <- combinacions[args[1]:args[2],]
+> 
+> 
+> 
+> ## Crear la funció que digereixi i seeccioni els fragments
+> refseq <- SimRAD::ref.DNAseq("~/cophyhopa/data/reference.fa", subselect.contigs = FALSE)
+> 
+> digest_select <- function(x) {
++   digestio <- SimRAD::insilico.digest(refseq, x[["cs_5p1"]], x[["cs_3p1"]], x[["cs_5p2"]], x[["cs_3p2"]])
++   seleccio1 <- SimRAD::adapt.select(digestio, type='AB+BA', x[["cs_5p1"]], x[["cs_3p1"]], x[["cs_5p2"]], x[["cs_3p2"]])
++   seleccio2 <- SimRAD::size.select(seleccio1, min.size=500, max.size=1000, graph=FALSE, verbose=FALSE)
++   length.select <- length(seleccio2)
++   return(length.select)
++ }
+> 
+> 
+> list_cs2 <- lapply(1:dim(combinacions)[1], function(x) combinacions[x,])
+> 
+> digestions <- lapply(list_cs2, digest_select)
+Number of restriction sites for the first enzyme: 252650
+Number of restriction sites for the second enzyme: 596003
+Number of type AB and BA fragments:301097
+Number of type AA fragments:101426
+Number of type BB fragments:443587
+Number of restriction sites for the first enzyme: 252650
+Number of restriction sites for the second enzyme: 506673
+Number of type AB and BA fragments:759322
+Number of type AA fragments:252650
+Number of type BB fragments:506672
+Number of restriction sites for the first enzyme: 252650
+Number of restriction sites for the second enzyme: 851611
+Number of type AB and BA fragments:325277
+Number of type AA fragments:90011
+Number of type BB fragments:688972
+Number of restriction sites for the first enzyme: 252650
+Number of restriction sites for the second enzyme: 736231
+Number of type AB and BA fragments:304266
+Number of type AA fragments:100517
+Number of type BB fragments:584097
+Number of restriction sites for the first enzyme: 252650
+Number of restriction sites for the second enzyme: 976598
+Number of type AB and BA fragments:426095
+Number of type AA fragments:92057
+Number of type BB fragments:976294
+Number of restriction sites for the first enzyme: 252650
+Number of restriction sites for the second enzyme: 391827
+Number of type AB and BA fragments:524142
+Number of type AA fragments:252650
+Number of type BB fragments:260189
+Number of restriction sites for the first enzyme: 252650
+Number of restriction sites for the second enzyme: 998889
+Number of type AB and BA fragments:319527
+Number of type AA fragments:92886
+Number of type BB fragments:839125
+Number of restriction sites for the first enzyme: 252650
+Number of restriction sites for the second enzyme: 807508
+Number of type AB and BA fragments:307390
+Number of type AA fragments:98954
+Number of type BB fragments:653813
+Number of restriction sites for the first enzyme: 759807
+Number of restriction sites for the second enzyme: 10316366
+Number of type AB and BA fragments:1368398
+Number of type AA fragments:75608
+Number of type BB fragments:9632166
+Number of restriction sites for the first enzyme: 759807
+Number of restriction sites for the second enzyme: 205386
+Number of type AB and BA fragments:299608
+Number of type AA fragments:609929
+Number of type BB fragments:55458
+Number of restriction sites for the first enzyme: 759807
+Number of restriction sites for the second enzyme: 343956
+Number of type AB and BA fragments:454994
+Number of type AA fragments:532309
+Number of type BB fragments:116459
+Number of restriction sites for the first enzyme: 759807
+Number of restriction sites for the second enzyme: 290274
+Number of type AB and BA fragments:500574
+Number of type AA fragments:759806
+Number of type BB fragments:117969
+Number of restriction sites for the first enzyme: 759807
+Number of restriction sites for the second enzyme: 288415
+Number of type AB and BA fragments:354039
+Number of type AA fragments:582787
+Number of type BB fragments:111396
+Number of restriction sites for the first enzyme: 759807
+Number of restriction sites for the second enzyme: 506673
+Number of type AB and BA fragments:411192
+Number of type AA fragments:554210
+Number of type BB fragments:301077
+Number of restriction sites for the first enzyme: 759807
+Number of restriction sites for the second enzyme: 207353
+Number of type AB and BA fragments:302092
+Number of type AA fragments:608760
+Number of type BB fragments:54953
+Number of restriction sites for the first enzyme: 759807
+Number of restriction sites for the second enzyme: 227885
+Number of type AB and BA fragments:284176
+Number of type AA fragments:617718
+Number of type BB fragments:85797
+Number of restriction sites for the first enzyme: 759807
+Number of restriction sites for the second enzyme: 337804
+Number of type AB and BA fragments:394748
+Number of type AA fragments:562308
+Number of type BB fragments:140209
+Number of restriction sites for the first enzyme: 620440
+Number of restriction sites for the second enzyme: 10316366
+Number of type AB and BA fragments:1052008
+Number of type AA fragments:85533
+Number of type BB fragments:9745209
+Number of restriction sites for the first enzyme: 620440
+Number of restriction sites for the second enzyme: 343956
+Number of type AB and BA fragments:394476
+Number of type AA fragments:423201
+Number of type BB fragments:146718
+Number of restriction sites for the first enzyme: 620440
+Number of restriction sites for the second enzyme: 371292
+Number of type AB and BA fragments:375688
+Number of type AA fragments:432595
+Number of type BB fragments:183448
+Number of restriction sites for the first enzyme: 620440
+Number of restriction sites for the second enzyme: 506673
+Number of type AB and BA fragments:358916
+Number of type AA fragments:440981
+Number of type BB fragments:327215
+Number of restriction sites for the first enzyme: 620440
+Number of restriction sites for the second enzyme: 463325
+Number of type AB and BA fragments:496000
+Number of type AA fragments:372440
+Number of type BB fragments:215325
+Number of restriction sites for the first enzyme: 620440
+Number of restriction sites for the second enzyme: 227885
+Number of type AB and BA fragments:277014
+Number of type AA fragments:481932
+Number of type BB fragments:89378
+Number of restriction sites for the first enzyme: 620440
+Number of restriction sites for the second enzyme: 391827
+Number of type AB and BA fragments:411593
+Number of type AA fragments:414643
+Number of type BB fragments:186031
+Number of restriction sites for the first enzyme: 620440
+Number of restriction sites for the second enzyme: 419355
+Number of type AB and BA fragments:461201
+Number of type AA fragments:386348
+Number of type BB fragments:178891
+Number of restriction sites for the first enzyme: 614100
+Number of restriction sites for the second enzyme: 164903
+Number of type AB and BA fragments:417498
+Number of type AA fragments:614017
+Number of type BB fragments:76921
+Number of restriction sites for the first enzyme: 614100
+Number of restriction sites for the second enzyme: 343956
+Number of type AB and BA fragments:432581
+Number of type AA fragments:397051
+Number of type BB fragments:125395
+Number of restriction sites for the first enzyme: 614100
+Number of restriction sites for the second enzyme: 290274
+Number of type AB and BA fragments:492854
+Number of type AA fragments:614099
+Number of type BB fragments:125215
+Number of restriction sites for the first enzyme: 614100
+Number of restriction sites for the second enzyme: 506673
+Number of type AB and BA fragments:392718
+Number of type AA fragments:417740
+Number of type BB fragments:310314
+Number of restriction sites for the first enzyme: 614100
+Number of restriction sites for the second enzyme: 337804
+Number of type AB and BA fragments:374400
+Number of type AA fragments:426587
+Number of type BB fragments:150139
+> 
+> 
+> write.table(digestions, file= paste("digestions", args[1], ".txt", sep = ""), 
++             row.names=FALSE, col.names=FALSE, sep= " / ")
+> 
+> #max_length <- which(digestions_51 == max(unlist(digestions)))
+> 
+> 
+> 
+> 
+> 
