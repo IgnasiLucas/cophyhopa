@@ -1,0 +1,64 @@
+> ## Load libraries and reference genome
+> 
+> #install.packages("SimRAD")
+> #if (!requireNamespace("BiocManager", quietly = TRUE))
+> #install.packages("BiocManager")
+> #BiocManager::install("Biostrings")
+> #BiocManager::install("ShortRead")
+> 
+> library(parallel)
+> library(SimRAD)
+> library(dplyr)
+> 
+> enzims <- read.table("~/cophyhopa/data/enzymes.txt", row.names = 1, col.names = c('enzims', 'Prime5', 'Prime3'), as.is = TRUE)
+> NumEnzims <- dim(enzims)[1]
+> 
+> combinacions_all <- data.frame(
++   cs_5p1 = rep(enzims$Prime5, each=NumEnzims),
++   cs_3p1 = rep(enzims$Prime3, each=NumEnzims),
++   cs_5p2 = rep(enzims$Prime5, NumEnzims),
++   cs_3p2 = rep(enzims$Prime3, NumEnzims),
++   stringsAsFactors = FALSE
++ )
+> row.names(combinacions_all) <- paste(rep(row.names(enzims), each=NumEnzims),
++                                      rep(row.names(enzims), NumEnzims),
++                                      sep = '_')
+> 
+> z1 <- combn(row.names(enzims), 2)
+> z1 <- t(z1)
+> z1 <- as.data.frame(z1)
+> library(tidyr)
+> combinations <- unite(z1, combinacio, c(1:2), sep = "_", remove = TRUE)
+> comb_index <- combinacions_all[combinations[,1],] 
+> 
+> list_cs <- lapply(1:dim(comb_index)[1], function(x) comb_index[x,])  #dimensió 1:x
+> 
+> 
+> ## Crear la funció que digereixi i seeccioni els fragments
+> refseq <- SimRAD::ref.DNAseq("~/cophyhopa/data/reference.fa", subselect.contigs = TRUE, prop.contigs = 0.1)
+> 
+> cores <- detectCores()
+> cl <- makeForkCluster(4)
+> clusterExport(cl, "refseq", envir = .GlobalEnv)
+> 
+> digest_select <- function(x) {
++   digestio <- SimRAD::insilico.digest(refseq, x[["cs_5p1"]], x[["cs_3p1"]], x[["cs_5p2"]], x[["cs_3p2"]])
++   seleccio1 <- SimRAD::adapt.select(digestio, type='AB+BA', x[["cs_5p1"]], x[["cs_3p1"]], x[["cs_5p2"]], x[["cs_3p2"]])
++   seleccio2 <- SimRAD::size.select(seleccio1, min.size=500, max.size=1000, graph=FALSE, verbose=FALSE)
++   length.select <- length(seleccio2)
++   return(length.select)
++ }
+> 
+> digestions <- parallel::parLapply(cl, list_cs[1:4], digest_select)
+> #stopCluster()
+> 
+> #digestions <- foreach(i=list_cs[1:16]) %dopar% digest_select(i)
+> 
+> 
+> write.table(digestions, file="digestions_all.txt", 
++             row.names=FALSE, col.names=FALSE, sep= " / ")
+> 
+> max_length <- which(digestions == max(unlist(digestions)))
+> 
+> 
+> 

@@ -1,0 +1,345 @@
+'verbose' and 'quietly' are both true; being verbose then ..
+now dyn.load("/usr/lib/R/library/methods/libs/methods.so") ...
+[Previously saved workspace restored]
+
+'verbose' and 'quietly' are both true; being verbose then ..
+'verbose' and 'quietly' are both true; being verbose then ..
+now dyn.load("/usr/lib/R/library/utils/libs/utils.so") ...
+Garbage collection 1 = 0+0+1 (level 2) ... 
+12.0 Mbytes of cons cells used (35%)
+3.1 Mbytes of vectors used (5%)
+'verbose' and 'quietly' are both true; being verbose then ..
+now dyn.load("/usr/lib/R/library/grDevices/libs/grDevices.so") ...
+'verbose' and 'quietly' are both true; being verbose then ..
+now dyn.load("/usr/lib/R/library/graphics/libs/graphics.so") ...
+'verbose' and 'quietly' are both true; being verbose then ..
+now dyn.load("/usr/lib/R/library/stats/libs/stats.so") ...
+ ending setup_Rmainloop(): R_Interactive = 0 {main.c}
+ >R_ReplConsole(): before "for(;;)" {main.c}
+now dyn.load("/usr/lib/R/library/parallel/libs/parallel.so") ...
+Loading required package: Biostrings
+Loading required package: BiocGenerics
+Garbage collection 2 = 1+0+1 (level 0) ... 
+17.2 Mbytes of cons cells used (50%)
+4.2 Mbytes of vectors used (7%)
+Garbage collection 3 = 2+0+1 (level 0) ... 
+19.9 Mbytes of cons cells used (58%)
+5.0 Mbytes of vectors used (8%)
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which, which.max, which.min
+
+Loading required package: S4Vectors
+Loading required package: stats4
+Garbage collection 4 = 3+0+1 (level 0) ... 
+22.6 Mbytes of cons cells used (66%)
+5.8 Mbytes of vectors used (9%)
+now dyn.load("/usr/local/lib/R/site-library/S4Vectors/libs/S4Vectors.so") ...
+Garbage collection 5 = 4+0+1 (level 0) ... 
+26.9 Mbytes of cons cells used (78%)
+6.7 Mbytes of vectors used (10%)
+Garbage collection 6 = 5+0+1 (level 0) ... 
+29.2 Mbytes of cons cells used (85%)
+7.3 Mbytes of vectors used (11%)
+Garbage collection 7 = 5+1+1 (level 1) ... 
+29.1 Mbytes of cons cells used (85%)
+7.0 Mbytes of vectors used (11%)
+Garbage collection 8 = 5+1+2 (level 2) ... 
+30.3 Mbytes of cons cells used (44%)
+7.3 Mbytes of vectors used (11%)
+Garbage collection 9 = 6+1+2 (level 0) ... 
+34.4 Mbytes of cons cells used (50%)
+8.3 Mbytes of vectors used (13%)
+Garbage collection 10 = 7+1+2 (level 0) ... 
+35.7 Mbytes of cons cells used (51%)
+8.6 Mbytes of vectors used (13%)
+
+Attaching package: ‘S4Vectors’
+
+The following object is masked from ‘package:base’:
+
+    expand.grid
+
+Loading required package: IRanges
+Garbage collection 11 = 8+1+2 (level 0) ... 
+41.9 Mbytes of cons cells used (60%)
+10.1 Mbytes of vectors used (16%)
+now dyn.load("/usr/local/lib/R/site-library/IRanges/libs/IRanges.so") ...
+Garbage collection 12 = 9+1+2 (level 0) ... 
+58.9 Mbytes of cons cells used (85%)
+14.5 Mbytes of vectors used (23%)
+Garbage collection 13 = 9+2+2 (level 1) ... 
+60.2 Mbytes of cons cells used (87%)
+14.7 Mbytes of vectors used (23%)
+Garbage collection 14 = 9+2+3 (level 2) ... 
+62.1 Mbytes of cons cells used (46%)
+15.2 Mbytes of vectors used (24%)
+Garbage collection 15 = 10+2+3 (level 0) ... 
+70.9 Mbytes of cons cells used (53%)
+17.2 Mbytes of vectors used (27%)
+Loading required package: XVector
+now dyn.load("/usr/local/lib/R/site-library/XVector/libs/XVector.so") ...
+Garbage collection 16 = 11+2+3 (level 0) ... 
+86.6 Mbytes of cons cells used (65%)
+21.2 Mbytes of vectors used (33%)
+now dyn.load("/usr/local/lib/R/site-library/Biostrings/libs/Biostrings.so") ...
+Garbage collection 17 = 12+2+3 (level 0) ... 
+101.2 Mbytes of cons cells used (75%)
+24.8 Mbytes of vectors used (39%)
+Garbage collection 18 = 13+2+3 (level 0) ... 
+108.3 Mbytes of cons cells used (81%)
+26.5 Mbytes of vectors used (41%)
+
+Attaching package: ‘Biostrings’
+
+The following object is masked from ‘package:base’:
+
+    strsplit
+
+Loading required package: ShortRead
+Loading required package: BiocParallel
+now dyn.load("/usr/local/lib/R/site-library/BiocParallel/libs/BiocParallel.so") ...
+Loading required package: Rsamtools
+Loading required package: GenomeInfoDb
+now dyn.load("/usr/local/lib/R/site-library/bitops/libs/bitops.so") ...
+now dyn.load("/usr/local/lib/R/site-library/RCurl/libs/RCurl.so") ...
+Garbage collection 19 = 13+3+3 (level 1) ... 
+114.2 Mbytes of cons cells used (85%)
+27.6 Mbytes of vectors used (43%)
+Garbage collection 20 = 13+3+4 (level 2) ... 
+115.2 Mbytes of cons cells used (48%)
+27.6 Mbytes of vectors used (43%)
+Loading required package: GenomicRanges
+now dyn.load("/usr/local/lib/R/site-library/GenomicRanges/libs/GenomicRanges.so") ...
+Garbage collection 21 = 14+3+4 (level 0) ... 
+142.2 Mbytes of cons cells used (59%)
+34.2 Mbytes of vectors used (53%)
+now dyn.load("/gata/mar/R/x86_64-pc-linux-gnu-library/3.6/Rsamtools/libs/Rsamtools.so") ...
+Loading required package: GenomicAlignments
+Loading required package: SummarizedExperiment
+Loading required package: Biobase
+now dyn.load("/usr/local/lib/R/site-library/Biobase/libs/Biobase.so") ...
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: DelayedArray
+Loading required package: matrixStats
+now dyn.load("/usr/local/lib/R/site-library/matrixStats/libs/matrixStats.so") ...
+
+Attaching package: ‘matrixStats’
+
+The following objects are masked from ‘package:Biobase’:
+
+    anyMissing, rowMedians
+
+now dyn.load("/usr/lib/R/library/grid/libs/grid.so") ...
+Garbage collection 22 = 15+3+4 (level 0) ... 
+159.7 Mbytes of cons cells used (66%)
+38.3 Mbytes of vectors used (60%)
+now dyn.load("/usr/lib/R/library/lattice/libs/lattice.so") ...
+now dyn.load("/usr/lib/R/library/Matrix/libs/Matrix.so") ...
+Garbage collection 23 = 16+3+4 (level 0) ... 
+179.3 Mbytes of cons cells used (75%)
+43.5 Mbytes of vectors used (68%)
+Garbage collection 24 = 17+3+4 (level 0) ... 
+196.2 Mbytes of cons cells used (82%)
+47.5 Mbytes of vectors used (74%)
+Garbage collection 25 = 17+4+4 (level 1) ... 
+203.2 Mbytes of cons cells used (85%)
+49.2 Mbytes of vectors used (77%)
+Garbage collection 26 = 17+4+5 (level 2) ... 
+207.7 Mbytes of cons cells used (48%)
+50.4 Mbytes of vectors used (65%)
+now dyn.load("/usr/local/lib/R/site-library/DelayedArray/libs/DelayedArray.so") ...
+Garbage collection 27 = 17+4+6 (level 2) ... 
+214.5 Mbytes of cons cells used (50%)
+51.7 Mbytes of vectors used (55%)
+Garbage collection 28 = 18+4+6 (level 0) ... 
+244.0 Mbytes of cons cells used (57%)
+59.4 Mbytes of vectors used (64%)
+
+Attaching package: ‘DelayedArray’
+
+The following objects are masked from ‘package:matrixStats’:
+
+    colMaxs, colMins, colRanges, rowMaxs, rowMins, rowRanges
+
+The following objects are masked from ‘package:base’:
+
+    aperm, apply, rowsum
+
+now dyn.load("/usr/lib/R/library/tools/libs/tools.so") ...
+Garbage collection 29 = 19+4+6 (level 0) ... 
+268.3 Mbytes of cons cells used (63%)
+65.8 Mbytes of vectors used (70%)
+now dyn.load("/gata/mar/R/x86_64-pc-linux-gnu-library/3.6/GenomicAlignments/libs/GenomicAlignments.so") ...
+Garbage collection 30 = 20+4+6 (level 0) ... 
+288.1 Mbytes of cons cells used (67%)
+70.9 Mbytes of vectors used (76%)
+now dyn.load("/usr/local/lib/R/site-library/png/libs/png.so") ...
+now dyn.load("/usr/local/lib/R/site-library/jpeg/libs/jpeg.so") ...
+now dyn.load("/gata/mar/R/x86_64-pc-linux-gnu-library/3.6/ShortRead/libs/ShortRead.so") ...
+Garbage collection 31 = 20+5+6 (level 1) ... 
+303.6 Mbytes of cons cells used (71%)
+74.7 Mbytes of vectors used (80%)
+Garbage collection 32 = 20+5+7 (level 2) ... 
+317.8 Mbytes of cons cells used (52%)
+78.1 Mbytes of vectors used (69%)
+Loading required package: zlibbioc
+Warning messages:
+1: In find.package(package, lib.loc, quiet = TRUE, verbose = verbose) :
+  package ‘SimRAD’ found more than once, using the first from
+  “/gata/mar/R/x86_64-pc-linux-gnu-library/3.6/SimRAD”,
+  “/usr/local/lib/R/site-library/SimRAD”
+2: In find.package(package, lib.loc, quiet = TRUE) :
+  package ‘ShortRead’ found more than once, using the first from
+  “/gata/mar/R/x86_64-pc-linux-gnu-library/3.6/ShortRead”,
+  “/usr/local/lib/R/site-library/ShortRead”
+3: In find.package(package, lib.loc, quiet = TRUE, verbose = verbose) :
+  package ‘ShortRead’ found more than once, using the first from
+  “/gata/mar/R/x86_64-pc-linux-gnu-library/3.6/ShortRead”,
+  “/usr/local/lib/R/site-library/ShortRead”
+4: In find.package(package, fp.lib.loc, quiet = TRUE) :
+  package ‘ShortRead’ found more than once, using the first from
+  “/gata/mar/R/x86_64-pc-linux-gnu-library/3.6/ShortRead”,
+  “/usr/local/lib/R/site-library/ShortRead”
+5: In find.package(package, fp.lib.loc, quiet = TRUE) :
+  package ‘SimRAD’ found more than once, using the first from
+  “/gata/mar/R/x86_64-pc-linux-gnu-library/3.6/SimRAD”,
+  “/usr/local/lib/R/site-library/SimRAD”
+now dyn.load("/usr/local/lib/R/site-library/rlang/libs/rlang.so") ...
+now dyn.load("/usr/local/lib/R/site-library/vctrs/libs/vctrs.so") ...
+now dyn.load("/usr/local/lib/R/site-library/glue/libs/glue.so") ...
+now dyn.load("/usr/local/lib/R/site-library/magrittr/libs/magrittr.so") ...
+now dyn.load("/usr/local/lib/R/site-library/ellipsis/libs/ellipsis.so") ...
+now dyn.load("/usr/local/lib/R/site-library/tibble/libs/tibble.so") ...
+now dyn.load("/usr/local/lib/R/site-library/purrr/libs/purrr.so") ...
+now dyn.load("/usr/local/lib/R/site-library/dplyr/libs/dplyr.so") ...
+
+Attaching package: ‘dplyr’
+
+The following object is masked from ‘package:ShortRead’:
+
+    id
+
+The following objects are masked from ‘package:GenomicAlignments’:
+
+    first, last
+
+The following object is masked from ‘package:matrixStats’:
+
+    count
+
+The following object is masked from ‘package:Biobase’:
+
+    combine
+
+The following objects are masked from ‘package:GenomicRanges’:
+
+    intersect, setdiff, union
+
+The following object is masked from ‘package:GenomeInfoDb’:
+
+    intersect
+
+The following objects are masked from ‘package:Biostrings’:
+
+    collapse, intersect, setdiff, setequal, union
+
+The following object is masked from ‘package:XVector’:
+
+    slice
+
+The following objects are masked from ‘package:IRanges’:
+
+    collapse, desc, intersect, setdiff, slice, union
+
+The following objects are masked from ‘package:S4Vectors’:
+
+    first, intersect, rename, setdiff, setequal, union
+
+The following objects are masked from ‘package:BiocGenerics’:
+
+    combine, intersect, setdiff, union
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Loading required package: foreach
+Loading required package: iterators
+Warning messages:
+1: In find.package(package, lib.loc, quiet = TRUE, verbose = verbose) :
+  package ‘doParallel’ found more than once, using the first from
+  “/gata/mar/R/x86_64-pc-linux-gnu-library/3.6/doParallel”,
+  “/usr/local/lib/R/site-library/doParallel”
+2: In find.package(package, fp.lib.loc, quiet = TRUE) :
+  package ‘doParallel’ found more than once, using the first from
+  “/gata/mar/R/x86_64-pc-linux-gnu-library/3.6/doParallel”,
+  “/usr/local/lib/R/site-library/doParallel”
+Warning message:
+In library(foreach) : package ‘foreach’ already present in search()
+now dyn.load("/usr/local/lib/R/site-library/tidyr/libs/tidyr.so") ...
+
+Attaching package: ‘tidyr’
+
+The following object is masked from ‘package:S4Vectors’:
+
+    expand
+
+Garbage collection 33 = 21+5+7 (level 0) ... 
+335.3 Mbytes of cons cells used (55%)
+82.6 Mbytes of vectors used (73%)
+Garbage collection 34 = 21+5+8 (level 2) ... 
+340.1 Mbytes of cons cells used (56%)
+84.0 Mbytes of vectors used (26%)
+Garbage collection 35 = 21+5+9 (level 2) ... 
+340.1 Mbytes of cons cells used (56%)
+255.2 Mbytes of vectors used (42%)
+Garbage collection 36 = 21+5+10 (level 2) ... 
+340.1 Mbytes of cons cells used (56%)
+490.7 Mbytes of vectors used (55%)
+Garbage collection 37 = 21+5+11 (level 2) ... 
+340.1 Mbytes of cons cells used (56%)
+735.8 Mbytes of vectors used (64%)
+Garbage collection 38 = 21+5+12 (level 2) ... 
+340.1 Mbytes of cons cells used (56%)
+949.9 Mbytes of vectors used (67%)
+Garbage collection 39 = 21+5+13 (level 2) ... 
+340.1 Mbytes of cons cells used (56%)
+1159.8 Mbytes of vectors used (68%)
+Garbage collection 40 = 21+5+14 (level 2) ... 
+340.1 Mbytes of cons cells used (56%)
+1648.8 Mbytes of vectors used (73%)
+Garbage collection 41 = 21+5+15 (level 2) ... 
+340.6 Mbytes of cons cells used (56%)
+2237.9 Mbytes of vectors used (81%)
+Error in checkForRemoteErrors(val) : 
+  2 nodes produced errors; first error: object 'refseq' not found
+Calls: <Anonymous> ... clusterApply -> staticClusterApply -> checkForRemoteErrors
+Execution halted

@@ -1,0 +1,75 @@
+---
+title: "insilico_digest"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Using SimRAD to in silico digestion of the reference genome
+
+To use SimRAD in R, two aditional packages from Bioconductor are necessary: "Biostrings" and "Shortread". Here, we perform a double-digest RADseq with a reference genome from Coregonus genus. We tested four restriction enzymes in pairs: PstI - MspI and SbfI - EcoRI.
+
+### Install all necessary packages and load the reference genome 
+```{r message=FALSE}
+
+# install.packages("SimRAD")
+# if (!requireNamespace("BiocManager", quietly = TRUE))
+# install.packages("BiocManager")
+# BiocManager::install("Biostrings")
+# BiocManager::install("ShortRead")
+
+library(SimRAD)
+
+refseq <- ref.DNAseq("~/cophyhopa/data/reference.fa", subselect.contigs = TRUE, prop.contigs = 0.25)
+
+```
+### Define restriction enzymes 
+The enzymes are defined according to the recognized restriction sites: 5 prime side and 3 prime side.
+
+```{r}
+# Define the restriction enzyme recognition pattern
+
+# Restriction Enzyme SbfI
+# cs_5pS <- "CCTGCA"
+# cs_3pS <- "GG"
+# Restriction Enzyme EcoRI
+# cs_5pE <- "G"
+# cs_3pE <- "AATTC"
+
+# Restriction Enzyme 1 PstI
+cs_5p1 <- "CTGCA"
+cs_3p1 <- "G"
+# Restriction Enzyme 2 MspI
+cs_5p2 <- "C"
+cs_3p2 <- "CGG"
+```
+
+### Test in silico digest with enymes 1 and 2 
+Digestion with restriction enzymes 1 and 2 is simulated. Then those fragments flanked by two restriction enzyme sites are selected, one end with enzyme 1 and other end with enzyme 2 (type = "AB+BA"), during the library construction. Coming up next, those fragments within a specific range are selected. This step simulates the typical size selection step of ddRADseq. 
+
+```{r warning=FALSE}
+simseq.dig <- insilico.digest(refseq, cs_5p1, cs_3p1, cs_5p2, cs_3p2, verbose=TRUE)
+
+# selection of AB type of fragments
+simseq.sel <- adapt.select(simseq.dig, type="AB+BA", cs_5p1, cs_3p1, cs_5p2, cs_3p2)
+# number of selected fragments: 
+length(simseq.sel)
+
+# wide size selection (500-1000bp):
+wid.simseq <- size.select(simseq.sel, min.size = 500, max.size = 1000, graph=TRUE, verbose=TRUE)
+
+# narrow size selection (600-900bp):
+nar.simseq <- size.select(simseq.sel,  min.size = 600, max.size = 900, graph=TRUE, verbose=TRUE)
+
+# comparison of fragments size range (including too all fragments) 
+boxplot(list(width(simseq.sel), width(wid.simseq), width(nar.simseq)), names=c("All fragments", "Wide size selection", "Narrow size selection"), ylab="Locus size (bp)")
+
+# comparison of fragments size range (only with wide and narrow fragments) 
+boxplot(list(width(wid.simseq), width(nar.simseq)), names=c("Wide size selection", "Narrow size selection"), ylab="Locus size (bp)")
+
+```
+
+
+
