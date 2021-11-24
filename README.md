@@ -9,9 +9,11 @@ to not used combinations of indices.
 Downloading the reads in data/fastq. Here I plan to perform quality control,
 and maybe k-mer analyses. The number of files is huge...
 
+I will update [this report](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2021-11-23/README.html)
+
 # 2021-10-13
 Assignment of samples to indices, according to distribution of samples in
-the 96-well plates reported by Alan.
+the 96-well plates reported by Alan. See [this report](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2021-10-13/README.html)
 
 # 2021-10-08
 The DNA libraries are prepared. Eleven of them were analysed in Bioanalyser for
