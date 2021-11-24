@@ -1,3 +1,18 @@
+# 2021-11-23
+We just received the first batch of sequences, with a note that a second lane did
+not produce very good quality output, and a promise to repeat the sequencing.
+From the overview of the numbers of reads per sample, it seems the sequencing
+effort got quite well distributed among samples. We can also see low, but
+positive, levels of cross contamination from the numbers of reads assigned
+to not used combinations of indices.
+
+Downloading the reads in data/fastq. Here I plan to perform quality control,
+and maybe k-mer analyses. The number of files is huge...
+
+# 2021-10-13
+Assignment of samples to indices, according to distribution of samples in
+the 96-well plates reported by Alan.
+
 # 2021-10-08
 The DNA libraries are prepared. Eleven of them were analysed in Bioanalyser for
 quality control. The concentrations of all them are also determined with Qubit.

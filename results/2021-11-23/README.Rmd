@@ -1,0 +1,89 @@
+---
+title: "Description of sequencing data received"
+author: "J. Ignacio Lucas Lledó"
+date: "23/11/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+We received a link to download the data with the warning:
+
+> LUCASJIG_01: the results from lane 2 do not look very good,
+> it seems it's an issue with the kit. However, if you do a
+> stringent filtering you still can use the data. In any case
+> we will resequence as soon as possible.
+
+We also got a list of the total number of reads per sample, including the
+mock samples that identify index hopping events. I paste this information
+in the file `numReads.txt`, to be checked. I downloaded the data and checked
+their md5sum in `data/fastq`.
+
+## Checking sample-index correspondance
+
+On `2021-10-13` I created the file `SampleIndexSeq.tsv`, which was used to
+communicate the assignment of samples to combinations of indices. Here I want
+to make sure that the reads we got are correctly assigned to samples, because
+the fastq file names include sample and index sequence. I note, however, that
+the index sequences included in the fastq file name are the reverse-complements
+of the index sequences used in the `SampleIndexSeq.tsv`.
+
+```{bash files}
+if [ ! -e comparison.txt ]; then
+   if [ ! -e fromOriginalAssignment.txt ]; then
+      if [ ! -e SampleIndexSeq.tsv ]; then
+         cp ../2021-10-13/SampleIndexSeq.tsv ./
+      fi
+      
+      # head SampleIndexSeq.tsv
+      # "Sample"        "i7"    "i7seq" "i5"    "i5seq"
+      # "BIE002"        "N701"  "TCGCCTTA"      "S502"  "CTCTCTAT"
+      # "BRZ001"        "N701"  "TCGCCTTA"      "S503"  "TATCCTCT"
+      # "THU001"        "N701"  "TCGCCTTA"      "S505"  "GTAAGGAG"
+      # "WAL003"        "N701"  "TCGCCTTA"      "S506"  "ACTGCATA"
+      # "LAN005"        "N701"  "TCGCCTTA"      "S507"  "AAGGAGTA"
+      # "SUO001"        "N701"  "TCGCCTTA"      "S508"  "CTAAGCCT"
+      # ...
+      
+      gawk '(NR > 1){gsub(/\"/,""); print $1 "\t" $3 "\t" $5}' SampleIndexSeq.tsv | sort -k 1,1 > fromOriginalAssignment.txt
+   fi
+
+   if [ ! -e fromFileNames.txt ]; then
+      # ls -1 ../../data/fastq | grep 'fastq.gz' | grep '_R1_' | head
+      # 175600_12752AAC_GTAGAGGA-CTTAATAG_R1_001.fastq.gz
+      # 175601_12765AAC_GCTCATGA-AGCTAGAA_R1_001.fastq.gz
+      # 175602_12767AAC_GCTCATGA-TCTTACGC_R1_001.fastq.gz
+      # 175603_12769AAC_GCTCATGA-ATAGCCTT_R1_001.fastq.gz
+      # 175604_12796AAC_ACTCGCTA-CTAGTCGA_R1_001.fastq.gz
+      # 175605_12798AAC_ACTCGCTA-ACTCTAGG_R1_001.fastq.gz
+      # 175606_12800AAC_ACTCGCTA-CTTAATAG_R1_001.fastq.gz
+      # ...
+      
+      ls -1 ../../data/fastq | grep 'fastq.gz' | grep '_R1_' | cut -d '_' -f 1 > z1
+      ls -1 ../../data/fastq | grep 'fastq.gz' | grep '_R1_' | cut -d '_' -f 3 | \
+         cut -d '-' -f 1 | tr ACGT TGCA | rev > z2
+      ls -1 ../../data/fastq | grep 'fastq.gz' | grep '_R1_' | cut -d '_' -f 3 | \
+         cut -d '-' -f 2 | tr ACGT TGCA | rev > z3
+      paste z1 z2 z3 | sort -k 1,1 > fromFileNames.txt
+      rm z1 z2 z3
+   fi
+   
+   sdiff fromOriginalAssignment.txt fromFileNames.txt > comparison.txt
+   rm fromOriginalAssignment.txt fromFileNames.txt
+fi
+grep -P "[\|><]" comparison.txt
+```
+
+Thus, the only difference between the original assignment of indices to reads and the
+one reported is that there are no fastq files for some *HOP* mock samples, which is
+expected.
+
+## Number of reads per sample
+
+```{bash numReads}
+
+```
+
+
