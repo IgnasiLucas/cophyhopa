@@ -6,10 +6,18 @@ effort got quite well distributed among samples. We can also see low, but
 positive, levels of cross contamination from the numbers of reads assigned
 to not used combinations of indices.
 
-Downloading the reads in data/fastq. Here I plan to perform quality control,
-and maybe k-mer analyses. The number of files is huge...
+Downloaded the reads in data/fastq. I re-counted the reads per sample and
+put together a table "Features" with information from all aspects of the
+samples: fish features, DNA extraction success, position in plates and
+number of reads. It includes the 104 mock samples. Just started using it
+to explore the determinants of the number of reads.
 
-I will update [this report](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2021-11-23/README.html)
+See [this report](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2021-11-23/README.html).
+
+# 2021-10-27
+We received the Bioanalyser results from the 5 pools, with similar profiles,
+and I decide to use equivalent amounts of DNA in the target size range from
+the 5 pools to make the final pool.
 
 # 2021-10-13
 Assignment of samples to indices, according to distribution of samples in

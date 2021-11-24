@@ -82,8 +82,134 @@ expected.
 
 ## Number of reads per sample
 
-```{bash numReads}
+We have a report of how many reads are there for every sample. But I want to check if
+it is correct, and if they are counting single reads or pairs. The reported numbers
+of reads per sample are manually saved in the file `numReads.txt`.
 
+```{bash numReads}
+if [ ! -e checkNumReads.txt ]; then
+   FASTQDIR='../../data/fastq'
+   SAMPLE=( $(gawk '(NR > 1){gsub(/\"/,""); print $1}' SampleIndexSeq.tsv | sort) )
+   THREADS=48
+   for i in $(seq 0 $THREADS $(( ${#SAMPLE[@]} - 1 )) ); do
+      for j in $(seq $i $(($i + $THREADS - 1)) ); do
+         echo -e ${SAMPLE[$j]} "\t" \
+            $(echo $(gunzip -c $FASTQDIR/${SAMPLE[$j]}*_R1_001.fastq.gz 2> /dev/null | wc -l) "/4" | bc) \
+            > $(printf "z_%s.txt" ${SAMPLE[$j]}) &
+      done
+      wait
+   done
+   cat z_*.txt | sort -k 1,1 > checkNumReads.txt
+   sed -i 's/ //g' checkNumReads.txt
+   rm z*
+fi
+
+if [ ! -e numReads.txt ]; then
+   echo "File numReads.txt is missing."
+else
+   gawk '{print $3 "\t" $4}' numReads.txt | sort -k 1,1 > z1
+   NUMDIF=$(sdiff checkNumReads.txt z1 | tee comparison2.txt | grep -P "[\|<>]" | wc -l)
+   echo "There are $NUMDIF differences between reported and calculated read counts."
+   rm z1
+fi
 ```
 
+## Relationship between number of reads and DNA sample features
 
+There are four data sets I need to combine in one data frame, or two:
+
+1. The number of read pairs per sample.
+2. The main features of the DNA samples (concentration, integrity indicators, tissue of origin...).
+3. The features of the fish from which DNA was extracted (apparent species, lake of origin, sex, age...).
+4. The distribution of samples among the four 96-well plates.
+
+Whe have 280 samples, but 374 pairs of fastq files and 384 rows in the sample sheet
+that assigns samples to combinations of indices. This is because there are 104
+index combinations not actually used for any sample, but attributed to mock
+samples named with the *HOP* prefix. Among those, 10 did not receive any read
+assigned to them, and therefore lack fastq files. I want to include the mock
+samples in the analysis.
+
+```{r data}
+# Starting with the table with all 384 rows:
+
+Features <- read.table(ifelse(file.exists('SampleIndexSeq.tsv'),
+                              'SampleIndexSeq.tsv',
+                              '../2021-10-13/SampleIndexSeq.tsv'),
+                       header = TRUE, row.names = 1)
+
+# Adding plate information:
+A  <- read.table('../../data/plate_A.tsv', header = TRUE, as.is = TRUE)
+B  <- read.table('../../data/plate_B.tsv', header = TRUE, as.is = TRUE)
+C  <- read.table('../../data/plate_C.tsv', header = TRUE, as.is = TRUE)
+D  <- read.table('../../data/plate_D.tsv', header = TRUE, as.is = TRUE)
+isA <- as.vector(A[! is.na(A)])
+isB <- as.vector(B[! is.na(B)])
+isC <- as.vector(C[! is.na(C)])
+isD <- as.vector(D[! is.na(D)])
+
+Features$plate <- factor(NA, levels = c('A','B','C','D'))
+Features[isA, 'plate'] <- 'A'
+Features[isB, 'plate'] <- 'B'
+Features[isC, 'plate'] <- 'C'
+Features[isD, 'plate'] <- 'D'
+
+rm(isA, isB, isC, isC)
+
+Plates <- as.matrix(rbind(cbind(A,B), cbind(C,D)))
+
+# Adding fish information
+Fish <- read.table('../../data/Fish_clean.tsv', header = TRUE, sep = '\t')
+Fish$Date <- as.Date(Fish$Date, "%d.%m.%Y")
+Fish$Date_dissect <- as.Date(Fish$Date_dissect, "%d.%m.%Y")
+Fish$LongKept <- Fish$Date_dissect - Fish$Date  # Number of days between catchment and dissection
+Fish$Fish_code <- as.character(Fish$Fish_code)  # This is not a factor
+row.names(Fish) <- Fish$Fish_code
+
+Features$lake      <- Fish[row.names(Features), 'Lake']
+Features$region    <- Fish[row.names(Features), 'Region']
+Features$catchment <- Fish[row.names(Features), 'Catchment']
+Features$date      <- Fish[row.names(Features), 'Date']
+Features$furka     <- Fish[row.names(Features), 'Furka_length']
+Features$weight    <- Fish[row.names(Features), 'Weight_g']
+Features$sex       <- Fish[row.names(Features), 'Sex']
+Features$age       <- Fish[row.names(Features), 'Age']
+Features$condition <- Fish[row.names(Features), 'Condition']
+Features$sciName   <- Fish[row.names(Features), 'Sci_name_CONSENSUS_ID']
+
+# Adding DNA extraction features:
+dna <- read.table('../../data/dna_quality.csv', header = TRUE,
+                  colClasses = c('character','numeric','factor','factor',
+                                 'factor','factor'),
+                  row.names = 1)
+dna$Electroforesis <- factor(dna$Electroforesis,
+                             levels = c('MuyDegradado','Degradado','Utilizable',
+                                        'UtilizableBanda','Bien'))
+
+Features$Concentration  <- dna[row.names(Features), 'Concentration']
+Features$Electroforesis <- dna[row.names(Features), 'Electroforesis']
+Features$Tissue         <- dna[row.names(Features), 'Tissue']
+Features$Extraction     <- dna[row.names(Features), 'Extraction']
+Features$Evaporated     <- dna[row.names(Features), 'Evaporated']
+
+rm(dna)
+
+# Adding number of reads
+numReads <- read.table('checkNumReads.txt', col.names=c('sample','reads'), row.names=1)
+Features$numReads <- numReads[row.names(Features), 'reads']
+
+# Adding a filter for real samples
+Features$isReal <- ! startsWith(row.names(Features), 'HOP')
+
+# Saving this table, because it may be used in future folders.
+write.table(Features, file = 'Features.csv', quote = FALSE, sep = "\t")
+save(Features, file = 'Features.RData')
+
+boxplot(numReads ~ lake, data = Features, xlab = 'Lake', ylab = 'Number of reads per sample')
+```
+
+## SessionInfo
+
+```{r sessioninfo}
+sessionInfo()
+```
