@@ -139,24 +139,20 @@ Features <- read.table(ifelse(file.exists('SampleIndexSeq.tsv'),
                        header = TRUE, row.names = 1)
 
 # Adding plate information:
-A  <- read.table('../../data/plate_A.tsv', header = TRUE, as.is = TRUE)
-B  <- read.table('../../data/plate_B.tsv', header = TRUE, as.is = TRUE)
-C  <- read.table('../../data/plate_C.tsv', header = TRUE, as.is = TRUE)
-D  <- read.table('../../data/plate_D.tsv', header = TRUE, as.is = TRUE)
-isA <- as.vector(A[! is.na(A)])
-isB <- as.vector(B[! is.na(B)])
-isC <- as.vector(C[! is.na(C)])
-isD <- as.vector(D[! is.na(D)])
+# Plate A has i5 S502-S511 and i7 N701-N715
+# Plate B has i5 S502-S511 and i7 N716-N729
+# Plate C has i5 S513-S522 and i7 N701-N715
+# Plate D has i5 S513-S522 and i7 N716-N729
 
 Features$plate <- factor(NA, levels = c('A','B','C','D'))
-Features[isA, 'plate'] <- 'A'
-Features[isB, 'plate'] <- 'B'
-Features[isC, 'plate'] <- 'C'
-Features[isD, 'plate'] <- 'D'
-
-rm(isA, isB, isC, isC)
-
-Plates <- as.matrix(rbind(cbind(A,B), cbind(C,D)))
+Features[Features$i5 %in% paste0('S', 502:511) &
+            Features$i7 %in% paste0('N', 701:715), 'plate'] <- 'A'
+Features[Features$i5 %in% paste0('S', 502:511) &
+            Features$i7 %in% paste0('N', 716:729), 'plate'] <- 'B'
+Features[Features$i5 %in% paste0('S', 513:522) &
+            Features$i7 %in% paste0('N', 701:715), 'plate'] <- 'C'
+Features[Features$i5 %in% paste0('S', 513:522) &
+            Features$i7 %in% paste0('N', 716:729), 'plate'] <- 'D'
 
 # Adding fish information
 Fish <- read.table('../../data/Fish_clean.tsv', header = TRUE, sep = '\t')
@@ -204,9 +200,89 @@ Features$isReal <- ! startsWith(row.names(Features), 'HOP')
 # Saving this table, because it may be used in future folders.
 write.table(Features, file = 'Features.csv', quote = FALSE, sep = "\t")
 save(Features, file = 'Features.RData')
-
-boxplot(numReads ~ lake, data = Features, xlab = 'Lake', ylab = 'Number of reads per sample')
 ```
+
+I suppose, the right thing to do is a thoughtful linear model. But, it's so
+easy to just make some plots!
+
+```{r somePlots}
+library(ggplot2)
+ggplot(data = Features, mapping = aes(x = lake, y = numReads)) +
+   geom_boxplot(notch = TRUE)
+
+ggplot(data = Features, mapping = aes(x = Electroforesis, y = numReads)) +
+   geom_boxplot(notch = TRUE)
+
+ggplot(data = Features, mapping = aes(x = Concentration, y = numReads, color = Electroforesis)) +
+   geom_point() + geom_smooth(method = 'lm')
+```
+
+The question is what determines the final number of reads that get sequenced in a sample.
+DNA concentration after extraction is an indication of how successful the extraction was,
+and it is reasonable to suspect that sequencing success is limited by DNA the amount of
+DNA. However, we have taken a lot of care to balance the amount of DNA among samples,
+precisely to remove the variation due to differences in DNA concentration after extraction.
+Only the samples with the lowest initial concentrations, presumably those labeled
+*MuyDegradado*, could not be added to the pool in a proportional amount. We already
+expected those to have a lower yield.
+
+The graphs confirm our overall success at balancing the amount of DNA among samples, and
+point at the quality of the DNA as the main cause of differences in the number of reads.
+
+## Distribution of the number of reads in the PCR plates
+The positions of samples in the four 96-well plates where the indices were attached
+could reveal biases. I want to see a heat-map of the number of reads across the four
+plates, like a landscape. I expect to see the *valleys* caused by the combinations of
+indices that were not assigned to any read.
+
+```{r heatmap}
+ggplot(data = Features,
+       mapping = aes(x = i7, y = i5, fill = numReads)) +
+   geom_tile() + geom_hline(yintercept = 8.5) + geom_vline(xintercept = 12.5) +
+   scale_fill_gradient(trans = 'log',
+                       breaks = c(1,10,100,1000,10000,100000,1000000,10000000)) +
+   theme(axis.text.x = element_text(angle = 90)) +
+   scale_y_discrete(limits = rev) +
+   annotate(geom = 'text', x = c(6,18,6,18), y=c(12,12,4,4), label=c('A','B','C','D'))
+```
+
+## On the amount of index hopping
+There are 104 combinations of indices that do not correspond to any real
+sample, and received between 0 and `r max(Features[! Features$isReal, 'numReads'])`
+reads. We need to model the process of index hopping to account for it. An initial
+hypothesis we can test is if the number of reads sequenced with the same i5 or i7
+index is directly related to the amount of index hopping into a particular combination.
+Initial observation of the heatmap above suggests that is the case. Let's see.
+
+```{r hopping}
+# I build a data frame for mock samples, with number of reads with the same
+# index among all real samples or among those in the same plate
+Hopping <- data.frame(numReads = Features[! Features$isReal, 'numReads'],
+                      plate = Features[! Features$isReal, 'plate'],
+                      row.names = rownames(Features)[! Features$isReal])
+Hopping$i5real  <- sapply(rownames(Hopping), function(x) {
+   sum(Features[Features$i5 == Features[x, 'i5'] & Features$isReal, 'numReads'])})
+Hopping$i5plate <- sapply(rownames(Hopping), function(x) {
+   sum(Features[Features$i5 == Features[x, 'i5'] &
+                Features$plate == Features[x,'plate'] &
+                Features$isReal, 'numReads'])})
+Hopping$i7real  <- sapply(rownames(Hopping), function(x) {
+   sum(Features[Features$i7 == Features[x, 'i7'] & Features$isReal, 'numReads'])})
+Hopping$i7plate <- sapply(rownames(Hopping), function(x) {
+   sum(Features[Features$i7 == Features[x, 'i7'] &
+                Features$plate == Features[x, 'plate'] &
+                Features$isReal, 'numReads'])})
+summary(lm(numReads ~ i5real + i7real, data = Hopping))
+
+ggplot(data = Hopping, mapping = aes(x = i5real, y = numReads, color = plate)) +
+   geom_point() + xlab('Number of reads from samples with same i5') +
+   ylab('Number of misassigned reads')
+
+ggplot(data = Hopping, mapping = aes(x = i7real, y = numReads, color = i5real)) +
+   geom_point() + xlab('Number of reads from samples with same i7') +
+   ylab('Number of misassigned reads')
+```
+
 
 ## SessionInfo
 
