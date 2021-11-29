@@ -1,0 +1,39 @@
+K-mer statistics for: 
+ - Hash 1: "../../data/fastq/LAN039_12419AAC_TAGGCATG-TACTCCTT_R1_001.fastq.gz"
+ - Hash 2: "../../data/fastq/WAL078_12865AAC_TACGCTGC-ATAGCCTT_R1_001.fastq.gz"
+
+Total K-mers in: 
+ - Hash 1: 855501661
+ - Hash 2: 832535055
+
+Distinct K-mers in:
+ - Hash 1: 86608654
+ - Hash 2: 75766378
+
+Total K-mers only found in:
+ - Hash 1: 110648532
+ - Hash 2: 373333953
+
+Distinct K-mers only found in:
+ - Hash 1: 70203139
+ - Hash 2: 66773928
+
+Shared K-mers:
+ - Total shared found in hash 1: 744853129
+ - Total shared found in hash 2: 729113605
+ - Distinct shared K-mers: 16405515
+
+Distance between spectra 1 and 2 (all k-mers):
+ - Manhattan distance: 1.27957e+07
+ - Euclidean distance: 8.39825e+06
+ - Cosine distance: 0.000259953
+ - Canberra distance: 96.3645
+ - Jaccard distance: 0.146094
+
+Distance between spectra 1 and 2 (shared k-mers):
+ - Manhattan distance: 1.84238e+06
+ - Euclidean distance: 314060
+ - Cosine distance: 0.00152163
+ - Canberra distance: 95.2306
+ - Jaccard distance: 0.106332
+

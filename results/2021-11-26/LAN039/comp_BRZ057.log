@@ -1,0 +1,64 @@
+Kmer Analysis Toolkit (KAT) V2.4.2
+
+Running KAT in COMP mode
+------------------------
+
+Input 1 is a sequence file.  Counting kmers for input 1 (../../data/fastq/LAN039_12419AAC_TAGGCATG-TACTCCTT_R1_001.fastq.gz) ... done.  Time taken: 39.0s
+
+Input 2 is a sequence file.  Counting kmers for input 2 (../../data/fastq/BRZ057_12872AAC_ATGCGCAG-TACTCCTT_R1_001.fastq.gz) ... done.  Time taken: 32.1s
+
+Comparing hashes ... done.  Time taken: 28.9s
+
+Merging results ... done.  Time taken: 2.0s
+
+Saving results to disk ... done.  Time taken: 0.3s
+
+
+Summary statistics
+------------------
+
+K-mer statistics for: 
+ - Hash 1: "../../data/fastq/LAN039_12419AAC_TAGGCATG-TACTCCTT_R1_001.fastq.gz"
+ - Hash 2: "../../data/fastq/BRZ057_12872AAC_ATGCGCAG-TACTCCTT_R1_001.fastq.gz"
+
+Total K-mers in: 
+ - Hash 1: 855501661
+ - Hash 2: 733156821
+
+Distinct K-mers in:
+ - Hash 1: 86608654
+ - Hash 2: 108393865
+
+Total K-mers only found in:
+ - Hash 1: 112631111
+ - Hash 2: 345726272
+
+Distinct K-mers only found in:
+ - Hash 1: 66526375
+ - Hash 2: 97087502
+
+Shared K-mers:
+ - Total shared found in hash 1: 742870550
+ - Total shared found in hash 2: 597777522
+ - Distinct shared K-mers: 20082279
+
+Distance between spectra 1 and 2 (all k-mers):
+ - Manhattan distance: 2.32856e+07
+ - Euclidean distance: 1.51883e+07
+ - Cosine distance: 0.000929771
+ - Canberra distance: 171.481
+ - Jaccard distance: 0.213347
+
+Distance between spectra 1 and 2 (shared k-mers):
+ - Manhattan distance: 2.44754e+06
+ - Euclidean distance: 579993
+ - Cosine distance: 0.00157177
+ - Canberra distance: 170.991
+ - Jaccard distance: 0.114875
+
+Creating plot(s) ... done.  Time taken: 4.0s
+
+Current configuration does not support peak analysis.
+KAT COMP completed.
+Total runtime: 106.6s
+

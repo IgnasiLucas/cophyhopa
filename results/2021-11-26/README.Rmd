@@ -162,9 +162,10 @@ ggplot(data = byLane, mapping = aes(x = kmerFreq, y = kmerNum, color = Lane)) +
 ```
 
 Lanes 1 and 2 have almost identical k-mer profiles in all 5 samples
-analysed here. Filtering low quality reads should improve the profile.
-
-## Filtering
+analysed here. Filtering low quality reads could improve the profile,
+if sequencing errors are a big portion of the low multiplicity peak
+in the k-mer profile. But contamination and sequencing of fragments
+from out of the selected range can also contribute that that peak.
 
 ## K-mer and GC content
 
@@ -172,13 +173,93 @@ analysed here. Filtering low quality reads should improve the profile.
 CHOSEN=(LAN039 BRZ057 THU185 WAL078 175619)
 
 for sample in ${CHOSEN[@]}; do
-   if [ ! -e $sample/gcp ]; then
+   if [ ! -e $sample/gcp.mx ]; then
       kat gcp -N -t 4 -o $sample/gcp ../../data/fastq/$sample*.fastq.gz &> $sample/gcp.log &
    fi
 done
 wait
 ```
 
-## Comparisons
+```{r plotGC, fig.width=20, fig.height=20, warning=FALSE}
+library('tidyr')
+library('gridExtra')
+for (Sample in c('LAN039', 'BRZ057', 'THU185', 'WAL078', '175619')) {
+   gcp      <- read.table(paste(Sample, 'gcp.mx', sep='/'))
+   gcp$GC   <- seq(0,26)
+   
+   gcp_long <- pivot_longer(gcp, 1:1001, names_to = 'kmerFreq', values_to = 'kmerNum')
+   gcp_long$kmerFreq <- as.numeric(substring(gcp_long$kmerFreq, 2)) - 1
+   assign(sprintf('p%s', Sample), ggplot(data=gcp_long, mapping=aes(x=kmerFreq, y=GC, fill=kmerNum)) +
+      scale_fill_gradientn(trans='log', colors=terrain.colors(10), breaks=c(1,100,10000,1e6), na.value='blue') +
+      geom_tile() + ggtitle(Sample))
+}
+
+grid.arrange(pLAN039, pBRZ057, pTHU185, pWAL078, p175619, nrow=3)
+```
+
+
+## Comparisons between samples
+
+```{bash comp}
+SAMPLE=(LAN039 BRZ057 THU185 WAL078 175619)
+for first in 0 1 2 3; do
+   for second in $(seq $(($first + 1)) 4); do
+      if [ ! -e ${SAMPLE[$first]}/comp_${SAMPLE[$second]}-main.mx ]; then
+         FASTQ1=$(ls -1 ../../data/fastq/${SAMPLE[$first]}* | grep R1)
+         FASTQ2=$(ls -1 ../../data/fastq/${SAMPLE[$second]}* | grep R1)
+         if [ -z "${SIZE[$second]}" ]; then
+            SIZE[$second]=$(gunzip -c $FASTQ2 | wc -l)
+         fi
+         if [ -z "${SIZE[$first]}" ]; then
+            SIZE[$first]=$(gunzip -c $FASTQ1 | wc -l)
+         fi
+         if [ ${SIZE[$first]} -ge ${SIZE[$second]} ]; then
+            PARAM='--d2_scale'
+            VALUE=$(echo "${SIZE[$second]} / ${SIZE[$first]}" | bc -l)
+         else
+            PARAM='--d1_scale'
+            VALUE=$(echo "${SIZE[$first]} / ${SIZE[$second]}" | bc -l)
+         fi
+         kat comp --output_prefix ${SAMPLE[$first]}/comp_${SAMPLE[$second]} \
+                  --non_canonical_1 \
+                  --non_canonical_2 \
+                  --threads 8 \
+                  $PARAM $VALUE \
+                  --density_plot \
+                  $FASTQ1 $FASTQ2 \
+                  &> ${SAMPLE[$first]}/comp_${SAMPLE[$second]}.log &
+      fi
+   done
+done
+wait
+```
+
+```{r plotComp, fig.width=20, fig.height=20, warning=FALSE}
+SAMPLE = c('LAN039', 'BRZ057', 'THU185', 'WAL078', '175619')
+for (i in 1:4) {
+   for (j in (i+1):5) {
+      comp <- read.table(sprintf('%s/comp_%s-main.mx', SAMPLE[i], SAMPLE[j]))
+      comp$Y <- seq(0,1000)
+      comp_long <- pivot_longer(comp, 1:1001, names_to = 'X', values_to = 'frequency')
+      comp_long$X <- as.numeric(substring(comp_long$X, 2)) - 1
+      assign(sprintf('p%s_%s', SAMPLE[i], SAMPLE[j]),
+             ggplot(data=comp_long, mapping=aes(x=X, y=Y, fill=frequency)) + geom_tile() + xlim(0,500) + ylim(0,500) +
+             scale_fill_gradientn(trans='log', colors=terrain.colors(10), breaks=c(1,100,10000,1000000), na.value='blue') +
+             xlab(sprintf('27-mer frequency in %s', SAMPLE[i])) +
+             ylab(sprintf('27-mer frequency in %s', SAMPLE[j])))
+   }
+}
+
+layout_matrix <- matrix(c(1, NA, NA, NA,
+                          2,  3, NA, NA,
+                          4,  5,  6, NA,
+                          7,  8,  9, 10), nrow=4, ncol=4, byrow=TRUE)
+
+grid.arrange(pLAN039_BRZ057,
+             pLAN039_THU185, pBRZ057_THU185,
+             pLAN039_WAL078, pBRZ057_WAL078, pTHU185_WAL078, 
+             pLAN039_175619, pBRZ057_175619, pTHU185_175619, pWAL078_175619,
+             layout_matrix = layout_matrix)
+```
 
 # References
