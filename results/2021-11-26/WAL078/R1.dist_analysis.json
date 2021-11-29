@@ -1,0 +1,33 @@
+{
+    "k": 27,
+    "nb_peaks": 2,
+    "global_minima": {
+        "freq": 76,
+        "count": 34111
+    },
+    "global_maxima": {
+        "freq": 79,
+        "count": 35810
+    },
+    "mean_freq": 116,
+    "peaks": [
+        {
+            "mean_freq": 79.00000003029724,
+            "stddev": 34.63346878820929,
+            "count": 15910,
+            "volume": 1366288
+        },
+        {
+            "mean_freq": 156.00000000934955,
+            "stddev": 68.4113474169204,
+            "count": 7563,
+            "volume": 1282717
+        }
+    ],
+    "hom_peak": {
+        "freq": 79,
+        "index": 1
+    },
+    "est_genome_size": 3931722,
+    "est_het_rate": 0.0
+}

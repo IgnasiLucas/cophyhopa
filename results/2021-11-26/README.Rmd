@@ -1,0 +1,184 @@
+---
+title: "K-mer analysis"
+author: "J. Ignacio Lucas Lledó"
+date: "26/11/2021"
+output: html_document
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Here I want to explore some aspects of the first batch of fastq files received
+using the K-mer Analysis Toolkit [@Mapleson2016]. K-mer counts offer a signature
+of the sequence compostion of a fastq file. The distribution of counts is related
+to how repetitive the content is. Many k-mers (words) counted few times indicate
+that most reads are quite different among them, as if coverage was very low or
+if they had a lot of random errors.
+
+We can also compare the counts between two fastq files: the more similar the
+sequences in the two files, the more correlated the counts will be. With this,
+I can take a look at how much more similar missassigned reads are to those from
+their putative original sample than to those from any other sample. I should
+also be able to confirm that samples from the same species have more similar
+sequence compositions than unrelated fastq files.
+
+Finally, I noticed that fastq files have reads from two lanes (indicated in
+the fourth ":"-separated field of the name of the read), and we have been
+told that lane 2 delivered low quality data. If I manage to distribute a fastq
+file in two, for the two lanes, I could also compare them.
+
+K-mers can be counted on the sequenced strand or on both. Reads are oriented,
+because specific adapters were ligated to either enzyme's cut site. That is,
+reads from a locus will always be sequenced from the same side. Thus, I don't
+need to count *canonical* k-mers, but only in one strand.
+
+## General k-mer profiles
+
+I choose a few fastq files to analyse, just as examples.
+
+1. One per plate, from different species: LAN039, BRZ057, THU185 and WAL078.
+2. One of the "control" samples with a unique dual index: 175619.
+3. Four mock samples sharing an index with the control sample: HOP006, HOP026,
+HOP034 and HOP49.
+4. And three mock samples from another sector of plate D: HOP038, HOP052 and HOP066.
+
+```{bash}
+CHOSEN=(LAN039 BRZ057 THU185 WAL078 175619 HOP006
+        HOP049 HOP026 HOP034 HOP052 HOP066 HOP038)
+
+for sample in ${CHOSEN[@]}; do
+   if [ ! -d $sample ]; then mkdir $sample; fi
+   for fastq in $(ls ../../data/fastq/*.fastq.gz | grep $sample); do
+      READ=$(echo $fastq | cut -d '_' -f 4)
+      if [ ! -e $sample/$READ.hist ]; then
+         kat hist -t 2 -o -N $sample/$READ $fastq &> $sample/$READ.log &
+      fi
+   done
+done
+wait
+
+if [ ! -e byRead ]; then
+   gawk '(FNR == 1){
+      split(FILENAME, A, /\//)
+      SAMPLE = A[2]
+      READ = substr(A[3], 2, 1)
+      ALLSAMPLES[SAMPLE] = 1
+   }(/^[^#]/){
+      F[SAMPLE, READ, $1] = $2
+   }END{
+      for (s in ALLSAMPLES) {
+         for (i = 1; i <= 2; i++) {
+            for (j = 1; j <= 2000; j++) {
+               print s "\t" i "\t" j "\t" F[s, i, j]
+            }
+         }
+      }
+   }' $(find . -name 'R[12]') | grep -v HOP > byRead.hist
+fi
+```
+
+```{r plotReads}
+library('ggplot2')
+byRead <- read.table('byRead.hist', col.names = c('Sample','Read','kmerFreq','kmerNum'),
+                     colClasses = c('factor','factor','numeric','numeric'))
+ggplot(data = byRead, mapping = aes(x = kmerFreq, y = kmerNum, color = Read)) +
+   geom_line() + xlim(1, 500) + scale_y_log10() + facet_wrap(~Sample)
+```
+
+Actaully, the mock samples do not have enough reads for a meaningful k-mer profile.
+In the rest, we can see the distribution of k-mer frequencies does resemble a mixture
+of an exponential (sequencing errors and possible contamination) and a normal that
+could be centered around 100. The problem is that the excess of low frequency k-mers
+makes it difficult to see the normal component. Changing the *k* up to 51 does not
+improve the profile.
+
+Importantly, forward and reverse reads have very similar profiles.
+
+## Comparison between lane 1 and lane 2
+
+The challenge is to split fastq files by lane. I can use *gawk*. In
+ordre to avoid writing and reading from additional fastq files, I wanted
+to make `kat hist` read from standard input, but it does not work.
+I raised [an issue](https://github.com/TGAC/KAT/issues/163) in KAT's
+github. For the moment, I will have to use files.
+
+```{bash lanes}
+CHOSEN=(LAN039 BRZ057 THU185 WAL078 175619)
+for sample in ${CHOSEN[@]}; do
+   if [ ! -e $sample/lane1.hist ]; then
+      if [ ! -e $sample/lane1.fasta ]; then
+         gunzip -c ../../data/fastq/$sample*.fastq.gz | \
+         gawk -v SAMPLE=$sample '(NR % 4 == 1){
+            if (NR > 1) {
+               split(NAME,A,/:/)
+               printf ">%s\n%s\n", NAME, SEQ >> sprintf("%s/lane%i.fasta", SAMPLE, A[4])
+            }
+            NAME = $1
+         }(NR % 4 == 2){
+            SEQ  = $1
+         }END{
+            split(NAME, A, /:/)
+            printf "%s\n%s\n", NAME, SEQ >> sprintf("%s/lane%i.fasta", SAMPLE, A[4])
+         }' &
+      fi
+   fi
+done
+wait
+
+for sample in ${CHOSEN[@]}; do
+   if [ ! -e $sample/lane1.hist ]; then
+      kat hist -N -t 4 -h 2000 -o $sample/lane1.hist $sample/lane1.fasta &> $sample/lane1.log &
+      kat hist -N -t 4 -h 2000 -o $sample/lane2.hist $sample/lane2.fasta &> $sample/lane2.log &
+   fi
+done
+wait
+if [ ! -e byLane.hist ]; then
+   gawk '(FNR == 1){
+      split(FILENAME, A, /\//)
+      SAMPLE = A[2]
+      LANE = substr(A[3], 5, 1)
+      ALLSAMPLES[SAMPLE] = 1
+   }(/^[^#]/){
+      F[SAMPLE, LANE, $1] = $2
+   }END{
+      for (s in ALLSAMPLES) {
+         for (i = 1; i <= 2; i++) {
+            for (j = 1; j <= 2000; j++) {
+               print s "\t" i "\t" j "\t" F[s, i, j]
+            }
+         }
+      }
+   }' $(find . -name 'lane*.hist') > byLane.hist
+fi
+```
+
+```{r plotLanes}
+byLane <- read.table('byLane.hist', col.names=c('Sample','Lane','kmerFreq','kmerNum'),
+                     colClasses = c('factor','factor','numeric','numeric'))
+ggplot(data = byLane, mapping = aes(x = kmerFreq, y = kmerNum, color = Lane)) +
+   geom_line() + scale_y_log10() + xlim(1, 500) + facet_wrap(~Sample)
+```
+
+Lanes 1 and 2 have almost identical k-mer profiles in all 5 samples
+analysed here. Filtering low quality reads should improve the profile.
+
+## Filtering
+
+## K-mer and GC content
+
+```{bash}
+CHOSEN=(LAN039 BRZ057 THU185 WAL078 175619)
+
+for sample in ${CHOSEN[@]}; do
+   if [ ! -e $sample/gcp ]; then
+      kat gcp -N -t 4 -o $sample/gcp ../../data/fastq/$sample*.fastq.gz &> $sample/gcp.log &
+   fi
+done
+wait
+```
+
+## Comparisons
+
+# References

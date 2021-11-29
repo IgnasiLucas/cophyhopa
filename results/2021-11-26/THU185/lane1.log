@@ -1,0 +1,49 @@
+Kmer Analysis Toolkit (KAT) V2.4.2
+
+Running KAT in HIST mode
+------------------------
+
+Input 1 is a sequence file.  Counting kmers for input 1 (THU185/lane1.fasta) ... done.  Time taken: 78.5s
+
+Bining kmers ... done.  Time taken: 2.3s
+
+Merging counts ... done.  Time taken: 0.0s
+
+Saving results to disk ... done.  Time taken: 0.0s
+
+Creating plot ... done.  Time taken: 1.0s
+
+Analysing peaks
+---------------
+
+Analysing distributions for: THU185/lane1.hist ... done.  Time taken:  4.7s
+
+K-mer frequency spectra statistics
+----------------------------------
+K-value used: 27
+Peaks in analysis: 2
+Global minima @ Frequency=100x (8136)
+Global maxima @ Frequency=101x (8641)
+Overall mean k-mer frequency: 146x
+
+  Index    Left    Mean    Right    StdDev    Max    Volume  Description
+-------  ------  ------  -------  --------  -----  --------  -------------
+      1   16.07     101   185.93     42.46   2515    265527  1X
+      2   20        200   380        90      1016    226360  2X
+
+Calculating genome statistics
+-----------------------------
+Assuming that homozygous peak is the largest in the spectra with frequency of: 101x
+Homozygous peak index: 1
+CAUTION: the following estimates are based on having a clean spectra and having identified the correct homozygous peak!
+Estimated genome size: 0.72 Mbp
+
+Creating plots
+--------------
+
+Plotting K-mer frequency distributions ... done.  Saved to: None
+
+
+KAT HIST completed.
+Total runtime: 86.9s
+

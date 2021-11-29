@@ -1,0 +1,70 @@
+Kmer Analysis Toolkit (KAT) V2.4.2
+
+Running KAT in GCP mode
+------------------------
+
+Input 1 is a sequence file.  Counting kmers for input 1 (../../data/fastq/BRZ057_12872AAC_ATGCGCAG-TACTCCTT_R1_001.fastq.gz ../../data/fastq/BRZ057_12872AAC_ATGCGCAG-TACTCCTT_R2_001.fastq.gz) ...
+Warning: Specified hash size insufficent - attempting to double hash size...
+Warning: Specified hash size insufficent - attempting to double hash size...
+Warning: Specified hash size insufficent - attempting to double hash size...
+Warning: Specified hash size insufficent - attempting to double hash size... success!
+ success!
+ success!
+ success!
+ done.  Time taken: 127.1s
+
+Analysing kmers in hash ...done.  Time taken: 23.6s
+
+Merging matrices ...done.  Time taken: 0.0s
+
+Saving results to disk ... done.  Time taken: 0.0s
+
+Creating plot ... done.  Time taken: 1.4s
+
+Analysing peaks
+---------------
+
+Analysing distributions for: BRZ057/gcp.mx ... done.  Time taken:  9.2s
+
+K-mer frequency spectra statistics
+----------------------------------
+
+K-value used: 27
+Peaks in analysis: 2
+Global minima @ Frequency=87x (58593)
+Global maxima @ Frequency=88x (59565)
+Overall mean k-mer frequency: 116x
+
+  Index    Left    Mean    Right    StdDev    Max    Volume  Description
+-------  ------  ------  -------  --------  -----  --------  -------------
+      1   15.11      88   160.89     36.44  21380   1938274  1X
+      2   18.65     174   329.35     77.67   5121    984923  2X
+
+Calculating genome statistics
+-----------------------------
+Assuming that homozygous peak is the largest in the spectra with frequency of: 88x
+Homozygous peak index: 1
+CAUTION: the following estimates are based on having a clean spectra and having identified the correct homozygous peak!
+Estimated genome size: 3.91 Mbp
+
+GC distribution statistics
+--------------------------
+
+K-value used: 27
+Peaks in analysis: 1
+Mean GC: 42.42%
+
+  Index    Left    Mean    Right    StdDev       Max     Volume  Description
+-------  ------  ------  -------  --------  --------  ---------  -------------
+      1    4.65   11.53    18.41      3.44  23346807  201176132
+
+Creating plots
+--------------
+
+Plotting K-mer frequency distributions ... done.  Saved to: None
+Plotting GC distributions ... done. Saved to: None
+
+
+KAT GCP completed.
+Total runtime: 161.8s
+

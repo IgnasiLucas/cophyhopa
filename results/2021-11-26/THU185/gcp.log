@@ -1,0 +1,71 @@
+Kmer Analysis Toolkit (KAT) V2.4.2
+
+Running KAT in GCP mode
+------------------------
+
+Input 1 is a sequence file.  Counting kmers for input 1 (../../data/fastq/THU185_12704AAC_CTCTCTAC-CTTAATAG_R1_001.fastq.gz ../../data/fastq/THU185_12704AAC_CTCTCTAC-CTTAATAG_R2_001.fastq.gz) ...
+Warning: Specified hash size insufficent - attempting to double hash size...
+Warning: Specified hash size insufficent - attempting to double hash size...
+Warning: Specified hash size insufficent - attempting to double hash size...
+Warning: Specified hash size insufficent - attempting to double hash size... success!
+ success!
+ success!
+ success!
+ done.  Time taken: 119.2s
+
+Analysing kmers in hash ...done.  Time taken: 17.8s
+
+Merging matrices ...done.  Time taken: 0.0s
+
+Saving results to disk ... done.  Time taken: 0.0s
+
+Creating plot ... done.  Time taken: 1.4s
+
+Analysing peaks
+---------------
+
+Analysing distributions for: THU185/gcp.mx ... done.  Time taken:  7.6s
+
+K-mer frequency spectra statistics
+----------------------------------
+
+K-value used: 27
+Peaks in analysis: 3
+Global minima @ Frequency=72x (71795)
+Global maxima @ Frequency=76x (73573)
+Overall mean k-mer frequency: 104x
+
+  Index    Left    Mean    Right    StdDev    Max    Volume  Description
+-------  ------  ------  -------  --------  -----  --------  -------------
+      1   14.17      76   137.83     30.92  38368   2953637  1X
+      2   17.32     150   282.68     66.34   8390   1379083  2X
+      3   21.26     226   430.74    102.37    681    171952  3X
+
+Calculating genome statistics
+-----------------------------
+Assuming that homozygous peak is the largest in the spectra with frequency of: 76x
+Homozygous peak index: 1
+CAUTION: the following estimates are based on having a clean spectra and having identified the correct homozygous peak!
+Estimated genome size: 6.23 Mbp
+
+GC distribution statistics
+--------------------------
+
+K-value used: 27
+Peaks in analysis: 1
+Mean GC: 41.71%
+
+  Index    Left    Mean    Right    StdDev       Max     Volume  Description
+-------  ------  ------  -------  --------  --------  ---------  -------------
+      1    4.27   11.35    18.43      3.54  16501243  146360922
+
+Creating plots
+--------------
+
+Plotting K-mer frequency distributions ... done.  Saved to: None
+Plotting GC distributions ... done. Saved to: None
+
+
+KAT GCP completed.
+Total runtime: 146.4s
+

@@ -1,0 +1,57 @@
+Kmer Analysis Toolkit (KAT) V2.4.2
+
+Running KAT in HIST mode
+------------------------
+
+Input 1 is a sequence file.  Counting kmers for input 1 (BRZ057/lane2.fasta) ...
+Warning: Specified hash size insufficent - attempting to double hash size...
+Warning: Specified hash size insufficent - attempting to double hash size...
+Warning: Specified hash size insufficent - attempting to double hash size...
+Warning: Specified hash size insufficent - attempting to double hash size... success!
+ success!
+ success!
+ success!
+ done.  Time taken: 88.2s
+
+Bining kmers ... done.  Time taken: 5.6s
+
+Merging counts ... done.  Time taken: 0.0s
+
+Saving results to disk ... done.  Time taken: 0.0s
+
+Creating plot ... done.  Time taken: 0.9s
+
+Analysing peaks
+---------------
+
+Analysing distributions for: BRZ057/lane2.hist ... done.  Time taken:  4.9s
+
+K-mer frequency spectra statistics
+----------------------------------
+K-value used: 27
+Peaks in analysis: 2
+Global minima @ Frequency=105x (5680)
+Global maxima @ Frequency=107x (5884)
+Overall mean k-mer frequency: 160x
+
+  Index    Left    Mean    Right    StdDev    Max    Volume  Description
+-------  ------  ------  -------  --------  -----  --------  -------------
+      1   16.49     107   197.51     45.25   1625    182766  1X
+      2   20.59     212   403.41     95.7     803    190073  2X
+
+Calculating genome statistics
+-----------------------------
+Assuming that homozygous peak is the largest in the spectra with frequency of: 107x
+Homozygous peak index: 1
+CAUTION: the following estimates are based on having a clean spectra and having identified the correct homozygous peak!
+Estimated genome size: 0.56 Mbp
+
+Creating plots
+--------------
+
+Plotting K-mer frequency distributions ... done.  Saved to: None
+
+
+KAT HIST completed.
+Total runtime: 100.0s
+
