@@ -1,3 +1,25 @@
+# 2021-11-26
+The k-mer analysis shows a distribution of k-mer abundances similar to a mixture
+of two components: a large fraction of words read relatively few times (but
+still a lot) and a core of words with a more or less normal coverage of
+around 100. I take the first sporadic words to be those with sequencing errors,
+contamination and out-of-range fragments, while the second component must represent
+the DNA fragments targeted. Of course, there is also a long tail of highly repetitive
+words.
+
+The sporadic component is not explained by reverse reads only, or by reads from
+lane 2 (supposed to be more noisy).
+
+K-mer and GC-content show quite homogeneous nature of the DNA sequenced.
+
+The comparison of k-mer frequencies among samples confirm a strong correlation,
+giving support to the hope of having sequenced a large enough portion of common
+loci.
+
+The k-mer analyses could be extended to compare reads to the reference genome,
+or to repeat it after de-replicating the reads. But we need to move on. See the
+[report here](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2021-11-26/README.html)
+
 # 2021-11-23
 We just received the first batch of sequences, with a note that a second lane did
 not produce very good quality output, and a promise to repeat the sequencing.
