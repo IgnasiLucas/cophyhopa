@@ -1,0 +1,222 @@
+---
+title: "Index hopping"
+author: "J. Ignacio Lucas Lledó"
+date: "13/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+We have now two batches of reads, because the sequencing center decided
+to run the machine a second time. Here I add the number of reads in the
+second batch to the table of sample features and I try to model the amount
+of index hopping among the index combinations where we can observe the
+misassignment of reads.
+
+```{bash numReads}
+if [ ! -e TotalNumReads.txt ]; then
+   FASTQDIR1='../../data/fastq'
+   FASTQDIR2='../../data/fastr'
+   if [ ! -e SampleIndexSeq.tsv ]; then cp ../2021-10-13/SampleIndexSeq.tsv ./; fi
+   
+   SAMPLE=( $(gawk '(NR > 1){gsub(/\"/,""); print $1}' SampleIndexSeq.tsv | sort) )
+   THREADS=24
+   for i in $(seq 0 $THREADS $(( ${#SAMPLE[@]} - 1 )) ); do
+      for j in $(seq $i $(($i + $THREADS - 1)) ); do
+         echo -e ${SAMPLE[$j]} "\t" \
+            $(echo $(gunzip -c $FASTQDIR1/${SAMPLE[$j]}*_R1_001.fastq.gz 2> /dev/null | wc -l) "/4" | bc) "\t" \
+            $(echo $(gunzip -c $FASTQDIR2/${SAMPLE[$j]}*_R1_001.fastq.gz 2> /dev/null | wc -l) "/4" | bc) \
+            > $(printf "z_%s.txt" ${SAMPLE[$j]}) &
+      done
+      wait
+   done
+   for k in $(seq $(( $j + 1)) $(( ${#SAMPLE[@]} - 1)) ); do
+      echo -e ${SAMPLE[$k]} "\t" \
+         $(echo $(gunzip -c $FASTQDIR1/${SAMPLE[$k]}*_R1_001.fastq.gz 2> /dev/null | wc -l) "/4" | bc) "\t" \
+         $(echo $(gunzip -c $FASTQDIR2/${SAMPLE[$k]}*_R1_001.fastq.gz 2> /dev/null | wc -l) "/4" | bc) \
+         > $(printf "z_%s.txt" ${SAMPLE[$k]}) &
+   done
+   wait
+   cat z_*.txt | sort -k 1,1 > TotalNumReads.txt
+   rm z*
+fi
+
+if [ ! -e Features.RData ]; then
+   cp ../2021-11-23/Features.RData ./
+fi
+```
+
+```{r data}
+library('ggplot2')
+load('Features.RData')
+TotalNumReads <- read.table('TotalNumReads.txt',
+                            col.names = c('Sample','numReads1', 'numReads2'),
+                            row.names = 1)
+Features$numReads1 <- TotalNumReads[row.names(Features), 'numReads1']
+Features$numReads2 <- TotalNumReads[row.names(Features), 'numReads2']
+Features$meanNumReads <- (Features$numReads1 + Features$numReads2) / 2
+# Coefficient of variation between the two runs: CV(x)=sd(x)/mean(x).
+# A downwardly biased estimation of sd of two numbers: abs(x - y)/sqrt(2)
+Features$CVnumReads <- abs(Features$numReads1 - Features$numReads2) / (sqrt(2) * Features$meanNumReads)
+stopifnot(all.equal(Features$numReads, Features$numReads1))
+Features <- Features[, -(which(names(Features) == 'numReads'))]
+
+f <- Features$i7 != 'N729'
+ggplot(Features[f,], aes(x = meanNumReads, y = CVnumReads, color = isReal)) +
+  geom_point() + scale_y_log10() + ylab('CV number of reads between runs') +
+  xlab('Mean number of reads')
+
+ggplot(data = Features, mapping = aes(x = numReads1, y = numReads2, color = isReal)) +
+  geom_point() + scale_y_log10() + scale_x_log10() +
+  xlab('First sequencing run') + ylab('Second sequencing run') + ggtitle('Number of reads per sample')
+```
+
+The sequencing run does not affect much the number of reads. Even the amount of
+index hopping is the same between technical replicates of the sequencing.
+
+## Determinants of index hopping
+
+```{r heatmap}
+ggplot(data = Features,
+       mapping = aes(x = i7, y = i5, fill = meanNumReads)) +
+   geom_tile() + geom_hline(yintercept = 8.5) + geom_vline(xintercept = 12.5) +
+   scale_fill_gradient(trans = 'log',
+                       breaks = c(1,10,100,1000,10000,100000,1000000,10000000)) +
+   theme(axis.text.x = element_text(angle = 90)) +
+   scale_y_discrete(limits = rev) +
+   annotate(geom = 'text', x = c(6,18,6,18), y=c(12,12,4,4), label=c('A','B','C','D'))
+```
+
+There are different kinds of samples, in terms of their expected amount of index
+hopping:
+
+1. 278 real samples identified with i5 and i7 indices that are both shared
+with other real samples.
+2. Two real samples identified with i5 and i7 indices not shared with any
+other sample.
+3. And mock samples all the reads of which come from index hopping.
+
+Among the mock samples, those with i7 index N729 stick out for having extremely
+low numbers of reads: zero or one. This is the only index that was not used
+at all. Because its tube was never opened, molecules with this index must
+have been absent in the pool. The few reads reporting N729 can only come from
+technical artifacts, such as errors in reading the index sequence. Thus, most
+of the index hopping must be due not to sequencing errors, but to real molecules.
+
+The presence of free adapters is supposed to be the main cause of index
+hopping. After having cleaned up the pools and after size selection, the
+amount of free adapters in the pool must have been negligible. Fragmentation
+of the DNA fragments in the libraries can also produce free adapters, and
+this is the reason why they recommend libraries to be stored at -20 C.
+
+In any case, the number of reads missassigned to an index must be proportional
+to the number of fragments in the pool actually labeled with that index. This
+is quite apparent in the figure above, but can be made more explicit. Furthermore
+I wonder if missassignment to an erroneous i5 is just as probable as missassignment
+to an erroneous i7. 
+
+```{r hoppingNeighbours}
+# Number of real samples sharing one or the other index (excluding itself, if real):
+Features$i5neiNum <- sapply(1:384, function(x){
+  sum(Features$isReal & Features$i5 == Features[x, 'i5'])
+}) - Features$isReal
+Features$i7neiNum <- sapply(1:384, function(x){
+  sum(Features$isReal & Features$i7 == Features[x, 'i7'])
+}) - Features$isReal
+Features$neiNum     <- Features$i5neiNum + Features$i7neiNum
+Features$neiNumProd <- Features$i5neiNum * Features$i7neiNum
+
+f <- ! Features$isReal & Features$i7 != 'N729'
+summary(lm(meanNumReads ~ neiNum, data = Features[f, ]))
+summary(lm(meanNumReads ~ i5neiNum + i7neiNum, data = Features[f,]))
+summary(lm(meanNumReads ~ i5neiNum * i7neiNum, data = Features[f,]))
+summary(lm(meanNumReads ~ neiNumProd, data = Features[f,]))
+
+# Number of real samples sharing one index or the other and in the same plate.
+Features$i5neiNumPlate <- sapply(1:384, function(x){
+  sum(Features$isReal &
+        Features$i5 == Features[x, 'i5'] &
+        Features$plate == Features[x, 'plate'])
+}) - Features$isReal
+Features$i7neiNumPlate <- sapply(1:384, function(x){
+  sum(Features$isReal &
+        Features$i7 == Features[x, 'i7'] &
+        Features$plate == Features[x, 'plate'])
+}) - Features$isReal
+Features$neiNumPlate     <- Features$i5neiNumPlate + Features$i7neiNumPlate
+Features$neiNumPlateProd <- Features$i5neiNumPlate * Features$i7neiNumPlate
+
+f <- ! Features$isReal & Features$i7 != 'N729'
+summary(lm(meanNumReads ~ neiNumPlate, data = Features[f,]))
+summary(lm(meanNumReads ~ i5neiNumPlate + i7neiNumPlate, data = Features[f,]))
+summary(lm(meanNumReads ~ i5neiNumPlate * i7neiNumPlate, data = Features[f,]))
+summary(lm(meanNumReads ~ neiNumPlateProd, data = Features[f,]))
+
+ggplot(data = Features[f,], mapping = aes(x = neiNumProd, y = meanNumReads, color = plate)) +
+  geom_point() + xlab('Product of number of real neighbours') + ylab('Number of missassigned reads')
+```
+
+It is not the number of real samples *in the same plate*, but the product
+or interaction between the number of real samples sharing one index and
+the number sharing the other *in the whole experiment* what determines
+better the amount of index hopping.
+
+```{r hoppingReads}
+# Number of reads with same index i5 or i7
+Features$i5neiReads <- sapply(1:384, function(x) {
+  sum(Features[Features$isReal & Features$i5 == Features[x,'i5'], 'meanNumReads'])
+}) - Features$isReal * Features$meanNumReads
+Features$i7neiReads <- sapply(1:384, function(x) {
+  sum(Features[Features$isReal & Features$i7 == Features[x,'i7'], 'meanNumReads'])
+}) - Features$isReal * Features$meanNumReads
+Features$neiReads     <- Features$i5neiReads + Features$i7neiReads
+Features$neiReadsProd <- Features$i5neiReads * Features$i7neiReads
+
+f <- ! Features$isReal & Features$i7 != 'N729'
+summary(lm(meanNumReads ~ neiReads, data = Features[f,]))
+summary(lm(meanNumReads ~ i5neiReads + i7neiReads, data = Features[f,]))
+summary(lm(meanNumReads ~ i5neiReads * i7neiReads, data = Features[f,]))
+summary(lm(meanNumReads ~ neiReadsProd, data = Features[f,]))
+
+ggplot(data = Features[f,], mapping = aes(x = neiReadsProd, y = meanNumReads, color = i7neiNum)) +
+  geom_point() + geom_smooth(method = 'lm') + scale_y_log10() + scale_x_log10() +
+  xlab('Product of numbers of index neighbours') + ylab('Number of missassigned reads') +
+  ggtitle('Index hopping')
+```
+
+## Conclusions
+
+I have modelled the number of reads in non real samples. That is, the number
+of misassigned reads where we can count them. I expected misassignments to be
+due to independent events involving a misreading of either index i5 or index i7.
+However, the sum of *i5-neighbours* and *i7-neighbours* is not as predictive
+of the amount of misassignment as their product. This points at an interaction
+between the number of samples (or reads) sharing the i5 and the number sharing
+the i7 indices. If I understand well, this means that errors do not only come
+from misreading one of the two indices, but often from misreading both.
+
+It is also notable that the cross-contamination is not limited to the plate,
+but affects the whole pool together. This suggests that the problem is **not**
+an erroneous manipulation of the indices during library preparation, but something
+that happens after pooling all samples together.
+
+## Prediction of misassigned reads in real samples
+
+```{r prediction}
+f <- ! Features$isReal & Features$i7 != 'N729'
+M0 <- lm(meanNumReads ~ i5neiReads * i7neiReads, data = Features[f,])
+Predicted <- predict(M0, Features[Features$isReal, c('i5neiReads', 'i7neiReads')], se.fit = TRUE)
+plot(density(Predicted$fit / Features[names(Predicted$fit), 'meanNumReads']),
+     xlab = 'Expected fraction of index hopping', main = '')
+```
+
+The only sample where we expect a proportion of wrongly assigned reads
+is the one with fewest reads: SUO095, which looked ok in the electrophoresis
+but turned out with only 167111 reads between the two sequencing runs.
+
+```{r sessionInfo}
+sessionInfo()
+```
+

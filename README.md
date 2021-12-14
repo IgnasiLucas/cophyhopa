@@ -1,3 +1,19 @@
+# 2021-12-13
+Using numbers of reads from both sequencing runs, I model the amount of index
+hopping in mock samples, where all reads observed are misassigned. The best
+predictor of the number of reads misassigned to a combination of i5 and i7
+indices is the product of the concentrations of those i5 and i7 indices in
+the pool. That is, the **product** of the total number of reads sharing the i5
+and the total number of reads sharing that i7. The fact that the product of
+those numbers predict index hopping level better than their sum makes me think
+that index hopping happens frequently by misassignment of both indices.
+
+The model achieves an adjusted R-squared of 0.9874. The predicted amounts of
+index hopping in real samples are below 5% in all samples but in the one with the
+lowest amount of reads (SUO095: 18% of index hopping in 167111 reads).
+
+See the [report here](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2021-12-13/README.html)
+
 # 2021-11-26
 The k-mer analysis shows a distribution of k-mer abundances similar to a mixture
 of two components: a large fraction of words read relatively few times (but
