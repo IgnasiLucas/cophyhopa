@@ -1,3 +1,7 @@
+# 2021-12-21
+Preparing to run ipyrad from RStudio. You can see 
+[the report herer](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2021-12-21/README.html)
+
 # 2021-12-13
 Using numbers of reads from both sequencing runs, I model the amount of index
 hopping in mock samples, where all reads observed are misassigned. The best

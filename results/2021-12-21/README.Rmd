@@ -1,0 +1,80 @@
+---
+title: "Preparing for ipyrad"
+author: "J. Ignacio Lucas Lledó"
+date: "21/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+There are three issues we need to solve before using `ipyrad`.
+
+- Fastq file names are too long.
+- We have fastq files from two sequencing runs.
+- We need to call ipyrad, in its conda environment, from RStudio.
+
+## The fastq file names
+Sample names are inferred from the fastq file names, which include:
+the sample name, a misterious codeword, and the sequences of the two
+indices, i5 and i7. We can remove all that redundant information.
+The solution that preserves the data better is to create symbolic
+links.
+
+```{bash symlinks}
+FASTQDIR1=../../data/fastq
+FASTQDIR2=../../data/fastr
+DATADIR=/gata/joiglu/cophyhopa/data
+if [ ! -d run1 ]; then mkdir run1; fi
+if [ ! -d run2 ]; then mkdir run2; fi
+
+# ls -1 /gata/joiglu/cophyhopa/data/fastq/*.fastq.gz | head -n 5
+# /gata/joiglu/cophyhopa/data/fastq/175600_12752AAC_GTAGAGGA-CTTAATAG_R1_001.fastq.gz
+# /gata/joiglu/cophyhopa/data/fastq/175600_12752AAC_GTAGAGGA-CTTAATAG_R2_001.fastq.gz
+# /gata/joiglu/cophyhopa/data/fastq/175601_12765AAC_GCTCATGA-AGCTAGAA_R1_001.fastq.gz
+# /gata/joiglu/cophyhopa/data/fastq/175601_12765AAC_GCTCATGA-AGCTAGAA_R2_001.fastq.gz
+# /gata/joiglu/cophyhopa/data/fastq/175602_12767AAC_GCTCATGA-TCTTACGC_R1_001.fastq.gz
+
+# First sequencing run:
+for file in $(ls -1 $DATADIR/fastq/*.fastq.gz); do
+   SAMPLE=$(echo $file | cut -d "/" -f 7 | cut -d "_" -f 1)
+   READ=$(echo $file | cut -d "_" -f 4)
+   if [ ! -e run1/${SAMPLE}_${READ}.fastq.gz ]; then
+      ln -s $file run1/${SAMPLE}_${READ}.fastq.gz
+   fi
+done
+
+# Now for the second sequencing run:
+for file in $(ls -1 $DATADIR/fastr/*.fastq.gz); do
+   SAMPLE=$(echo $file | cut -d "/" -f 7 | cut -d "_" -f 1)
+   READ=$(echo $file | cut -d "_" -f 4)
+   if [ ! -e run2/${SAMPLE}_${READ}.fastq.gz ]; then
+      ln -s $file run2/${SAMPLE}_${READ}.fastq.gz
+   fi
+done
+```
+
+## How to activate ipyrad
+
+```{r reticulate}
+library('reticulate')
+use_condaenv('ipyrad')
+```
+
+That's it. Now ipyrad should be available. I will save a copy of the ipyrad
+environment, for reproducibility
+
+```{bash exportEnv}
+/opt/miniconda3/bin/conda list -n ipyrad --explicit > spec-ipyrad.txt
+```
+
+## The two sequencing runs
+One good thing of ipyrad is that we can start working with two sets of
+fastq files and then tell ipyrad to merge them. As long as the files are
+correctly named, it will correctly join the information from files from
+the same samples. Thus, we don't need to create new fastq files with the
+combined information from the two runs for every sample.
+
+The procedure is described in ipyrad manual as [one library and multiple lanes of sequencing](https://ipyrad.readthedocs.io/en/master/8-branching.html#one-library-multiple-lanes-of-sequencing).
+
