@@ -1,0 +1,190 @@
+---
+title: '2021-11-30'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+
+setwd("~/cophyhopa/results/2021-11-29")
+library(fastqcr)
+
+fastqc(fq.dir = "~/cophyhopa/data/fastq", qc.dir = "~/cophyhopa/results/2021-11-29/reports", 
+       threads = 40, fastqc.path = "/usr/local/bin/fastqc")
+
+qc.files <- list.files(path = "~/cophyhopa/results/2021-11-29/reports", all.files = FALSE, full.names = TRUE, pattern = "zip")
+all <- qc_read_collection(files = qc.files, sample_names = qc.files, modules = "all")
+QS <- qc_plot_collection(all, modules = "sequence quality")
+qc_plot_collection(all, modules = "all")
+
+# Aggregating multiple FastQC reports into a data frame 
+qc.dir = "~/cophyhopa/results/2021-11-29/reports"
+qc <- qc_aggregate(qc.dir, progressbar = TRUE)
+qc.sum <- summary(qc)
+qc.stat <- qc_stats(qc)
+
+
+## Inspecting problems 
+# See which modules failed in the most samples 
+module <- qc_fails(qc, "module")
+# See which samples failed the most 
+samples <- qc_fails(qc, "sample")
+
+# Building multi QC reports 
+multiReport <- qc_report(qc.dir, result.file = "/gata/mar/cophyhopa/results/2021-11-29/multiQCreport")
+# Building one-sample QC reports (+ interpretation)
+qc.file <- "~/cophyhopa/results/2021-11-29/reports/BRZ013_12390AAC_TCCTGAGC-CGGAGAGA_R1_001_fastqc.zip"
+qc_report(qc.file, result.file = "onesample_report", interpret = FALSE)
+
+
+```
+
+### ngsReports package
+
+You can also embed plots, for example:
+
+```{r}
+
+# Installation 
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("ngsReports")
+
+library(ngsReports)
+
+```
+
+
+```{r}
+# Read the FastQC reports 
+qc.files <- list.files(path = "~/cophyhopa/results/2021-11-29/reports", 
+                       full.names = TRUE, pattern = "zip")
+qc.seq <- FastqcDataList(qc.files)
+
+```
+
+## Generating plots
+
+# Inspecting the PASS/WARN/FAIL status of each module 
+```{r, echo=FALSE}
+plotSummary(qc.seq)
+
+```
+
+# Summary of the total number of reads in each Fastq file 
+```{r}
+plotReadTotals(qc.seq) + 
+      theme(
+        legend.position = c(1, 1), 
+        legend.justification = c(1, 1),
+        legend.background = element_rect(colour = "black")
+    )
+
+```
+
+# Per BASE Sequence Qualities 
+```{r}
+
+current <- "~/cophyhopa/results/2021-11-29/reports"
+new <- "~/cophyhopa/results/2021-11-29/rep_zip"
+list <- list.files(current, "zip")
+file.copy(file.path(current, list), new)
+
+old.names <- list.files(new, "zip")
+new.names <- gsub("_(.*?)_(.*?)-(.*?)_(.*?)", "_", old.names)
+new.names <- gsub("_001_fastqc", "", new.names)
+file.rename(file.path(new, old.names), file.path(new, new.names))
+
+# Base sequence quality obtained for an individual file 
+plotBaseQuals(qc.seq[[100]])
+
+
+# Base sequence qualities for multiple FastQC reports, summarised as both a heatmap
+plotBaseQuals(qc, usePlotly = FALSE, warn = 30, fail = 15, boxWidth = 0.8,
+              plotType = "heatmap", plotValue = "Mean", cluster = TRUE, 
+              dendrogram = TRUE, nc = 2) +
+  theme(axis.text.y = element_text(size = 0.01))
+
+sq <- getModule(qc.seq, module = "Per_base_sequence_quality")
+LQ <- sq[which(sq$Mean < 25), ]
+length(which(grepl("HOP", names(qc.seq)) == TRUE))
+qc <- qc.seq
+qc <- qc[!grepl("HOP", names(qc.seq))]
+
+
+```
+
+# Mean Sequence Quality per Read 
+```{r}
+# Individual 
+plotSeqQuals(qc[[20]])
+
+# Multi
+plotSeqQuals(qc, alpha = 0.05, warn = 40, fail = 30, plotType = "heatmap", 
+             dendrogram = FALSE, cluster = FALSE) + 
+  theme(axis.text.y = element_text(size = 0.01))
+  
+
+ps <- getModule(qc, module = "Per_sequence_quality_scores")
+
+LQ <- sq[which(sq$Mean < 25), ]
+length(which(grepl("HOP", names(qc.seq)) == TRUE))
+qc <- qc.seq
+qc <- qc[!grepl("HOP", names(qc.seq))]
+
+plotSeqQuals(qc, alpha = 0.05, warn = 40, fail = 30, plotType = "line", 
+             dendrogram = FALSE, cluster = FALSE) + 
+  theme(axis.text.y = element_text(size = 0.01), legend.position = "none") 
+  
+
+```
+
+# Per Base Sequence Content
+```{r}
+plotSeqContent(qc) + 
+  theme(axis.text.y = element_text(size = 0.01)) 
+```
+
+# Adapter content 
+```{r}
+plotAdapterContent(qc) +
+    theme(axis.text.y = element_text(size = 0.01)) 
+
+```
+
+# Sequence Duplication Level 
+```{r}
+plotDupLevels(qc) +
+    theme(axis.text.y = element_text(size = 0.01)) 
+
+```
+
+# GC Content 
+```{r}
+gcAvail(gcTheoretical, "Genome")
+
+plotGcContent(qc, plotType = "line") +
+  theme(axis.text.y = element_text(size = 0.01), legend.position = "none") 
+
+
+```
+
+# Overrepresented Sequences 
+```{r}
+plotOverrep(qc) +
+  theme(axis.text.y = element_text(size = 0.01))
+
+```
+
+
+
