@@ -1,0 +1,228 @@
+---
+title: "Quality control of fastq files"
+author: "Mar Llaberia Robledillo & J. Ignacio Lucas Lledó"
+date: "10/1/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+There are two sequencing runs, each with the two fastq files
+from each of the 280 true samples and the 94 mock ones. In all
+they are 1496 fastq files. To visualize quality parameters of
+all them is too much.
+
+```{r script}
+library(fastqcr)
+run1 <- '../../data/fastq'
+run2 <- '../../data/fastr'
+
+if (! file.exists('report1')) {
+  fastqc(fq.dir = run1, qc.dir = "reports1", 
+         threads = 40, fastqc.path = "/usr/local/bin/fastqc")
+}
+
+if (! file.exists('report2')) {
+  fastqc(fq.dir = run2, qc.dir = "reports2",
+         threads = 40, fastqc.path = "/usr/local/bin/fastqc")
+}
+
+qc.files1 <- list.files(path = "reports1", all.files = FALSE,
+                        full.names = TRUE, pattern = "zip")
+# Sample names can be extracted from the file names
+samples1 <- sapply(strsplit(qc.files1, "[/_]"), '[[', 2)
+
+qc.files2 <- list.files(path = 'reports2', all.files = FALSE,
+                        full.names = TRUE, pattern = 'zip')
+# Some fake samples (HOP) got so little spurious reads that appear in
+# only one of the two sequencing runs. I will limit to the subset of
+# samples with fastq files from both sequencing runs.
+samples2 <- sapply(strsplit(qc.files2, "[/_]"), '[[', 2)
+samples <- intersect(samples1, samples2)
+rm(samples1, samples2)
+
+# The lists of fastq files from the two sequencing runs are not
+# "parallel". I will use the common samples to filter the lists of files:
+qc.files1 <- grep(paste0('(', paste(samples, collapse = '|'), ')'), qc.files1, value = TRUE)
+qc.files2 <- grep(paste0('(', paste(samples, collapse = '|'), ')'), qc.files2, value = TRUE)
+stopifnot(all.equal(substring(qc.files1, 10), substring(qc.files2, 10)))
+```
+
+To read collections of reports is slow, and we don't want to include
+all samples in a collection, because then the plots would not be
+visible. One way to split samples in meaningful groups would be to
+use the 3-letters prefix of their names, which indicate the lake
+of origin, I think.
+
+```{r collections}
+table(substr(samples, 1, 3))
+# filters for individual lakes:
+f_lake <- lapply(unique(substr(samples, 1, 3)),
+                 function(x) grepl(x, qc.files1))
+# just to check
+stopifnot(all.equal(as.numeric(table(substr(samples, 1, 3))),
+                    sapply(f_lake, sum)/2))
+names(f_lake) <- unique(substr(samples, 1, 3))
+
+# And filters for forward and reverse reads:
+f_R1  <- grepl('_R1_', qc.files1)
+f_R2  <- grepl('_R2_', qc.files1)
+
+# I create 4 lists of collections for each lake:
+coll_R1.run1 <- lapply(unique(substr(samples, 1, 3)),
+                       function(x) {
+                         suppressMessages(qc_read_collection(
+                           files = qc.files1[f_lake[[x]] & f_R1],
+                           sample_names = grep(x, samples, value = TRUE),
+                           modules = 'all',
+                           verbose = FALSE
+                         ))
+                       })
+names(coll_R1.run1) <- unique(substr(samples, 1, 3))
+
+coll_R2.run1 <- lapply(unique(substr(samples, 1, 3)),
+                       function(x) {
+                         suppressMessages(qc_read_collection(
+                           files = qc.files1[f_lake[[x]] & f_R2],
+                           sample_names = grep(x, samples, value = TRUE),
+                           modules = 'all',
+                           verbose = FALSE
+                         ))
+                       })
+names(coll_R2.run1) <- unique(substr(samples, 1, 3))
+
+coll_R1.run2 <- lapply(unique(substr(samples, 1, 3)),
+                       function(x) {
+                         suppressMessages(qc_read_collection(
+                           files = qc.files2[f_lake[[x]] & f_R1],
+                           sample_names = grep(x, samples, value = TRUE),
+                           modules = 'all',
+                           verbose = FALSE
+                         ))
+                       })
+names(coll_R1.run2) <- unique(substr(samples, 1, 3))
+
+coll_R2.run2 <- lapply(unique(substr(samples, 1, 3)),
+                       function(x) {
+                         suppressMessages(qc_read_collection(
+                           files = qc.files2[f_lake[[x]] & f_R2],
+                           sample_names = grep(x, samples, value = TRUE),
+                           modules = 'all',
+                           verbose = FALSE
+                         ))
+                       })
+names(coll_R2.run2) <- unique(substr(samples, 1, 3))
+```
+
+In order to reduce the size of the report and to be able to compare
+forward and reverse reads as well as the two sequencing runs, I will
+group plots by lake. Not all modules produce meaningful plots when the
+collection includes several reports. For example, the module "Per base
+sequence content" would try to produce as many plots as reports, instead
+of summarizing them in a single plot.
+
+## Per base sequence quality
+
+```{r perBaseQ, fig.width=10, fig.height=10}
+library('gridExtra')
+library('ggplot2')
+for (lake in unique(substr(samples, 1, 3))) {
+  whatPlot <- 'Per base sequence quality'
+  p1 <- qc_plot_collection(coll_R1.run1[[lake]], modules = whatPlot)
+  p2 <- qc_plot_collection(coll_R2.run1[[lake]], modules = whatPlot)
+  p3 <- qc_plot_collection(coll_R1.run2[[lake]], modules = whatPlot)
+  p4 <- qc_plot_collection(coll_R2.run2[[lake]], modules = whatPlot)
+  p1 <- p1 + ggtitle(lake, subtitle = 'Forward reads, sequencing run 1')
+  p2 <- p2 + ggtitle(lake, subtitle = 'Reverse reads, sequencing run 1')
+  p3 <- p3 + ggtitle(lake, subtitle = 'Forward reads, sequencing run 2')
+  p4 <- p4 + ggtitle(lake, subtitle = 'Reverse reads, sequencing run 2')
+  if (sum(f_lake[[lake]]) > 44) {
+    p1 <- p1 + guides(color = 'none')
+    p2 <- p2 + guides(color = 'none')
+    p3 <- p3 + guides(color = 'none')
+    p4 <- p4 + guides(color = 'none')
+  }
+  grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
+}
+```
+
+## Per sequence quality scores
+
+```{r perSeqQ, fig.width=10, fig.height=10}
+for (lake in unique(substr(samples, 1, 3))) {
+  whatPlot <- 'Per sequence quality scores'
+  p1 <- qc_plot_collection(coll_R1.run1[[lake]], modules = whatPlot)
+  p2 <- qc_plot_collection(coll_R2.run1[[lake]], modules = whatPlot)
+  p3 <- qc_plot_collection(coll_R1.run2[[lake]], modules = whatPlot)
+  p4 <- qc_plot_collection(coll_R2.run2[[lake]], modules = whatPlot)
+  p1 <- p1 + ggtitle(lake, subtitle = 'Forward reads, sequencing run 1')
+  p2 <- p2 + ggtitle(lake, subtitle = 'Reverse reads, sequencing run 1')
+  p3 <- p3 + ggtitle(lake, subtitle = 'Forward reads, sequencing run 2')
+  p4 <- p4 + ggtitle(lake, subtitle = 'Reverse reads, sequencing run 2')
+  if (sum(f_lake[[lake]]) > 44) {
+    p1 <- p1 + guides(color = 'none')
+    p2 <- p2 + guides(color = 'none')
+    p3 <- p3 + guides(color = 'none')
+    p4 <- p4 + guides(color = 'none')
+  }
+  grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
+}
+```
+
+## Per sequence GC content
+
+```{r perSeqGC, fig.width=10, fig.height=10}
+for (lake in unique(substr(samples, 1, 3))) {
+  whatPlot <- 'Per sequence GC content'
+  p1 <- qc_plot_collection(coll_R1.run1[[lake]], modules = whatPlot)
+  p2 <- qc_plot_collection(coll_R2.run1[[lake]], modules = whatPlot)
+  p3 <- qc_plot_collection(coll_R1.run2[[lake]], modules = whatPlot)
+  p4 <- qc_plot_collection(coll_R2.run2[[lake]], modules = whatPlot)
+  p1 <- p1 + ggtitle(lake, subtitle = 'Forward reads, sequencing run 1')
+  p2 <- p2 + ggtitle(lake, subtitle = 'Reverse reads, sequencing run 1')
+  p3 <- p3 + ggtitle(lake, subtitle = 'Forward reads, sequencing run 2')
+  p4 <- p4 + ggtitle(lake, subtitle = 'Reverse reads, sequencing run 2')
+  if (sum(f_lake[[lake]]) > 44) {
+    p1 <- p1 + guides(color = 'none')
+    p2 <- p2 + guides(color = 'none')
+    p3 <- p3 + guides(color = 'none')
+    p4 <- p4 + guides(color = 'none')
+  }
+  grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
+}
+```
+
+## Per base N content
+
+```{r perBaseN, fig.width=10, fig.height=10}
+for (lake in unique(substr(samples, 1, 3))) {
+  whatPlot <- 'Per base N content'
+  p1 <- qc_plot_collection(coll_R1.run1[[lake]], modules = whatPlot)
+  p2 <- qc_plot_collection(coll_R2.run1[[lake]], modules = whatPlot)
+  p3 <- qc_plot_collection(coll_R1.run2[[lake]], modules = whatPlot)
+  p4 <- qc_plot_collection(coll_R2.run2[[lake]], modules = whatPlot)
+  p1 <- p1 + ggtitle(lake, subtitle = 'Forward reads, sequencing run 1')
+  p2 <- p2 + ggtitle(lake, subtitle = 'Reverse reads, sequencing run 1')
+  p3 <- p3 + ggtitle(lake, subtitle = 'Forward reads, sequencing run 2')
+  p4 <- p4 + ggtitle(lake, subtitle = 'Reverse reads, sequencing run 2')
+  if (sum(f_lake[[lake]]) > 44) {
+    p1 <- p1 + guides(color = 'none')
+    p2 <- p2 + guides(color = 'none')
+    p3 <- p3 + guides(color = 'none')
+    p4 <- p4 + guides(color = 'none')
+  }
+  grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
+}
+```
+
+## Conclusions
+We have a lot of data. The quality is good. I don't know why the sequencing
+center repeated the sequencing run. We can be conservative when filtering.
+
+## Session Information
+
+```{r sessionInfo}
+sessionInfo()
+```
