@@ -1,0 +1,7 @@
+vsearch v2.7.1_linux_x86_64, 251.9GB RAM, 64 cores
+vsearch --fastq_mergepairs ../../data/fastr/SUO061_12859AAC_TACGCTGC-CGGAGAGA_R1_001.fastq.gz --reverse ../../data/fastr/SUO061_12859AAC_TACGCTGC-CGGAGAGA_R2_001.fastq.gz --fastqout run2/SUO061.merged.fastq --fastqout_notmerged_fwd run2/SUO061.R1.fastq --fastqout_notmerged_rev run2/SUO061.R2.fastq --fastq_allowmergestagger --fastq_maxdiffs 1 --log logs/SUO061.2.merging.log --quiet --threads 20
+Started  Wed Jan 12 09:36:45 2022
+
+Finished Wed Jan 12 09:37:05 2022
+Elapsed time 00:20
+Max memory 37.9MB

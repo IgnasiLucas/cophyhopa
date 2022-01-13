@@ -1,0 +1,206 @@
+---
+title: "Filtering and merging with VSEARCH"
+author: "J. Ignacio Lucas Lledó"
+date: "10/1/2022"
+output: html_document
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The program `vsearch` can filter, denoise, dectect chimeras and merge paired
+end reads [@Rognes2016]. In what order should we process the reads? To remove
+low quality reads is a good thing to do in the first steps, as well as removing
+whole samples the sequencing of which may not have worked. That way, we don't
+waste time processing low quality data.
+
+Chimeric reads may be detected, and could then be removed as well. But it makes
+sense to attempt merging before chimera detection, since it is the whole fragment
+that might be chimeric, rather than only forward or only reverse reads, right?
+Plus, chimera detection requires dereplicated, size-sorted fasta input.
+
+Merging paired reads could be performed before filtering, because merging takes
+quality into account and updates the quality of the overlapping bases. Plus,
+VSEARCH does not seem to be able to filter paired-end reads without completely
+messing up their order in the files. Data Carpentry recommends Trimmomatic for
+that.
+
+## Merging
+
+Ideally I should combine fastq files from the two sequencing runs. This is
+important for subsequent steps, like clustering. The strategy will be:
+
+- Merge paired reads independently for the two sequencing runs.
+- Combine outputs and distribute them in two folders: merged and paired.
+- Compress the combined fastq files.
+
+Because there seems to be plenty of data, I will ignore the sequences from
+HOP files, even if some of them can be assigned to their original sample.
+
+```{bash merging}
+FASTQDIR1='../../data/fastq'
+FASTQDIR2='../../data/fastr'
+if [ ! -d logs ]; then mkdir logs; fi
+if [ ! -d merged ]; then mkdir merged; fi
+if [ ! -d paired ]; then mkdir paired; fi
+if [ ! -d run1 ]; then mkdir run1; fi
+if [ ! -d run2 ]; then mkdir run2; fi
+
+for fwdRead in $(ls -1 $FASTQDIR1 | grep '_R1_' | grep -v HOP); do
+   revRead=$(echo $fwdRead | sed 's/_R1_/_R2_/g')
+   sample=$(echo $fwdRead | cut -d '_' -f 1)
+   if [ ! -e merged/$sample.fq.gz ]; then
+      if [ ! -e run1/$sample.merged.fastq ]; then
+         vsearch --fastq_mergepairs $FASTQDIR1/$fwdRead \
+                 --reverse $FASTQDIR1/$revRead \
+                 --fastqout run1/$sample.merged.fastq \
+                 --fastqout_notmerged_fwd run1/$sample.R1.fastq \
+                 --fastqout_notmerged_rev run1/$sample.R2.fastq \
+                 --fastq_allowmergestagger \
+                 --fastq_maxdiffs 1 \
+                 --log logs/$sample.1.merging.log \
+                 --quiet --threads 20 &
+      fi
+      if [ ! -e run2/$sample.merged.fastq ]; then
+         vsearch --fastq_mergepairs $FASTQDIR2/$fwdRead \
+                 --reverse $FASTQDIR2/$revRead \
+                 --fastqout run2/$sample.merged.fastq \
+                 --fastqout_notmerged_fwd run2/$sample.R1.fastq \
+                 --fastqout_notmerged_rev run2/$sample.R2.fastq \
+                 --fastq_allowmergestagger \
+                 --fastq_maxdiffs 1 \
+                 --log logs/$sample.2.merging.log \
+                 --quiet --threads 20 &
+      fi
+      wait
+      cat run1/$sample.merged.fastq run2/$sample.merged.fastq | gzip > merged/$sample.fq.gz
+      rm run1/$sample.merged.fastq run2/$sample.merged.fastq
+      if [ -e run1/$sample.R1.fastq ]; then
+         cat run1/$sample.R1.fastq run2/$sample.R1.fastq | gzip > paired/$sample.R1.fq.gz
+         cat run1/$sample.R2.fastq run2/$sample.R2.fastq | gzip > paired/$sample.R2.fq.gz
+         rm run1/$sample.R1.fastq
+         rm run1/$sample.R2.fastq
+         rm run2/$sample.R1.fastq
+         rm run2/$sample.R2.fastq
+      fi
+   fi
+done
+rm -r run1
+rm -r run2
+```
+
+I shoul have redirected standard output. Now I miss the statistics on how many pairs
+got merged and all that. The merging process took two days, and I don't want to repeat it.
+It is faster to now read all the files with `awk` to count and measure the length of the
+merged or not-merged pairs.
+
+```{bash mergeStats}
+if [ ! -e merged.stats.txt ]; then
+   if [ ! -d merged.stats ]; then mkdir merged.stats; fi
+   NUMSAMPLES=$(ls -1 merged | wc -l)
+   NUMTHREADS=40
+   # Make sure we split samples evenly among threads:
+   while [ $(( $NUMSAMPLES % $NUMTHREADS )) -ne 0 ]; do
+      NUMTHREADS=$(( NUMTHREADS + 1))
+   done
+   NUMBATCHES=$(( NUMSAMPLES / NUMTHREADS))
+   for i in $(seq 1 $NUMBATCHES); do
+      LAST=$((  NUMTHREADS * i ))
+      for sample in $(ls -1 merged | cut -d "." -f 1 | head -n $LAST | tail -n $NUMTHREADS); do
+         echo $sample > merged.stats/$sample.stats.txt
+         gunzip -c merged/$sample.fq.gz | \
+         gawk '(NR % 4 == 2){
+            F[(length($1))]++
+         }END{
+            for (f = 10; f <= 292; f++) print F[f] + 0
+         }' >> merged.stats/$sample.stats.txt &
+      done
+      wait
+   done
+   for i in $(seq 1 $NUMBATCHES); do
+      LAST=$((  NUMTHREADS * i ))
+      for sample in $(ls -1 merged | cut -d "." -f 1 | head -n $LAST | tail -n $NUMTHREADS); do
+         gunzip -c paired/$sample.R1.fq.gz | wc -l | \
+         gawk '{print $1/4}' >> merged.stats/$sample.stats.txt &
+      done
+      wait
+   done
+   echo 'Length' > z1
+   for i in $(seq 10 293); do echo $i >> z1; done
+   paste z1 merged.stats/* > merged.stats.txt
+   rm z1
+   rm -r merged.stats
+fi
+```
+
+The `merged.stats.txt` file contains a *histogram* of DNA fragment lengths for every sample.
+The lengths range from 10 to 293. Because during merging I required the overlap to be at least
+10 and original paired reads were 151 bases, $2\times 151-10 = 292$ is the maximum length of
+merged read pairs. The *number of reads* assigned to the following length value (293) is the
+number of non-merged read pairs, the length of which we ignore.
+
+```{r lengthDist, fig.width=10, fig.height=10}
+library(tidyr)
+library(gridExtra)
+library(ggplot2)
+LengthHist <- read.table('merged.stats.txt', header = TRUE)
+LongHist <- pivot_longer(LengthHist, 2:281, names_to = 'Sample', values_to = 'NumReads')
+Filters <- lapply(unique(substr(LongHist$Sample, 1, 3)),
+                  function(x) startsWith(LongHist$Sample, x))
+names(Filters) <- unique(substr(LongHist$Sample, 1, 3))
+
+plots <- lapply(names(Filters),
+                function(x) {
+                   ggplot(LongHist[Filters[[x]],],
+                          aes(x=Length, y=NumReads, color=Sample)) +
+                      geom_line() + scale_y_log10() + guides(color = 'none') +
+                      ggtitle(x)})
+grid.arrange(grobs = plots, nrow = 3)
+```
+
+Two remarkable features: the distributions of merged fragment lengths are extremely
+similar, with all peaks matching among samples. This is very good because it
+means that the short DNA fragments that sneaked into the analysis are the same ones
+in all samples. And second, the last peak is the reason to use a log scale and 
+indicates that in all samples there are still many reads from fragments longer than
+292 base pairs, which is good. Let's see the proportions of merged and non-merged
+pairs.
+
+```{r proportions}
+library(RColorBrewer)
+Merging <- data.frame(
+   Sample = names(LengthHist)[2:281],
+   Merged = colSums(LengthHist[1:(dim(LengthHist)[1] - 1), 2:281]),
+   Paired = as.numeric(LengthHist[dim(LengthHist)[1], 2:281]),
+   Total  = colSums(LengthHist[, 2:281])
+)
+barplot(t(as.matrix(Merging[order(Merging$Total, decreasing = TRUE), 2:3])),
+        xaxt = 'n', border = NA, space = 0,
+        col = brewer.pal(3, 'Set2')[c(1,2)])
+legend(180, 2e+07, c('Merged', 'Not merged'), fill = brewer.pal(3, 'Set2')[c(1,2)])
+
+Merging$PropMerged <- Merging$Merged / Merging$Total
+ggplot(Merging, aes(x = Total, y = PropMerged)) + geom_point() + geom_smooth(method = 'lm')
+```
+
+About 50% of read pairs got merged. The number of non-merged reads is high
+enough to justify working separately with both kinds of reads.
+
+The purpose of clustering now is to count the number of different loci, and
+we do not need to include reverse reads in that analysis, because the same
+clustering is expected using either forward or reverse reads. And artificially
+merging them does not seem a good idea.
+
+## Filtering
+
+## Clustering
+
+## Session Info
+
+```{r sessionInfo}
+sessionInfo()
+```
+
+# References

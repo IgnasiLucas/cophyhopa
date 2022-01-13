@@ -1,0 +1,7 @@
+vsearch v2.7.1_linux_x86_64, 251.9GB RAM, 64 cores
+vsearch --fastq_mergepairs ../../data/fastr/BIE008_12694AAC_CTCTCTAC-CTCCTTAC_R1_001.fastq.gz --reverse ../../data/fastr/BIE008_12694AAC_CTCTCTAC-CTCCTTAC_R2_001.fastq.gz --fastqout run2/BIE008.merged.fastq --fastqout_notmerged_fwd run2/BIE008.R1.fastq --fastqout_notmerged_rev run2/BIE008.R2.fastq --fastq_allowmergestagger --fastq_maxdiffs 1 --log logs/BIE008.2.merging.log --quiet --threads 20
+Started  Tue Jan 11 18:01:40 2022
+
+Finished Tue Jan 11 18:01:46 2022
+Elapsed time 00:06
+Max memory 38.0MB

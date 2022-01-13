@@ -1,0 +1,7 @@
+vsearch v2.7.1_linux_x86_64, 251.9GB RAM, 64 cores
+vsearch --fastq_mergepairs ../../data/fastq/LAN092_12938AAC_CGATCAGT-ATTAGACG_R1_001.fastq.gz --reverse ../../data/fastq/LAN092_12938AAC_CGATCAGT-ATTAGACG_R2_001.fastq.gz --fastqout run1/LAN092.merged.fastq --fastqout_notmerged_fwd run1/LAN092.R1.fastq --fastqout_notmerged_rev run1/LAN092.R2.fastq --fastq_allowmergestagger --fastq_maxdiffs 1 --log logs/LAN092.1.merging.log --quiet --threads 20
+Started  Wed Jan 12 03:22:42 2022
+
+Finished Wed Jan 12 03:23:22 2022
+Elapsed time 00:40
+Max memory 38.0MB
