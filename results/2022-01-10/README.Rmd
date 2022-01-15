@@ -195,7 +195,244 @@ merging them does not seem a good idea.
 
 ## Filtering
 
+So for the moment, I will use vsearch for the filtering before the clustering.
+This means that paired reads cannot be filtered together, and I assume that filtering
+only forward reads (R1) is enough for the purpose of clustering and counting clusters
+(i.e., loci).
+
+I like the simplicity of using the number of expected errors as a filtering
+creteria. More than 1 sequencing error should not be tolerated. The same limit
+was set for the overlapping region when merging. But there are two ways to
+filter: either reject whole reads with more than one expected errors or to trim
+them in order to reduce the number of expected errors. Trimming should then
+be accompanied by a minimum length filter.
+
+I decide not to trim, but to remove the whole read if more than one error
+is expected. The reason is that trimming would complicate clustering. Up to
+now I expect all merged reads from the same locus to be the same length
+(except for those that failed to merge, by chance). I would also ignore, for
+the moment, the possibility that some DNA fragments contain a restriction
+site that failed to be digested (I should check that).
+
+```{bash filtering}
+if [ ! -d merged.clean ]; then mkdir merged.clean; fi
+if [ ! -d paired.clean ]; then mkdir paired.clean; fi
+if [ ! -e filtering.stats.txt ]; then
+   # I use my parallelization, because --fastq_filter is not parallelized.
+   NUMSAMPLES=$(ls -1 merged | wc -l)
+   NUMTHREADS=40
+   while [ $(( $NUMSAMPLES % $NUMTHREADS )) -ne 0 ]; do
+      NUMTHREADS=$(( NUMTHREADS + 1))
+   done
+   NUMBATCHES=$(( NUMSAMPLES / NUMTHREADS))
+   for i in $(seq 1 $NUMBATCHES); do
+      LAST=$((  NUMTHREADS * i ))
+      for sample in $(ls -1 merged | cut -d "." -f 1 | head -n $LAST | tail -n $NUMTHREADS); do
+         if [ ! -e merged.clean/$sample.fq.gz ]; then
+            vsearch --fastq_filter merged/$sample.fq.gz \
+                    --fastqout - \
+                    --log logs/$sample.merged.filter.log \
+                    --fastq_minlen 36 \
+                    --fastq_maxee 1 | \
+            gzip > merged.clean/$sample.fq.gz &
+         fi
+      done
+      wait
+   done
+   for i in $(seq 1 $NUMBATCHES); do
+      LAST=$((  NUMTHREADS * i ))
+      for sample in $(ls -1 merged | cut -d "." -f 1 | head -n $LAST | tail -n $NUMTHREADS); do
+         if [ ! -e paired.clean/$sample.R1.fq.gz ]; then
+            vsearch --fastq_filter paired/$sample.R1.fq.gz \
+                    --fastqout - \
+                    --log logs/$sample.paired.filter.log \
+                    --fastq_maxee 1 | \
+            gzip > paired.clean/$sample.R1.fq.gz &
+         fi
+      done
+      wait
+   done
+
+   gawk 'BEGIN{
+      print "Sample\tMerged.Kept\tMerged.Lost\tPaired.Kept\tPaired.Lost"
+   }(/sequences kept/){
+      split(FILENAME, A, /[./]/)
+      SAMPLE = A[2]
+      SAMPLELIST[SAMPLE] = 1
+      TYPE = A[3]
+      KEPT[SAMPLE, TYPE] = $1
+      LOST[SAMPLE, TYPE] = $8
+   }END{
+      for (sample in SAMPLELIST) {
+         print sample "\t" KEPT[sample, "merged"] "\t" \
+         LOST[sample, "merged"] "\t" KEPT[sample, "paired"] "\t" \
+         LOST[sample, "paired"]
+      }
+   }' logs/*.filter.log > filtering.stats.txt
+fi
+```
+
+```{r filteringStats}
+Filtering <- read.table('filtering.stats.txt', header = TRUE, as.is = TRUE)
+f_175 <- startsWith(Filtering$Sample, '175')
+Filtering[f_175, 'Sample'] <- paste0('X', Filtering[f_175, 'Sample'])
+row.names(Filtering) <- Filtering$Sample
+Filtering <- Filtering[row.names(Merging),]
+Palette <- brewer.pal(4, 'Paired')
+barplot(t(as.matrix(Filtering[order(Merging$Total, decreasing = TRUE), 2:5])),
+        xaxt = 'n', border = NA, space = 0,
+        col = Palette)
+legend(180, 2e+07, c('Merged kept', 'Merged lost', 'Paired kept', 'Paired lost'),
+       fill = Palette)
+```
+
+When removing reads with more than 1 expected error, we loose many of the
+forward paired reads, but very few of the merged ones. I believe this is due
+to the *correction* of errors in the overlap between merged pairs. Non-merged
+reads usually have most errors near the end. Plus, non-merged reads could
+be enriched in low-quality reads that could not be paired just because they
+had too many errors. For the moment, I think it is better to work with only
+the reads that passed the filters, for clustering purposes. However, when
+aligning the reads to the reference genome, it would be better to repeat the
+filtering and maybe then trim the reads. Otherwise, we could use Trimmomatic
+to filter forward and reverse reads together.
+
+## De-replication
+Before clustering we need to de-replicate the files. Fastq files are very
+redundant, because many reads can have the exact same sequence. Clustering
+will not look at sequence quality. Thus, dereplication can produce a much
+smaller fasta file, with unique sequences represented only once. The number
+of times a sequence was observed is annotated in its header.
+
+In addition to de-replicating, below I add the sample information to every
+sequence's header. The clustering will take that information into account to
+print the reports.
+
+```{bash clustering}
+if [ ! -d derep ]; then mkdir derep; fi
+if [ ! -d clustering.stats.txt ]; then
+   # Join merged and R1, dereplicate and add sample info
+   if [ ! -e derep.stats.txt ]; then
+      NUMSAMPLES=$(ls -1 merged | wc -l)
+      NUMTHREADS=40
+      while [ $(( $NUMSAMPLES % $NUMTHREADS )) -ne 0 ]; do
+         NUMTHREADS=$(( NUMTHREADS + 1))
+      done
+      NUMBATCHES=$(( NUMSAMPLES / NUMTHREADS))
+      for i in $(seq 1 $NUMBATCHES); do
+         LAST=$((  NUMTHREADS * i ))
+         for sample in $(ls -1 merged | cut -d "." -f 1 | head -n $LAST | tail -n $NUMTHREADS); do
+            if [ ! -e derep/$sample.fa ]; then
+               cat merged.clean/$sample.fq.gz paired.clean/$sample.R1.fq.gz | \
+               vsearch --derep_fulllength - \
+                       --gzip_decompress \
+                       --sizeout \
+                       --fasta_width 0 \
+                       --output - |
+               gawk -v SAMPLE=$sample '(/^>/){
+                  print $1 ";sample=" SAMPLE
+               }(/^[^>]/){
+                  print $1
+               }' > derep/$sample.fa &
+            fi
+         done
+         wait
+      done
+      # The following reads the de-replicated fasta files and writes a
+      # matrix with the histograms of multiplicity (number of sequences
+      # observed x number of times) for all samples.
+      gawk 'BEGIN{
+         MAXREP=30000
+         SAMPLEINDEX=1
+      }(FNR == 1){
+         split(FILENAME, PATH, /[/.]/)
+         SAMPLE = PATH[2]
+         SAMPLELIST[SAMPLEINDEX] = SAMPLE
+         SAMPLEINDEX++
+         HEADER = HEADER "\t" SAMPLE
+      }(/^>/){
+         split($1, A, /;/)
+         split(A[length(A) - 1], B, /=/)
+         F[SAMPLE, B[2]]++
+         if (B[2] > MAXREP) MAXREP = B[2]
+      }END{
+         print HEADER
+         for (i = 1; i <= MAXREP; i++) {
+            LINE = i
+            for (j = 1; j <= length(SAMPLELIST); j++) {
+               LINE = LINE "\t" F[SAMPLELIST[j], i] + 0 
+            }
+            print LINE
+         }
+      }' derep/*.fa > derep.stats.txt
+   fi
+fi
+```
+
+A sequence has been seen 100652 times in at least one sample. But very few
+sequences appear more than 6000 times in a file. 
+
+```{r plotDerepStats, fig.width=10, fig.height=10}
+Derep <- read.table('derep.stats.txt', header = TRUE)
+# Pool all counts above a multiplicity of 6000 in the same bin:
+Derep[6001, ] <- lapply(Derep, function(x, END) sum(x[6001:END]), END = dim(Derep)[1])
+Derep <- Derep[1:6001,] + 1
+Derep$Multiplicity <- 1:6001
+Derep.long <- pivot_longer(Derep, 1:280, names_to = 'Sample', values_to = 'NumReads')
+Filters <- lapply(unique(substr(Derep.long$Sample, 1, 3)),
+                  function(x) grepl(x, Derep.long$Sample))
+names(Filters) <- unique(substr(Derep.long$Sample, 1, 3))
+plots <- lapply(names(Filters),
+                function(lake) {
+                   ggplot(Derep.long[Filters[[lake]], ],
+                          aes(x = Multiplicity, y = NumReads, color = Sample)) +
+                      geom_line() + guides(color = 'none') + ggtitle(lake) +
+                      xlab('Multiplicity') + ylab('Number of reads') +
+                      scale_y_log10() + scale_x_log10()
+                })
+grid.arrange(grobs = plots, nrow = 3)
+```
+
+The most abundant type of sequences are *singletons*, observed only once. But
+the distribution of multiplicities has a bump, indicating that many reads are
+repeated between 10 and more than 100 times. After clustering, many of the
+singletons and the low-multiplicity sequences will be assigned to clusters of
+similar sequences, and the distribution of multiplicity (or coverage) will
+become more normal.
+
+In the plots above, the samples with much lower numbers of reads have a steeper
+slope.
+
 ## Clustering
+Clustering is parallelized in VSEARCH. My first goal is to perform a general
+clustering with all samples together. This would give the total number of loci
+across samples. Then I will look at the coverage distribution in terms of total
+number of reads (across samples) per cluster. I expect a relationship between
+this coverage and the cluster's length. The PCR used to add indices to the DNA
+fragments introduced a bias: short fragments proliferate faster. Thus, clusters
+of short sequences should receive higher coverage. (But see below).
+
+Because I did not trim the reads,
+a cluster should be composed of only reads of the same length.
+
+I would also like
+to see the *sample coverage*: how many samples are represented in a cluster.
+To put it another way, how deep loci got sequenced in every sample. I can get
+this information because I included the sample of origin in the header of
+every sequence.
+
+When clustering, we specify an identity threshold, usually defined in terms
+relative to the length of the alignment. But we filtered reads according to
+an absolute expected number of errors. Thus, short (merged) reads that are
+allowed to have one expected error will be more often split in different clusters
+even if they belong to the same one, because their identity will be lower, relative
+to their length. If short loci are erroneously split in two or more clusters
+more often than large loci, then their apparent coverage will be lower. To minimize
+the bias in cluster duplication, I could ignore clusters below a certain size.
+
+```{bash clustering}
+
+```
 
 ## Session Info
 

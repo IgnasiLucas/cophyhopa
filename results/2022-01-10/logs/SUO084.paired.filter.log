@@ -1,0 +1,8 @@
+vsearch v2.7.1_linux_x86_64, 251.9GB RAM, 64 cores
+vsearch --fastq_filter paired/SUO084.R1.fq.gz --fastqout - --log logs/SUO084.paired.filter.log --fastq_maxee 1
+Started  Fri Jan 14 00:49:29 2022
+1786248 sequences kept (of which 0 truncated), 1411886 sequences discarded.
+
+Finished Fri Jan 14 00:51:12 2022
+Elapsed time 01:43
+Max memory 17.7MB

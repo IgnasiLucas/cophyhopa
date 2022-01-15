@@ -1,0 +1,8 @@
+vsearch v2.7.1_linux_x86_64, 251.9GB RAM, 64 cores
+vsearch --fastq_filter paired/BRZ020.R1.fq.gz --fastqout - --log logs/BRZ020.paired.filter.log --fastq_maxee 1
+Started  Fri Jan 14 00:37:03 2022
+2593866 sequences kept (of which 0 truncated), 1779154 sequences discarded.
+
+Finished Fri Jan 14 00:39:18 2022
+Elapsed time 02:15
+Max memory 17.7MB

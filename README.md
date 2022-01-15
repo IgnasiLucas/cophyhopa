@@ -1,3 +1,14 @@
+# 2022-01-10
+Using VSEARCH to merge, filter, de-replicate and cluster reads, in order to
+count the number of loci that got sequenced. The strategy was: first to merge
+read pairs that could be merged (around 50%). Then, filter merged reads and
+forward members of non-merged pairs by expected errors. De-replicate and add
+sample information to fasta files. And cluster. Many non-merged forward reads
+became filtered out, presumably because of errors that could have been trimmed.
+Trimming is recommended for mapping purposes. Another limitation was to use
+an absolute number of expected errors (1) as filtering threshold, instead of
+a *rate* of expected errors, because merged reads differ in length.
+
 # 2021-12-21
 Preparing to run ipyrad from RStudio. You can see 
 [the report herer](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2021-12-21/README.html)

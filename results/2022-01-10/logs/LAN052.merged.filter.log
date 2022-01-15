@@ -1,0 +1,8 @@
+vsearch v2.7.1_linux_x86_64, 251.9GB RAM, 64 cores
+vsearch --fastq_filter merged/LAN052.fq.gz --fastqout - --log logs/LAN052.merged.filter.log --fastq_minlen 36 --fastq_maxee 1
+Started  Thu Jan 13 23:59:43 2022
+2218854 sequences kept (of which 0 truncated), 107794 sequences discarded.
+
+Finished Fri Jan 14 00:01:54 2022
+Elapsed time 02:11
+Max memory 17.7MB
