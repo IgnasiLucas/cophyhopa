@@ -29,6 +29,11 @@ lowest amount of reads (SUO095: 18% of index hopping in 167111 reads).
 
 See the [report here](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2021-12-13/README.html)
 
+# 2021-11-29
+Quality analysis.
+
+See the [report here](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2021-11-29/README.html)
+
 # 2021-11-26
 The k-mer analysis shows a distribution of k-mer abundances similar to a mixture
 of two components: a large fraction of words read relatively few times (but
