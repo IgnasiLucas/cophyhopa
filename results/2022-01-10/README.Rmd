@@ -308,7 +308,7 @@ In addition to de-replicating, below I add the sample information to every
 sequence's header. The clustering will take that information into account to
 print the reports.
 
-```{bash clustering}
+```{bash dereplication}
 if [ ! -d derep ]; then mkdir derep; fi
 if [ ! -d clustering.stats.txt ]; then
    # Join merged and R1, dereplicate and add sample info
@@ -430,9 +430,40 @@ to their length. If short loci are erroneously split in two or more clusters
 more often than large loci, then their apparent coverage will be lower. To minimize
 the bias in cluster duplication, I could ignore clusters below a certain size.
 
-```{bash clustering}
+I tried use 40 threads in clustering, but I run out of RAM. If using only one
+thread does not solve the memory problem, I will have to separate merged from non
+merged loci. Apparently, VSEARCH is not very efficient with datasets other than
+amplicons. The excess of diversity in random loci consumes too much memory.
 
+```{bash clustering, eval=FALSE}
+if [ ! -e centroids.fa ]; then
+   if [ ! -e sorted.fa ]; then
+      cat derep/*.fa | \
+      vsearch --sortbylength - \
+              --minseqlength 100 \
+              --fasta_width 0 \
+              --output sorted.fa
+   fi
+   vsearch --cluster_smallmem sorted.fa \
+           --centroids centroids.fa \
+           --id 0.97 \
+           --sizein \
+           --sizeout \
+           --strand plus \
+           --threads 1 \
+           --log logs/clustering.log \
+           --fasta_width 0
+fi
+
+#           --consout consensus.fa \
+#           --otutabout clustering.txt \
+#           --clusterout_id \
 ```
+
+Unfortunately, the clustering step consumes too much memory, even
+after reducing the number of threads to 1, skipping reads shorter
+than 100 nucleotides, and requesting only the centroids, instead of
+the consensus and the tabulated output.
 
 ## Session Info
 
