@@ -1,3 +1,15 @@
+# 2022-01-19
+To present results of the quality control of fastq files, the images in
+the report in `2021-11-29` are not all that informative or representative.
+I decided to make movies with the png files of the different reports. That
+way we can see better how samples compare among themselves and where the
+low-quality bases are. There is no html report in this folder, but you
+can enjoy the movies.
+
+# 2022-01-18
+Repeating the VSEARCH analysis from `2022-01-10`, but trying to cluster
+merged and non-merged forward reads separately. 
+
 # 2022-01-10
 Using VSEARCH to merge, filter, de-replicate and cluster reads, in order to
 count the number of loci that got sequenced. The strategy was: first to merge
@@ -8,6 +20,9 @@ became filtered out, presumably because of errors that could have been trimmed.
 Trimming is recommended for mapping purposes. Another limitation was to use
 an absolute number of expected errors (1) as filtering threshold, instead of
 a *rate* of expected errors, because merged reads differ in length.
+
+Finally, the clustering was interrupted due to lack of enough RAM. I abandon
+this strategy. See the [report here](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-01-10/README.html)
 
 # 2021-12-21
 Preparing to run ipyrad from RStudio. You can see 
@@ -75,7 +90,7 @@ See [this report](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/
 # 2021-10-27
 We received the Bioanalyser results from the 5 pools, with similar profiles,
 and I decide to use equivalent amounts of DNA in the target size range from
-the 5 pools to make the final pool.
+the 5 pools to make the final pool. See [the report here](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2021-10-27/README.html).
 
 # 2021-10-13
 Assignment of samples to indices, according to distribution of samples in
