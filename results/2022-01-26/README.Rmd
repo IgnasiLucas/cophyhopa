@@ -1,0 +1,54 @@
+---
+title: "Total number of reads"
+author: "J. Ignacio Lucas Lledó"
+date: "26/1/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In folder `2021-11-23` I described the data received then. But that was before
+receiving the second batch of sequences. I need to update some plots and to count
+how many read pairs we got in all.
+
+```{r data1}
+load('../2021-11-23/Features.RData')
+names(Features)[which(names(Features) == 'numReads')] <- 'numReads1' 
+```
+
+```{bash count}
+if [ ! -e NumReads2.txt ]; then
+   FASTQDIR='../../data/fastr'
+   SAMPLE=( $(ls -1 ../../data/fastr | grep "fastq.gz" | cut -d "_" -f 1 | uniq) )
+   THREADS=48
+   for i in $(seq 0 $THREADS $(( ${#SAMPLE[@]} - 1 )) ); do
+      for j in $(seq $i $(($i + $THREADS - 1)) ); do
+         echo -e ${SAMPLE[$j]} "\t" \
+            $(echo $(gunzip -c $FASTQDIR/${SAMPLE[$j]}*_R1_001.fastq.gz 2> /dev/null | wc -l) "/4" | bc) \
+            > $(printf "z_%s.txt" ${SAMPLE[$j]}) &
+      done
+      wait
+   done
+   cat z_*.txt | sort -k 1,1 > NumReads2.txt
+   sed -i 's/ //g' NumReads2.txt
+   rm z*
+fi
+```
+
+```{r plot}
+library(ggplot2)
+numReads2 <- read.table('NumReads2.txt', col.names = c('Sample','num'), row.names = 1)
+Features$numReads2 <- numReads2[row.names(Features), 'num']
+Features[is.na(Features$numReads2), 'numReads2'] <- 0
+Features$totalReads <- Features$numReads1 + Features$numReads2
+
+f <- ! startsWith(row.names(Features), 'HOP')
+ggplot(data = Features[f,], mapping = aes(x = lake, y = totalReads)) +
+   geom_boxplot(notch = FALSE)
+
+ggsave('numReadsPerLake.png')
+
+sum(Features[f, 'totalReads'])
+```
