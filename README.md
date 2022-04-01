@@ -1,3 +1,7 @@
+# 2022-01-26
+Between the two sequencing runs we got 2.447.193.170 pairs of reads assigned
+to real samples. See the [report here](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-01-26/README.html).
+
 # 2022-01-19
 To present results of the quality control of fastq files, the images in
 the report in `2021-11-29` are not all that informative or representative.
