@@ -24,6 +24,10 @@ a *rate* of expected errors, because merged reads differ in length.
 Finally, the clustering was interrupted due to lack of enough RAM. I abandon
 this strategy. See the [report here](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-01-10/README.html)
 
+I erased the contents of folders `merged`, `paired`, and `derep`, which were
+using too much disk space. For the moment, I keep `paired.clean` and `merged.clean`,
+but may remove them as well later.
+
 # 2021-12-21
 Preparing to run ipyrad from RStudio. You can see 
 [the report herer](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2021-12-21/README.html)
