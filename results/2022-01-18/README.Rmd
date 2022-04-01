@@ -1,0 +1,310 @@
+---
+title: "Clustering clean merged and non-merged reads separately"
+author: "J. Ignacio Lucas Lledó"
+date: "18/1/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In folder `2022-01-10` I failed to produce the clustering of reads,
+because the excess and type of data requires too much RAM. Here I
+will repeat the filtering to correct the fact that an absolute limit
+of expected errors was invariably imposed on reads of differing lengths.
+Then, I will keep merged and non-merged reads separate after de-replication,
+hoping that their separate clustering will be managable and still
+meaningful. The assumption is that non-merged reads with enough quality
+must correspond to different loci, rather than having failed to merge.
+
+## Filtering by an error rate of 1 in 100
+
+```{bash FilteringAgain}
+MERGED=../2022-01-10/merged
+PAIRED=../2022-01-10/paired
+if [ ! -d merged.clean ]; then mkdir merged.clean; fi
+if [ ! -d paired.clean ]; then mkdir paired.clean; fi
+if [ ! -d logs ]; then mkdir logs; fi
+if [ ! -e filtering.stats.txt ]; then
+   # I use my parallelization, because --fastq_filter is not parallelized.
+   NUMSAMPLES=$(ls -1 $MERGED | wc -l)
+   NUMTHREADS=40
+   while [ $(( $NUMSAMPLES % $NUMTHREADS )) -ne 0 ]; do
+      NUMTHREADS=$(( NUMTHREADS + 1))
+   done
+   NUMBATCHES=$(( NUMSAMPLES / NUMTHREADS))
+   for i in $(seq 1 $NUMBATCHES); do
+      LAST=$((  NUMTHREADS * i ))
+      for sample in $(ls -1 $MERGED | cut -d "." -f 1 | head -n $LAST | tail -n $NUMTHREADS); do
+         if [ ! -e merged.clean/$sample.fq.gz ]; then
+            vsearch --fastq_filter $MERGED/$sample.fq.gz \
+                    --fastqout - \
+                    --log logs/$sample.merged.filter.log \
+                    --fastq_minlen 36 \
+                    --fastq_maxee_rate 0.01 | \
+            gzip > merged.clean/$sample.fq.gz &
+         fi
+      done
+      wait
+   done
+   for i in $(seq 1 $NUMBATCHES); do
+      LAST=$((  NUMTHREADS * i ))
+      for sample in $(ls -1 $MERGED | cut -d "." -f 1 | head -n $LAST | tail -n $NUMTHREADS); do
+         if [ ! -e paired.clean/$sample.R1.fq.gz ]; then
+            vsearch --fastq_filter $PAIRED/$sample.R1.fq.gz \
+                    --fastqout - \
+                    --log logs/$sample.paired.filter.log \
+                    --fastq_maxee_rate 0.01 | \
+            gzip > paired.clean/$sample.R1.fq.gz &
+         fi
+      done
+      wait
+   done
+
+   gawk 'BEGIN{
+      print "Sample\tMerged.Kept\tMerged.Lost\tPaired.Kept\tPaired.Lost"
+   }(/sequences kept/){
+      split(FILENAME, A, /[./]/)
+      SAMPLE = A[2]
+      SAMPLELIST[SAMPLE] = 1
+      TYPE = A[3]
+      KEPT[SAMPLE, TYPE] = $1
+      LOST[SAMPLE, TYPE] = $8
+   }END{
+      for (sample in SAMPLELIST) {
+         print sample "\t" KEPT[sample, "merged"] "\t" \
+         LOST[sample, "merged"] "\t" KEPT[sample, "paired"] "\t" \
+         LOST[sample, "paired"]
+      }
+   }' logs/*.filter.log > filtering.stats.txt
+fi
+```
+
+```{r filteringStats}
+
+library(tidyr)
+library(gridExtra)
+library(ggplot2)
+library(RColorBrewer)
+
+LengthHist <- read.table('../2022-01-10/merged.stats.txt', header = TRUE)
+LongHist <- pivot_longer(LengthHist, 2:281, names_to = 'Sample', values_to = 'NumReads')
+Filters <- lapply(unique(substr(LongHist$Sample, 1, 3)),
+                  function(x) startsWith(LongHist$Sample, x))
+names(Filters) <- unique(substr(LongHist$Sample, 1, 3))
+
+Merging <- data.frame(
+   Sample = names(LengthHist)[2:281],
+   Merged = colSums(LengthHist[1:(dim(LengthHist)[1] - 1), 2:281]),
+   Paired = as.numeric(LengthHist[dim(LengthHist)[1], 2:281]),
+   Total  = colSums(LengthHist[, 2:281])
+)
+
+Filtering <- read.table('filtering.stats.txt', header = TRUE, as.is = TRUE)
+f_175 <- startsWith(Filtering$Sample, '175')
+Filtering[f_175, 'Sample'] <- paste0('X', Filtering[f_175, 'Sample'])
+row.names(Filtering) <- Filtering$Sample
+Filtering <- Filtering[row.names(Merging),]
+Palette <- brewer.pal(4, 'Paired')
+barplot(t(as.matrix(Filtering[order(Merging$Total, decreasing = TRUE), 2:5])),
+        xaxt = 'n', border = NA, space = 0,
+        col = Palette)
+legend(180, 2e+07, c('Merged kept', 'Merged lost', 'Paired kept', 'Paired lost'),
+       fill = Palette)
+```
+
+## De-replication
+
+```{bash dereplication}
+MERGED=../2022-01-10/merged
+PAIRED=../2022-01-10/paired
+if [ ! -d merged.derep ]; then mkdir merged.derep; fi
+if [ ! -d paired.derep ]; then mkdir paired.derep; fi
+if [ ! -e paired.derep.stats.txt ]; then
+   NUMSAMPLES=$(ls -1 $MERGED | wc -l)
+   NUMTHREADS=40
+   while [ $(( $NUMSAMPLES % $NUMTHREADS )) -ne 0 ]; do
+      NUMTHREADS=$(( NUMTHREADS + 1))
+   done
+   NUMBATCHES=$(( NUMSAMPLES / NUMTHREADS))
+   for i in $(seq 1 $NUMBATCHES); do
+      LAST=$((  NUMTHREADS * i ))
+      for sample in $(ls -1 $MERGED | cut -d "." -f 1 | head -n $LAST | tail -n $NUMTHREADS); do
+         if [ ! -e merged.derep/$sample.fa ]; then
+            vsearch --derep_fulllength merged.clean/$sample.fq.gz \
+                    --gzip_decompress \
+                    --sizeout \
+                    --fasta_width 0 \
+                    --output - |
+            gawk -v SAMPLE=$sample '(/^>/){
+               print $1 ";sample=" SAMPLE
+            }(/^[^>]/){
+               print $1
+            }' > merged.derep/$sample.fa 2> logs/$sample.merged.derep.log &
+         fi
+      done
+      wait
+   done
+   for i in $(seq 1 $NUMBATCHES); do
+      LAST=$((  NUMTHREADS * i ))
+      for sample in $(ls -1 $MERGED | cut -d "." -f 1 | head -n $LAST | tail -n $NUMTHREADS); do
+         if [ ! -e paired.derep/$sample.fa ]; then
+            vsearch --derep_fulllength paired.clean/$sample.R1.fq.gz \
+                    --gzip_decompress \
+                    --sizeout \
+                    --fasta_width 0 \
+                    --output - |
+            gawk -v SAMPLE=$sample '(/^>/){
+               print $1 ";sample=" SAMPLE
+            }(/^[^>]/){
+               print $1
+            }' > paired.derep/$sample.fa 2> logs/$sample.paired.derep.log &
+         fi
+      done
+      wait
+   done
+   # The following reads the de-replicated fasta files and writes a
+   # matrix with the histograms of multiplicity (number of sequences
+   # observed x number of times) for all samples.
+   gawk 'BEGIN{
+      MAXREP=30000
+      SAMPLEINDEX=1
+   }(FNR == 1){
+      split(FILENAME, PATH, /[/.]/)
+      SAMPLE = PATH[3]
+      SAMPLELIST[SAMPLEINDEX] = SAMPLE
+      SAMPLEINDEX++
+      HEADER = HEADER "\t" SAMPLE
+   }(/^>/){
+      split($1, A, /;/)
+      split(A[length(A) - 1], B, /=/)
+      F[SAMPLE, B[2]]++
+      if (B[2] > MAXREP) MAXREP = B[2]
+   }END{
+      print HEADER
+      for (i = 1; i <= MAXREP; i++) {
+         LINE = i
+         for (j = 1; j <= length(SAMPLELIST); j++) {
+            LINE = LINE "\t" F[SAMPLELIST[j], i] + 0 
+         }
+         print LINE
+      }
+   }' merged.derep/*.fa > merged.derep.stats.txt
+   
+   gawk 'BEGIN{
+      MAXREP=30000
+      SAMPLEINDEX=1
+   }(FNR == 1){
+      split(FILENAME, PATH, /[/.]/)
+      SAMPLE = PATH[3]
+      SAMPLELIST[SAMPLEINDEX] = SAMPLE
+      SAMPLEINDEX++
+      HEADER = HEADER "\t" SAMPLE
+   }(/^>/){
+      split($1, A, /;/)
+      split(A[length(A) - 1], B, /=/)
+      F[SAMPLE, B[2]]++
+      if (B[2] > MAXREP) MAXREP = B[2]
+   }END{
+      print HEADER
+      for (i = 1; i <= MAXREP; i++) {
+         LINE = i
+         for (j = 1; j <= length(SAMPLELIST); j++) {
+            LINE = LINE "\t" F[SAMPLELIST[j], i] + 0 
+         }
+         print LINE
+      }
+   }' paired.derep/*.fa > paired.derep.stats.txt
+fi
+```
+
+```{r plotDerepStats, fig.width=10, fig.height=10}
+Derep.m <- read.table('merged.derep.stats.txt', header = TRUE)
+# Pool all counts above a multiplicity of 6000 in the same bin:
+Derep.m[6001, ] <- lapply(Derep.m, function(x, END) sum(x[6001:END]), END = dim(Derep.m)[1])
+Derep.m <- Derep.m[1:6001,] + 1
+Derep.m$Multiplicity <- 1:6001
+Derep.m.long <- pivot_longer(Derep.m, 1:280, names_to = 'Sample', values_to = 'NumReads')
+Filters <- lapply(unique(substr(Derep.m.long$Sample, 1, 3)),
+                  function(x) grepl(x, Derep.m.long$Sample))
+names(Filters) <- unique(substr(Derep.m.long$Sample, 1, 3))
+plots <- lapply(names(Filters),
+                function(lake) {
+                   ggplot(Derep.m.long[Filters[[lake]], ],
+                          aes(x = Multiplicity, y = NumReads, color = Sample)) +
+                      geom_line() + guides(color = 'none') + ggtitle(lake) +
+                      xlab('Multiplicity') + ylab('Number of reads') +
+                      scale_y_log10() + scale_x_log10()
+                })
+grid.arrange(grobs = plots, nrow = 3)
+
+Derep.p <- read.table('paired.derep.stats.txt', header = TRUE)
+# Pool all counts above a multiplicity of 6000 in the same bin:
+Derep.p[6001, ] <- lapply(Derep.p, function(x, END) sum(x[6001:END]), END = dim(Derep.p)[1])
+Derep.p <- Derep.p[1:6001,] + 1
+Derep.p$Multiplicity <- 1:6001
+Derep.p.long <- pivot_longer(Derep.p, 1:280, names_to = 'Sample', values_to = 'NumReads')
+Filters <- lapply(unique(substr(Derep.p.long$Sample, 1, 3)),
+                  function(x) grepl(x, Derep.p.long$Sample))
+names(Filters) <- unique(substr(Derep.p.long$Sample, 1, 3))
+plots <- lapply(names(Filters),
+                function(lake) {
+                   ggplot(Derep.p.long[Filters[[lake]], ],
+                          aes(x = Multiplicity, y = NumReads, color = Sample)) +
+                      geom_line() + guides(color = 'none') + ggtitle(lake) +
+                      xlab('Multiplicity') + ylab('Number of reads') +
+                      scale_y_log10() + scale_x_log10()
+                })
+grid.arrange(grobs = plots, nrow = 3)
+```
+
+## Clustering
+
+```{bash clustering}
+if [ ! -e merged.centroids.fa ]; then
+   if [ ! -e merged.sorted.fa ]; then
+      cat merged.derep/*.fa | \
+      vsearch --sortbylength - \
+              --minseqlength 100 \
+              --fasta_width 0 \
+              --output merged.sorted.fa
+   fi
+   vsearch --cluster_smallmem merged.sorted.fa \
+           --centroids merged.centroids.fa \
+           --id 0.97 \
+           --sizein \
+           --sizeout \
+           --strand plus \
+           --threads 1 \
+           --log logs/merged.clustering.log \
+           --fasta_width 0
+fi
+if [ ! -e paired.centroids.fa ]; then
+   if [ ! -e paired.sorted.fa ]; then
+      cat paired.derep/*.fa | \
+      vsearch --sortbylength - \
+              --minseqlength 100 \
+              --fasta_width 0 \
+              --output paired.sorted.fa
+   fi
+   vsearch --cluster_smallmem paired.sorted.fa \
+           --centroids paired.centroids.fa \
+           --id 0.97 \
+           --sizein \
+           --sizeout \
+           --strand plus \
+           --threads 1 \
+           --log logs/paired.clustering.log \
+           --fasta_width 0
+fi
+#           --consout consensus.fa \
+#           --otutabout clustering.txt \
+#           --clusterout_id \
+```
+
+## Session Information
+
+```{r sessionInfo}
+sessionInfo()
+```

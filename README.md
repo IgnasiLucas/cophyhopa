@@ -8,7 +8,12 @@ can enjoy the movies.
 
 # 2022-01-18
 Repeating the VSEARCH analysis from `2022-01-10`, but trying to cluster
-merged and non-merged forward reads separately. 
+merged and non-merged forward reads separately.
+
+It didn't work. It just takes way too long clustering. I abandon this
+strategy. Next thing is to run ipyrad. Results are erased to save space.
+
+See the [report here, anyways.](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-01-18/README.html)
 
 # 2022-01-10
 Using VSEARCH to merge, filter, de-replicate and cluster reads, in order to

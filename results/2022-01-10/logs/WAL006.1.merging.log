@@ -1,7 +1,0 @@
-vsearch v2.7.1_linux_x86_64, 251.9GB RAM, 64 cores
-vsearch --fastq_mergepairs ../../data/fastq/WAL006_12374AAC_AGGCAGAA-CGGAGAGA_R1_001.fastq.gz --reverse ../../data/fastq/WAL006_12374AAC_AGGCAGAA-CGGAGAGA_R2_001.fastq.gz --fastqout run1/WAL006.merged.fastq --fastqout_notmerged_fwd run1/WAL006.R1.fastq --fastqout_notmerged_rev run1/WAL006.R2.fastq --fastq_allowmergestagger --fastq_maxdiffs 1 --log logs/WAL006.1.merging.log --quiet --threads 20
-Started  Wed Jan 12 21:51:32 2022
-
-Finished Wed Jan 12 21:52:59 2022
-Elapsed time 01:27
-Max memory 38.0MB

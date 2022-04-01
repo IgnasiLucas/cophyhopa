@@ -1,7 +1,0 @@
-vsearch v2.7.1_linux_x86_64, 251.9GB RAM, 64 cores
-vsearch --fastq_mergepairs ../../data/fastq/BRZ021_12708AAC_CGAGGCTG-ATAGAGAG_R1_001.fastq.gz --reverse ../../data/fastq/BRZ021_12708AAC_CGAGGCTG-ATAGAGAG_R2_001.fastq.gz --fastqout run1/BRZ021.merged.fastq --fastqout_notmerged_fwd run1/BRZ021.R1.fastq --fastqout_notmerged_rev run1/BRZ021.R2.fastq --fastq_allowmergestagger --fastq_maxdiffs 1 --log logs/BRZ021.1.merging.log --quiet --threads 20
-Started  Tue Jan 11 20:21:38 2022
-
-Finished Tue Jan 11 20:22:07 2022
-Elapsed time 00:29
-Max memory 38.0MB

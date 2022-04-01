@@ -1,7 +1,0 @@
-vsearch v2.7.1_linux_x86_64, 251.9GB RAM, 64 cores
-vsearch --fastq_mergepairs ../../data/fastr/THU128_12378AAC_AGGCAGAA-TCTTACGC_R1_001.fastq.gz --reverse ../../data/fastr/THU128_12378AAC_AGGCAGAA-TCTTACGC_R2_001.fastq.gz --fastqout run2/THU128.merged.fastq --fastqout_notmerged_fwd run2/THU128.R1.fastq --fastqout_notmerged_rev run2/THU128.R2.fastq --fastq_allowmergestagger --fastq_maxdiffs 1 --log logs/THU128.2.merging.log --quiet --threads 20
-Started  Wed Jan 12 19:37:09 2022
-
-Finished Wed Jan 12 19:37:52 2022
-Elapsed time 00:43
-Max memory 38.0MB

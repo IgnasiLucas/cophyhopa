@@ -1,7 +1,0 @@
-vsearch v2.7.1_linux_x86_64, 251.9GB RAM, 64 cores
-vsearch --fastq_mergepairs ../../data/fastq/ZUR011_12748AAC_GTAGAGGA-CTAGTCGA_R1_001.fastq.gz --reverse ../../data/fastq/ZUR011_12748AAC_GTAGAGGA-CTAGTCGA_R2_001.fastq.gz --fastqout run1/ZUR011.merged.fastq --fastqout_notmerged_fwd run1/ZUR011.R1.fastq --fastqout_notmerged_rev run1/ZUR011.R2.fastq --fastq_allowmergestagger --fastq_maxdiffs 1 --log logs/ZUR011.1.merging.log --quiet --threads 20
-Started  Thu Jan 13 01:40:49 2022
-
-Finished Thu Jan 13 01:41:38 2022
-Elapsed time 00:49
-Max memory 37.9MB
