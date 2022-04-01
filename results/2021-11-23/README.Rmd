@@ -208,10 +208,10 @@ easy to just make some plots!
 ```{r somePlots}
 library(ggplot2)
 ggplot(data = Features, mapping = aes(x = lake, y = numReads)) +
-   geom_boxplot(notch = TRUE)
+   geom_boxplot(notch = FALSE)
 
 ggplot(data = Features, mapping = aes(x = Electroforesis, y = numReads)) +
-   geom_boxplot(notch = TRUE)
+   geom_boxplot(notch = FALSE)
 
 ggplot(data = Features, mapping = aes(x = Concentration, y = numReads, color = Electroforesis)) +
    geom_point() + geom_smooth(method = 'lm')
