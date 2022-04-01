@@ -40,8 +40,10 @@ if [ ! -d run2 ]; then mkdir run2; fi
 for file in $(ls -1 $DATADIR/fastq/*.fastq.gz); do
    SAMPLE=$(echo $file | cut -d "/" -f 7 | cut -d "_" -f 1)
    READ=$(echo $file | cut -d "_" -f 4)
-   if [ ! -e run1/${SAMPLE}_${READ}.fastq.gz ]; then
-      ln -s $file run1/${SAMPLE}_${READ}.fastq.gz
+   if ! $(echo $SAMPLE | grep -q HOP); then
+      if [ ! -e run1/${SAMPLE}_${READ}_.fastq.gz ]; then
+         ln -s $file run1/${SAMPLE}_${READ}_.fastq.gz
+      fi
    fi
 done
 
@@ -49,26 +51,13 @@ done
 for file in $(ls -1 $DATADIR/fastr/*.fastq.gz); do
    SAMPLE=$(echo $file | cut -d "/" -f 7 | cut -d "_" -f 1)
    READ=$(echo $file | cut -d "_" -f 4)
-   if [ ! -e run2/${SAMPLE}_${READ}.fastq.gz ]; then
-      ln -s $file run2/${SAMPLE}_${READ}.fastq.gz
+   if ! $(echo $SAMPLE | grep -q HOP); then
+      if [ ! -e run2/${SAMPLE}_${READ}_.fastq.gz ]; then
+         ln -s $file run2/${SAMPLE}_${READ}_.fastq.gz
+      fi
    fi
 done
 ```
-
-## How to activate ipyrad
-
-```{r reticulate}
-library('reticulate')
-use_condaenv('ipyrad')
-```
-
-That's it. Now ipyrad should be available. I will save a copy of the ipyrad
-environment, for reproducibility
-
-```{bash exportEnv}
-/opt/miniconda3/bin/conda list -n ipyrad --explicit > spec-ipyrad.txt
-```
-
 ## The two sequencing runs
 One good thing of ipyrad is that we can start working with two sets of
 fastq files and then tell ipyrad to merge them. As long as the files are
