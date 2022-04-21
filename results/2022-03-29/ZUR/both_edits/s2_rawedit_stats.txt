@@ -1,0 +1,3 @@
+        reads_raw  trim_adapter_bp_read1  trim_adapter_bp_read2  trim_quality_bp_read1  trim_quality_bp_read2  reads_filtered_by_Ns  reads_filtered_by_minlen  reads_passed_filter
+ZUR011   12687148                 228096                 168024                7873811                6471321                 37723                      1945             12647480
+ZUR018    9922827                 176011                 135172                6035791                4778264                 29537                      1329              9891961
