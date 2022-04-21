@@ -1,0 +1,3 @@
+       clusters_total  hidepth_min clusters_hidepth avg_depth_total avg_depth_mj avg_depth_stat sd_depth_total sd_depth_mj sd_depth_stat
+ZUR011         520615          6.0            96077           21.99       111.14         111.14         168.71      380.12        380.12
+ZUR018         350365          6.0            80295           25.82       107.21         107.21         141.69      281.09        281.09
