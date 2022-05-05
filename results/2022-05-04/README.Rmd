@@ -1,0 +1,71 @@
+---
+title: "vcftools analysis"
+author: "Mar Llaberia-Robledillo"
+date: "4/5/2022"
+output: html_document
+---
+
+With assembly to the reference genome and clustering at 93\% similarity complete, the output is a .vcf file. We are going to work with the vcftools program to summarize, filter and run some calcuations to our genetic variation data. 
+
+# 1. Individual Filtering Options 
+
+--remove-indv Specify an individual to be removed from the analysis (scarce data)
+```{bash}
+
+INPUT='~/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+OUTPUT='assem2_indv'
+
+vcftools --vcf $INPUT --out $OUTPUT --remove-indv SUO095 --recode --recode-INFO-all
+
+```
+
+# 2. Site Filtering Options
+
+### Position filtering 
+-- thin Specified distance between one site and the next.
+
+### Variant type Filtering 
+-- remove-indels Exclude sites that contain an idel (any variant that alters the lenght of the REF allele). 
+
+### Info Field Filtering 
+-- mac Include only sites with Minor Allele Count higher or equal to <value>
+-- max-allels Include only sites with a number of alleles lower or equal to <value>
+
+### Genotype Value Filtering 
+--max-meanDP Includes only sites with mean depth values (over all included individuals) lower or equal to the <value>. These options require that the "DP" FORMAT tag is included for each site.
+--max-missing count Exclude sites with more than this number of missing genotypes over all individuals.
+
+### VCF Output Options 
+--recode Generate a new .vcf file from the input after applying the filtering options specified. 
+--recode-INFO-all Keep the INFO key present in the input file.
+```{bash}
+
+INPUT='~/cophyhopa/results/2022-05-04/assem2_indv.recode.vcf'
+OUTPUT='assem2_filter'
+
+vcftools --vcf $INPUT --out $OUTPUT --thin 500 --remove-indels --mac 2 --max-alleles 2 --max-meanDP 1000 --max-missing-count 12 --recode --recode-INFO-all
+
+```
+
+# 3. Output Options 
+
+### LD Statistics 
+--hap-r2 Outputs a file reporting the r2, D, and D’ statistics using phased haplotypes. These are the traditional measures of LD often reported in the population genetics literature.
+
+### Other Statistics 
+
+--relatedness This option is used to calculate and output a relatedness statistic based on the method of Yang et al. 2010. Expectation of Ajk is zero for individuals within a populations, and one for an individual with themselves (unadjusted Ajk statistic). The output file has the suffix ".relatedness".
+--relatedness2 This option is used to calculate and output a relatedness statistic based on the method of Manichaikul et al.2010. The output file has the suffix ".relatedness2".
+--missing-indv Generates a file reporting the missingness on a per-individual basis. The file has the suffix ".imiss".
+
+In this case, it is not necessary to create an output file (option --recode), the program creates it for each statistic.
+```{bash}
+
+INPUT='~/cophyhopa/results/2022-05-04/assem2_filter.recode.vcf'
+OUTPUT='assem2_outstat'
+
+vcftools --vcf $INPUT --out $OUTPUT --relatedness
+vcftools --vcf $INPUT --out $OUTPUT --relatedness2
+vcftools --vcf $INPUT --out $OUTPUT --missing-indv
+
+```

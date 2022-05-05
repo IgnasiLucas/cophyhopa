@@ -1,0 +1,33 @@
+
+
+processing file: README.Rmd
+running: bash  -c "
+INPUT='~/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+OUTPUT='assem2_indv'
+
+vcftools --vcf \$INPUT --out \$OUTPUT --remove-indv SUO095 --recode --recode-INFO-all
+"
+Quitting from lines 14-20 (README.Rmd) 
+Error in engine(options) : 
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf ~/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf
+	--recode-INFO-all
+	--out assem2_indv
+	--recode
+	--remove-indv SUO095
+
+stat error: No such file or directory
+Error: Can't determine file type of ~/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf
+Calls: <Anonymous> ... process_group.block -> call_block -> block_exec -> in_dir -> engine
+In addition: Warning message:
+In system2(cmd, code, stdout = TRUE, stderr = TRUE, env = options$engine.env) :
+  running command ''bash'  -c "
+INPUT='~/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+OUTPUT='assem2_indv'
+
+vcftools --vcf \$INPUT --out \$OUTPUT --remove-indv SUO095 --recode --recode-INFO-all
+" 2>&1' had status 1
+Execution halted

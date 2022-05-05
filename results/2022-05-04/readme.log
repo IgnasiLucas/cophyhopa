@@ -1,0 +1,10 @@
+> rmarkdown::render('README.Rmd', output_file='README.html')
+  |                                                                              |                                                                      |   0%  |                                                                              |............                                                          |  17%
+  ordinary text without R code
+
+  |                                                                              |.......................                                               |  33%
+label: unnamed-chunk-1 (with options) 
+List of 1
+ $ engine: chr "bash"
+
+
