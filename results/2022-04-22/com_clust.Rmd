@@ -1,0 +1,94 @@
+---
+title: "ggplot"
+output: html_document
+---
+```{bash}
+conda activate ipyrad 
+ipyrad -p params-both.txt -r
+```
+
+## aaa
+
+
+```{r}
+setwd("~/cophyhopa/results")
+#a1 <- read.delim("2022-04-01/assembly1.txt") #fail 
+
+## Assembly 1 
+setwd("~/cophyhopa/results/2022-04-01")
+a1_s2 <- read.table("both_edits/s2_rawedit_stats.txt")
+a1_s3 <- read.table("both_clust_0.85/s3_cluster_stats.txt")
+a1_s4 <- read.table("both_clust_0.85/s4_joint_estimate.txt")
+a1_s5 <- read.table("both_consens/s5_consens_stats.txt")
+##s6 <- read.table("both_across/both_clust_database.fa")
+
+## Summary stats i need to compare 
+#su <- c("state", "reads_raw", "reads_passed_filter", "refseq_mapped_reads", "refseq_unmapped_reads", "clusters_total", "clusters_hidepth", "hetero_es", "error_est", "reads_consens")
+
+#in case summary wanted
+#sa1 <- data.frame(s2$reads_raw, s2$reads_passed_filter, s3$clusters_total, s3$clusters_hidepth, s4$hetero_est, s4$error_est, s5$reads_consens) 
+
+## Assembly 2
+setwd("~/cophyhopa/results/2022-04-22")
+#a2_s2 <- read.table("both_edits/s2_rawedit_stats.txt") # it's the same in both 
+a2_s3 <- read.table("assem2_clust_0.93/s3_cluster_stats.txt")
+a2_s4 <- read.table("assem2_clust_0.93/s4_joint_estimate.txt")
+a2_s5 <- read.table("assem2_consens/s5_consens_stats.txt")
+
+```
+
+## Including Plots
+
+
+```{r pressure, echo=FALSE}
+## First attempt 
+library(ggplot2)
+
+summary <- data.frame(a1_s2$reads_raw, a1_s2$reads_passed_filter, a1_s3$clusters_total, a1_s3$clusters_hidepth, a1_s4$hetero_est, a1_s4$error_est, a1_s5$reads_consens)
+rownames(summary) <- rownames(a1_s2)
+
+summary2 <- data.frame(a1_s2$reads_raw, a1_s2$reads_passed_filter, a2_s3$clusters_total, a2_s3$clusters_hidepth, a2_s4$hetero_est, a2_s4$error_est, a2_s5$reads_consens)
+rownames(summary2) <- rownames(a1_s2)
+
+summ <- merge(summary, summary2)
+rownames(summ) <- rownames(summary)
+plot(summ)
+
+a <- for(i in 1:7){
+  print(identical(summ[,i], summ[,(i+5)]))
+}
+
+ggplot(summ, aes(x = 1:length(rownames(summ)))) +
+  geom_point(aes(y=a1_s5.reads_consens), size=1, color="red") + 
+  geom_point(aes(y=a2_s5.reads_consens), size=0.5, color="blue")
+
+ggplot(summ, aes(x = a1_s5.reads_consens, y = a2_s5.reads_consens)) +
+  geom_point(size = 1) +
+  geom_smooth(method = "lm", size = 0.25, span = 1)
+
+ggplot(summ, aes(a1_s5.reads_consens)) + geom_freqpoly(color = "red") +
+  geom_freqpoly(aes(a2_s5.reads_consens), color = "blue")
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+```{r}
+
+
+ggplot(summ, aes(a1_s3.clusters_total, a2_s3.clusters_total))+
+  geom_point(size = 1) +
+  geom_smooth(method = "lm", size = 0.25)
+
+ggplot(clusters, aes(x = 1:length(rownames(clusters)))) +
+  geom_point(aes(y=a1), size=1, color="red") + 
+  geom_point(aes(y=a2), size=0.25, color="blue")
+
+
+ggplot(summ, aes(x = 1:length(rownames(summ)))) +
+  geom_point(aes(y=a1_s3.clusters_hidepth), size=1, color="red") + 
+  geom_point(aes(y=a2_s3.clusters_hidepth), size=0.5, color="blue")
+
+ggplot(summ, aes(a1_s3.clusters_hidepth)) + geom_freqpoly()
+```
+
