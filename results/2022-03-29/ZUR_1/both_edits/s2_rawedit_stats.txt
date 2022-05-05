@@ -1,3 +1,0 @@
-                                      reads_raw  trim_adapter_bp_read1  trim_adapter_bp_read2  trim_quality_bp_read1  trim_quality_bp_read2  reads_filtered_by_Ns  reads_filtered_by_minlen  reads_passed_filter
-ZUR011_12748AAC_GTAGAGGA-CTAGTCGA001   12653244                      0                      0                      0                      0                     2                         0             12653242
-ZUR018_12750AAC_GTAGAGGA-ACTCTAGG001    9973560                      0                      0                      0                      0                     2                         0              9973558
