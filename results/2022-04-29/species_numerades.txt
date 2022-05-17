@@ -1,0 +1,17 @@
+     1	Albock/acrinasus
+     2	Balchen1/alpinus
+     3	Balchen1/Balchen2/alpinus/steinmanni
+     4	Balchen2/brienzii
+     5	Balchen2/Felchen/brienzii/fatioi
+     6	Balchen2/steinmanni
+     7	Bondelle/confusus
+     8	Brienzlig/albellus
+     9	D
+    10	duplex
+    11	Felchen/Brienzlig/fatioi/albellus
+    12	Felchen/fatioi
+    13	heglingus
+    14	Kropfer/profundus
+    15	L
+    16	P
+    17	zuerichensis
