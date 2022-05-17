@@ -27,5 +27,5 @@ pairddrad                      ## [7] [datatype]: Datatype (see docs): rad, gbs,
 0, -10, 0, -10                 ## [25] [trim_reads]: Trim raw read edges (R1>, <R1, R2>, <R2) (see docs)
 0, 0, 0, 0                     ## [26] [trim_loci]: Trim locus edges (see docs) (R1>, <R1, R2>, <R2)
 l, p, s, n, k, a, g, G, u, v, t, m ## [27] [output_formats]: Output formats (see docs)
-                               ## [28] [pop_assign_file]: Path to population assignment file
+/gata/mar/cophyhopa/results/2022-04-01/popmap.txt  ## [28] [pop_assign_file]: Path to population assignment file
                                ## [29] [reference_as_filter]: Reads mapped to this reference are removed in step 3
