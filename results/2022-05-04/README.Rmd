@@ -9,14 +9,52 @@ With assembly to the reference genome and clustering at 93\% similarity complete
 
 # 1. Individual Filtering Options 
 
---remove-indv Specify an individual to be removed from the analysis (scarce data)
+We know individual SUO095 does not have enough data. But there may be others. Before
+deciding what individuals to remove from the data set, we need to see the proportion
+of sites where they miss data.
+
+```{bash missingness}
+VCF='../2022-04-22/assem2_outfiles/assem2.vcf'
+if [ ! -e assem2.imiss ]; then
+   vcftools --vcf $VCF \
+            --out assem2 \
+            --missing-indv
+fi
+```
+
+```{r missing}
+missingness <- read.table('assem2.imiss', header = TRUE)
+plot(ecdf(missingness$F_MISS),
+     xlab = 'Fraction of sites missing',
+     main = 'ECDF of fraction of sites missing per individual')
+abline(v = 0.82, col = 'red', lty = 2)
+abline(v = 0.655, col = 'orange', lty = 2)
+VeryBad <- as.character(missingness[missingness$F_MISS > 0.83, 'INDV'])
+VeryBad
+QuiteBad <- as.character(missingness[missingness$F_MISS > 0.655 & missingness$F_MISS <= 0.83, 'INDV'])
+QuiteBad
+if (! file.exists('VeryBad.txt')) {
+  write.table(VeryBad, file = 'VeryBad.txt', quote = FALSE, row.names = FALSE, col.names = FALSE)
+}
+```
+
+The raw data includes 879238 sites, about 40% of which are missing in any individual
+with good coverage. There is a tail of individuals with low coverage that miss more
+than 50% of sites. Many of them are usable in a large enough dataset, but this result
+makes me think that we should build two data sets: one to optimize the number of individuals
+and one to optimize the number of sites. However, the fact that 80% of individuals miss
+less than 60% of sites does not mean that the sites they share are 60% of the total:
+every individual may miss a different subset of the sites.
+
 ```{bash}
-
-INPUT='~/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
-OUTPUT='assem2_indv'
-
-vcftools --vcf $INPUT --out $OUTPUT --remove-indv SUO095 --recode --recode-INFO-all
-
+VCF='../2022-04-22/assem2_outfiles/assem2.vcf'
+if [ ! -e assem2_indv.recode.vcf ]; then
+   vcftools --vcf $VCF \
+            --out assem2_indv \
+            --remove VeryBad.txt \
+            --recode \
+            --recode-INFO-all
+fi
 ```
 
 # 2. Site Filtering Options
@@ -38,13 +76,19 @@ vcftools --vcf $INPUT --out $OUTPUT --remove-indv SUO095 --recode --recode-INFO-
 ### VCF Output Options 
 --recode Generate a new .vcf file from the input after applying the filtering options specified. 
 --recode-INFO-all Keep the INFO key present in the input file.
+
 ```{bash}
-
-INPUT='~/cophyhopa/results/2022-05-04/assem2_indv.recode.vcf'
-OUTPUT='assem2_filter'
-
-vcftools --vcf $INPUT --out $OUTPUT --thin 500 --remove-indels --mac 2 --max-alleles 2 --max-meanDP 1000 --max-missing-count 12 --recode --recode-INFO-all
-
+if [ ! -e assem2_filter.recode.vcf ]; then
+   vcftools --vcf assem2_indv.recode.vcf \
+            --out assem2_filter \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 12 \
+            --recode --recode-INFO-all
+fi
 ```
 
 # 3. Output Options 
@@ -59,13 +103,98 @@ vcftools --vcf $INPUT --out $OUTPUT --thin 500 --remove-indels --mac 2 --max-all
 --missing-indv Generates a file reporting the missingness on a per-individual basis. The file has the suffix ".imiss".
 
 In this case, it is not necessary to create an output file (option --recode), the program creates it for each statistic.
+
+The relatedness would make more sense to calculate it only for members of the same species. We
+skip that for the moment.
+
 ```{bash}
-
-INPUT='~/cophyhopa/results/2022-05-04/assem2_filter.recode.vcf'
+INPUT='assem2_filter.recode.vcf'
 OUTPUT='assem2_outstat'
-
-vcftools --vcf $INPUT --out $OUTPUT --relatedness
-vcftools --vcf $INPUT --out $OUTPUT --relatedness2
-vcftools --vcf $INPUT --out $OUTPUT --missing-indv
-
+#if [ ! -e assem2_outstat.relatedness ]; then
+#   vcftools --vcf $INPUT --out $OUTPUT --relatedness
+#fi
+#if [ ! -e assem2_outstat.relatedness2 ]; then
+#   vcftools --vcf $INPUT --out $OUTPUT --relatedness2
+#fi
+if [ ! -e assem2_outstat.imiss ]; then
+   vcftools --vcf $INPUT --out $OUTPUT --missing-indv
+fi
 ```
+
+```{r again}
+imiss <- read.table('assem2_outstat.imiss', header = TRUE, row.names = 1)
+plot(ecdf(imiss$F_MISS), xlab = 'Fraction of missing sites per individual',
+     main = 'ECDF of fraction of missing sites per individual in filtered VCF')
+abline(v = 0.10, col = 'red', lty = 2)
+NotGood <- row.names(imiss[imiss$F_MISS > 0.10,])
+NotGood
+if (! file.exists('NotGood.txt')) {
+  write.table(NotGood, file = 'NotGood.txt', quote = FALSE,
+              row.names = FALSE, col.names = FALSE)
+}
+```
+
+There are still 4 individuals with more than 10% of sites missing. These are the same
+4 individuals that would have been removed next in the individual filter above, if we
+had be a bit more strict. If we do remove them before filtering sites, we would probably
+obtan a more complete matrix of genotypes. Let's see.
+
+## More strict filtering
+
+```{bash}
+VCF='../2022-04-22/assem2_outfiles/assem2.vcf'
+if [ ! -e TheWorst.txt ]; then
+   cat VeryBad.txt NotGood.txt > TheWorst.txt
+fi
+if [ ! -e assem2_indv2.recode.vcf ]; then
+   vcftools --vcf $VCF \
+            --out assem2_indv2 \
+            --remove TheWorst.txt \
+            --recode \
+            --recode-INFO-all
+fi
+
+# To make sure site filters are applied after individual filters, we now run
+# the following separately:
+
+if [ ! -e strict.recode.vcf ]; then
+   vcftools --vcf assem2_indv2.recode.vcf \
+            --out strict \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 12 \
+            --recode --recode-INFO-all
+fi
+
+if [ ! -e assem2_strict.imiss ]; then
+   vcftools --vcf strict.recode.vcf \
+            --out assem2_strict \
+            --missing-indv
+fi
+```
+
+
+```{r last}
+imiss2 <- read.table('assem2_strict.imiss', header = TRUE, row.names = 1)
+plot(ecdf(imiss2$F_MISS), xlab = 'Proportion of sites missing per individual',
+     main = 'ECDF of proportion of missing sites per individual')
+f <- imiss2$F_MISS > 0.05
+z <- imiss2[f,]
+z$INDV <- row.names(z)
+z <- z[order(z$F_MISS),]
+text(z$F_MISS, labels = z$INDV, y = c(0.8,0.85,0.9,0.7,0.75,0.8,0.9,0.9), adj=0)
+#row.names(imiss2[imiss2$F_MISS > 0.1,])
+```
+
+There are still 2 individuals with more than 10% of missing data. But now we have
+24878 sites. I think we can live with this. If individuals with a higher fraction
+of missing data happened to look like hybrids, I would repeat the analyses without
+many of those missing sites.
+
+```{r sessioninfo}
+sessionInfo()
+```
+
