@@ -27,8 +27,8 @@ if [ ! -e popmap.txt ]; then
       CODE[$1] = NR
    }(FILENAME == "z2.txt"){
       split($2, A, "_")
-      print $1 "\t" sprintf("%s%02i", substr($1,1,3), CODE[A[2]])
-      POPS[sprintf("%s%02i", substr($1,1,3), CODE[A[2]])] = 1
+      print $1 "\t" sprintf("%s%02i", toupper(A[1]), CODE[A[2]])
+      POPS[sprintf("%s%02i", toupper(A[1]), CODE[A[2]])] = 1
    }END{
       LINIA = "# "
       for (p in POPS) {
