@@ -1,0 +1,141 @@
+populations v2.55, executed 2022-05-12 09:14:00 (zlib-1.2.11)
+populations --in-vcf /gata/mar/cophyhopa/results/2022-05-04/assem2_filter.recode.vcf --out-path /gata/mar/cophyhopa/results/2022-05-09/fineRADstructure --popmap /gata/mar/cophyhopa/results/2022-05-09/fineRADstructure/popmap.txt --radpainter
+Locus/sample distributions will be written to '/gata/mar/cophyhopa/results/2022-05-09/fineRADstructure/assem2_filter.recode.p.log.distribs'.
+populations parameters selected:
+  Input mode: VCF
+  Percent samples limit per population: 0
+  Locus Population limit: 1
+  Percent samples overall: 0
+  Minor allele frequency cutoff: 0
+  Maximum observed heterozygosity cutoff: 1
+  Applying Fst correction: none.
+  Pi/Fis kernel smoothing: off
+  Fstats kernel smoothing: off
+  Bootstrap resampling: off
+
+Parsing population map...
+The population map contained 280 samples, 25 population(s), 1 group(s).
+Opening the VCF file...
+Warning: Of the samples listed in the population map, 1 could not be found in the VCF :Working on 279 samples.
+Working on 25 population(s):
+    WAL10: WAL003, WAL004, WAL006, WAL007, WAL009, WAL010, WAL014, WAL016, WAL078, WAL079, WAL084, WAL086, WAL088
+    WAL13: WAL021, WAL022, WAL024, WAL030, WAL031, WAL033, WAL036, WAL040, WAL041, WAL042, WAL045
+    17517: 175600, 175601, 175603, 175604, 175605, 175606, 175607, 175608, 175610, 175611, 175612, 175613, 175614, 175617, 175619, 175620, 
+           175621
+    17513: 175602, 175609, 175615, 175616, 175618
+    ZUR10: ZUR011, ZUR018
+    BIE07: BIE002, BIE004, BIE005, BIE006, BIE007, BIE008, BIE028, BIE030, BIE044, BIE045, BIE048, BIE049, BIE050, BIE092
+    THU01: THU001, THU002, THU004, THU038, THU067, THU097, THU114, THU143, THU183, THU187, THU199
+    THU06: THU005, THU039, THU073, THU086, THU177, THU179, THU185, THU190, THU197, THU198
+    THU08: THU007, THU010, THU011, THU027, THU066, THU077, THU079, THU080, THU082, THU083, THU084, THU087
+    THU03: THU014
+    THU11: THU019
+    THU14: THU056, THU060, THU061, THU091, THU099, THU104, THU106, THU107, THU108, THU109, THU110, THU111, THU113, THU118, THU119, THU124, 
+           THU127, THU128, THU164, THU165, THU168, THU173
+    THU12: THU081, THU120
+    THU02: THU182
+    BRZ04: BRZ001, BRZ011, BRZ057
+    BRZ05: BRZ004, BRZ013, BRZ021, BRZ114, BRZ115
+    BRZ12: BRZ005, BRZ006, BRZ008, BRZ052, BRZ054, BRZ083, BRZ099, BRZ107, BRZ108, BRZ110, BRZ111
+    BRZ08: BRZ014, BRZ015, BRZ019, BRZ020, BRZ025, BRZ026, BRZ027, BRZ028, BRZ031, BRZ033, BRZ034, BRZ039, BRZ040, BRZ041, BRZ066, BRZ068, 
+           BRZ070, BRZ071
+    BRZ02: BRZ044, BRZ045, BRZ046, BRZ047
+    LAN16: LAN005, LAN017, LAN018, LAN019, LAN022, LAN029, LAN033, LAN038, LAN039, LAN040, LAN041, LAN052
+    LAN15: LAN042, LAN043, LAN044, LAN045, LAN047, LAN048, LAN049, LAN050, LAN062, LAN063, LAN064, LAN065, LAN067, LAN071, LAN111, LAN113, 
+           LAN130, LAN131, LAN132, LAN133, LAN134, LAN135
+    LAN09: LAN059, LAN060, LAN061, LAN072, LAN074, LAN087, LAN088, LAN089, LAN090, LAN092, LAN093, LAN095, LAN097, LAN098, LAN099, LAN102, 
+           LAN103, LAN114, LAN115, LAN117, LAN119
+    SUO15: SUO001, SUO002, SUO003, SUO004, SUO005, SUO006, SUO009, SUO011, SUO012, SUO016, SUO019, SUO020, SUO022, SUO023, SUO027, SUO031, 
+           SUO076, SUO077, SUO080, SUO081, SUO082, SUO116, SUO117, SUO118, SUO124, SUO125, SUO126, SUO127
+    SUO16: SUO030, SUO034, SUO043, SUO047, SUO048, SUO049, SUO056, SUO058, SUO059, SUO090, SUO092, SUO094, SUO097, SUO102
+    SUO09: SUO060, SUO061, SUO083, SUO084, SUO087, SUO088, SUO099, SUO100, SUO101, SUO104, SUO105, SUO108, SUO111, SUO112, SUO114, SUO115, 
+           SUO119, SUO120, SUO122
+Working on 1 group(s) of populations:
+    defaultgrp: WAL10, WAL13, 17517, 17513, ZUR10, BIE07, THU01, THU06, THU08, THU03, THU11, THU14, THU12, THU02, BRZ04, BRZ05, BRZ12, BRZ08, BRZ02, LAN16, LAN15, LAN09, SUO15, SUO16, SUO09
+
+Polymorphic loci in RADpainter/fineRADstructure format will be written to '/gata/mar/cophyhopa/results/2022-05-09/fineRADstructure/assem2_filter.recode.p.haps.radpainter'
+Raw haplotypes will be written to '/gata/mar/cophyhopa/results/2022-05-09/fineRADstructure/assem2_filter.recode.p.haplotypes.tsv'
+Population-level summary statistics will be written to '/gata/mar/cophyhopa/results/2022-05-09/fineRADstructure/assem2_filter.recode.p.sumstats.tsv'
+Population-level haplotype summary statistics will be written to '/gata/mar/cophyhopa/results/2022-05-09/fineRADstructure/assem2_filter.recode.p.hapstats.tsv'
+
+Processing data in batches:
+  * load a batch of catalog loci and apply filters
+  * compute SNP- and haplotype-wise per-population statistics
+  * write the above statistics in the output files
+  * export the genotypes/haplotypes in specified format(s)
+More details in '/gata/mar/cophyhopa/results/2022-05-09/fineRADstructure/assem2_filter.recode.p.log.distribs'.
+Now processing...
+LR778253.1 
+LR778254.1 
+LR778255.1 
+LR778256.1 
+LR778257.1 
+LR778258.1 
+LR778259.1 
+LR778260.1 
+LR778261.1 
+LR778262.1 
+LR778263.1 
+LR778264.1 
+LR778265.1 
+LR778266.1 
+LR778267.1 
+LR778268.1 
+LR778269.1 
+LR778270.1 
+LR778271.1 
+LR778272.1 
+LR778273.1 
+LR778274.1 
+LR778275.1 
+LR778276.1 
+LR778277.1 
+LR778278.1 
+LR778279.1 
+LR778280.1 
+LR778281.1 
+LR778282.1 
+LR778283.1 
+LR778284.1 
+LR778285.1 
+LR778286.1 
+LR778287.1 
+LR778288.1 
+LR778289.1 
+LR778290.1 
+LR778291.1 
+LR778292.1 
+Found 17452 SNP records in file '/gata/mar/cophyhopa/results/2022-05-04/assem2_filter.recode.vcf'. (Skipped 0 already filtered-out SNPs and 0 non-SNP records ; more with --verbose.)
+
+Removed 0 loci that did not pass sample/population constraints from 17452 loci.
+Kept 17452 loci, composed of 17452 sites; 0 of those sites were filtered, 17452 variant sites remained.
+    17452 genomic sites, of which 0 were covered by multiple loci (0.0%).
+Mean genotyped sites per locus: 1.00bp (stderr 0.00).
+
+Population summary statistics (more detail in populations.sumstats_summary.tsv):
+  WAL10: 12.874 samples per locus; pi: 0.10142; all/variant/polymorphic sites: 17452/17452/5943; private alleles: 106
+  WAL13: 10.986 samples per locus; pi: 0.098383; all/variant/polymorphic sites: 17452/17452/5739; private alleles: 46
+  17517: 16.981 samples per locus; pi: 0.1071; all/variant/polymorphic sites: 17452/17452/6826; private alleles: 60
+  17513: 4.995 samples per locus; pi: 0.10724; all/variant/polymorphic sites: 17452/17452/5098; private alleles: 3
+  ZUR10: 1.9966 samples per locus; pi: 0.11145; all/variant/polymorphic sites: 17452/17452/3527; private alleles: 2
+  BIE07: 13.932 samples per locus; pi: 0.11974; all/variant/polymorphic sites: 17452/17452/7691; private alleles: 150
+  THU01: 10.663 samples per locus; pi: 0.11651; all/variant/polymorphic sites: 17452/17452/6828; private alleles: 63
+  THU06: 9.9854 samples per locus; pi: 0.11226; all/variant/polymorphic sites: 17452/17452/6559; private alleles: 8
+  THU08: 11.428 samples per locus; pi: 0.10166; all/variant/polymorphic sites: 17452/17452/6101; private alleles: 12
+  THU03: 1 samples per locus; pi: 0.10403; all/variant/polymorphic sites: 17427/17427/1813; private alleles: 1
+  THU11: 1 samples per locus; pi: 0.10227; all/variant/polymorphic sites: 17435/17435/1783; private alleles: 0
+  THU14: 21.86 samples per locus; pi: 0.090479; all/variant/polymorphic sites: 17452/17452/5961; private alleles: 136
+  THU12: 1.9975 samples per locus; pi: 0.10279; all/variant/polymorphic sites: 17452/17452/3274; private alleles: 0
+  THU02: 1 samples per locus; pi: 0.10032; all/variant/polymorphic sites: 17435/17435/1749; private alleles: 0
+  BRZ04: 2.9952 samples per locus; pi: 0.096128; all/variant/polymorphic sites: 17452/17452/3732; private alleles: 2
+  BRZ05: 4.9873 samples per locus; pi: 0.10241; all/variant/polymorphic sites: 17452/17452/4828; private alleles: 4
+  BRZ12: 10.396 samples per locus; pi: 0.097351; all/variant/polymorphic sites: 17452/17452/5498; private alleles: 18
+  BRZ08: 17.149 samples per locus; pi: 0.096539; all/variant/polymorphic sites: 17452/17452/6196; private alleles: 37
+  BRZ02: 3.978 samples per locus; pi: 0.079905; all/variant/polymorphic sites: 17452/17452/3432; private alleles: 4
+  LAN16: 11.891 samples per locus; pi: 0.16286; all/variant/polymorphic sites: 17452/17452/9943; private alleles: 126
+  LAN15: 21.934 samples per locus; pi: 0.16433; all/variant/polymorphic sites: 17452/17452/10882; private alleles: 211
+  LAN09: 20.952 samples per locus; pi: 0.1634; all/variant/polymorphic sites: 17452/17452/10562; private alleles: 106
+  SUO15: 27.954 samples per locus; pi: 0.10534; all/variant/polymorphic sites: 17452/17452/6475; private alleles: 42
+  SUO16: 13.982 samples per locus; pi: 0.093838; all/variant/polymorphic sites: 17452/17452/4983; private alleles: 29
+  SUO09: 18.911 samples per locus; pi: 0.10836; all/variant/polymorphic sites: 17452/17452/6540; private alleles: 17
+Populations is done.
