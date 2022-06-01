@@ -1,0 +1,27 @@
+---
+title: "fineRADstructure analysis"
+author: "Mar Llaberia-Robledillo"
+date: "12/5/2022"
+output: html_document
+---
+
+# 1. Generate a dataset from .vcf file to `radpainter` format with `populations`
+
+```{bash, eval = FALSE}
+INPUT='~/cophyhopa/results/2022-05-04/assem2_filter.recode.vcf'
+OUTPUT='~/cophyhopa/results/2022-05-09/fineRADstructure'
+POPMAP='~/cophyhopa/results/2022-05-09/fineRADstructure/popmap.txt'
+
+populations --in-vcf $INPUT --out-path $OUTPUT --popmap $POPMAP -t 10 --radpainter
+
+```
+
+# 2. Run the analysis
+```{bash}
+
+RADpainter paint assem2_filter.recode.p.haps.radpainter
+
+finestructure -x 100000 -y 100000 -z 1000 -X -Y assem2_filter.recode.p.haps_chunks.out populations.haps_chunks.mcmc.xml
+finestructure -m T -x 100000 -X -Y  assem2_filter.recode.p.haps_chunks.out populations.haps_chunks.mcmc.xml populations.haps_chunks.mcmcTREE.xml
+
+```

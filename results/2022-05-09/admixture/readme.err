@@ -1,0 +1,24 @@
+
+
+processing file: README.Rmd
+running: bash  -c "INPUT='/gata/mar/cophyhopa/results/2022-05-04/assem2_filter.recode.vcf'
+OUTPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/assem93'
+
+plink --vcf \$INPUT --recode --out \$OUTPUT --allow-extra-chr 0
+plink --vcf \$INPUT --make-bed --out \$OUTPUT --allow-extra-chr 0
+
+#vcftools --vcf ~/cophyhopa/results/2022-05-04/assem2_filter.recode.vcf --out assem93 --plink
+"
+running: bash  -c "
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/assem93.bed'
+
+for K in 2 3 4 5 6 7 8 9 10 11; do admixture --cv \$INPUT \$K | tee log\${K}.out; done
+"
+running: bash  -c 'grep -h CV log*.out
+'
+Read 558 items
+Read 558 items
+output file: README.knit.md
+
+
+Output created: README.html

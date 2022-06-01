@@ -1,0 +1,330 @@
+---
+title: "SNPrelate PCA Swiss"
+author: "Mar Llaberia-Robledillo"
+date: "18/5/2022"
+output: html_document
+---
+
+# Select only Swiss samples
+
+```{bash, eval= FALSE}
+vcftools --vcf ~/cophyhopa/results/2022-05-04/assem2_filter.recode.vcf --out ~/cophyhopa/results/2022-05-09/SNPRelate/Swiss/swissvcf --remove swiss2.txt --recode --recode-INFO-all
+
+```
+
+
+```{r cars}
+# BiocManager::install("GWASTools") 
+
+# Only for Swiss ----
+
+library(GWASTools); library(ggplot2); library(SNPRelate); library(stringr)
+setwd("~/cophyhopa/results/2022-05-09/SNPRelate/Swiss")
+vcf <- snpgdsVCF2GDS("swissvcf.recode.vcf", "swiss.gds", method = "biallelic.only")
+
+genoswiss <- snpgdsOpen("swiss.gds")
+#snpgdsClose(genoswiss)
+
+## Add population information 
+popmap <- read.delim("~/cophyhopa/results/2022-05-09/SNPRelate/popmap.txt", header=FALSE)
+samp <- snpgdsGetGeno(genoswiss, sample.id = NULL, with.id = TRUE)
+
+row.names(popmap) <- popmap[,1]
+popmap <- popmap[samp$sample.id, ]
+
+## Add lakes information 
+popmap[,3] <- NA
+colnames(popmap) <- c("sample", "pop", "lake")
+ 
+library(stringr)
+for(i in 1:nrow(popmap)){
+  popmap[i, 3] <- substr(popmap[i, 2], 1, 3)
+  }
+
+head(popmap)
+
+popnum <- popmap
+for (i in 1:nrow(popnum)) {
+  class(popnum[,2]) <- "character"
+  a <- substring(popmap$pop, 4, 5)
+  popnum[i , 2] <- a[i]
+}
+
+```
+
+```{r}
+# option to filter SNPs for LD before pca
+#snpset <- snpgdsLDpruning(genofile, ld.threshold=0.2,autosome.only = FALSE)  
+#snpset.id <- unlist(snpset)
+#pca <- snpgdsPCA(genofile, num.thread=2, snp.id=snpset.id, autosome.only = FALSE)
+
+# pca with all SNPs
+pca <- snpgdsPCA(genoswiss, autosome.only = FALSE, 
+                 num.thread = 8)  
+
+# variance proportion (%)
+pc.percent <- pca$varprop*100
+pc.percent <- head(round(pc.percent, 2))
+
+# Manipulate results ----
+# make a data.frame
+tab <- data.frame(sample.id = pca$sample.id,
+                  EV1 = pca$eigenvect[,1],    # the first eigenvector
+                  EV2 = pca$eigenvect[,2],
+                  EV3 = pca$eigenvect[,3],
+                  EV4 = pca$eigenvect[,4],
+                  EV5 = pca$eigenvect[,5],
+                  EV6 = pca$eigenvect[,6],
+                  EV7 = pca$eigenvect[,7],# the second eigenvector
+                  stringsAsFactors = FALSE)
+head(tab)
+
+# add population data
+pop.group <- as.character(popmap[,2])
+tab[,9] <- pop.group
+colnames(tab)[9] <- "Population"
+
+## reorder pop names
+tab$Population <- popmap[tab$sample.i, 2]
+
+# add lakes information 
+lake <- as.character(popmap[,3])
+tab[,10] <- lake
+colnames(tab)[10] <- "lake"
+
+# reorder lakes names
+tab$lake <- popmap[tab$sample.id, 3]
+
+```
+
+
+```{r fig.height=8, fig.width=14}
+
+# PC1, PC2 and PC3
+ggplot(tab, aes(x = EV1, y = EV2, col = Population)) + geom_point(size = 4) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+ggplot(tab, aes(x = EV1, y = EV3, col = Population)) + geom_point(size = 4) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV3", pc.percent[3], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+ggplot(tab, aes(x = EV3, y = EV2, col = Population)) + geom_point(size = 4) + 
+  labs(x = paste("EV3", pc.percent[3],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+
+```
+
+```{r fig.height=8, fig.width=14}
+
+# Remove the iformation of lakes in Population column 
+
+# make a data.frame
+tab <- data.frame(sample.id = pca$sample.id,
+                  EV1 = pca$eigenvect[,1],    # the first eigenvector
+                  EV2 = pca$eigenvect[,2],
+                  EV3 = pca$eigenvect[,3],
+                  EV4 = pca$eigenvect[,4],
+                  EV5 = pca$eigenvect[,5],
+                  EV6 = pca$eigenvect[,6],
+                  EV7 = pca$eigenvect[,7],# the second eigenvector
+                  stringsAsFactors = FALSE)
+head(tab)
+
+# add population data
+pop.group <- as.character(popmap[,2])
+tab[,9] <- pop.group
+colnames(tab)[9] <- "Population"
+
+## reorder pop names
+tab$Population <- popmap[tab$sample.id, 2]
+
+tab$Population <- gsub("ZUR", "", tab$Population, fixed=TRUE)
+tab$Population <- gsub("BIE", "", tab$Population, fixed=TRUE)
+tab$Population <- gsub("BRI", "", tab$Population, fixed=TRUE)
+tab$Population <- gsub("THU", "", tab$Population, fixed=TRUE)
+tab$Population <- gsub("WAL", "", tab$Population, fixed=TRUE)
+
+# add lakes information 
+lake <- as.character(popmap[,3])
+tab[,10] <- lake
+colnames(tab)[10] <- "lake"
+
+# reorder lakes names
+tab$lake <- popmap[tab$sample.id, 3]
+
+ggplot(tab, aes(x = EV1, y = EV2, col = Population)) + 
+  geom_point(aes(shape = lake), size = 4) + 
+  stat_ellipse(aes(group = Population), linetype = 2) +
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+
+```
+
+```{r fig.height=8, fig.width=14}
+library(ggforce)
+ggplot(tab, aes(x = EV1, y = EV2, col = lake)) + theme_bw() + 
+  geom_point(aes(shape = lake), size = 4) + 
+  geom_mark_ellipse(aes(group = lake)) + xlim(-0.2, 0.15) + ylim(-0.15, 0.2)+
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+```
+
+# Repeat 
+
+```{r fig.height=8, fig.width=14}
+# pca with all SNPs
+pca <- snpgdsPCA(genoswiss, autosome.only = FALSE, 
+                 num.thread = 8)  
+
+# variance proportion (%)
+pc.percent <- pca$varprop*100
+pc.percent <- head(round(pc.percent, 2))
+
+# Manipulate results ----
+# make a data.frame
+tab <- data.frame(sample.id = pca$sample.id,
+                  EV1 = pca$eigenvect[,1],    # the first eigenvector
+                  EV2 = pca$eigenvect[,2],
+                  EV3 = pca$eigenvect[,3],
+                  EV4 = pca$eigenvect[,4],
+                  EV5 = pca$eigenvect[,5],
+                  EV6 = pca$eigenvect[,6],
+                  EV7 = pca$eigenvect[,7],# the second eigenvector
+                  stringsAsFactors = FALSE)
+head(tab)
+
+# add population data
+pop.group <- as.character(popnum[,2])
+tab[,9] <- pop.group
+colnames(tab)[9] <- "Population"
+
+## reorder pop names
+tab$Population <- popnum[tab$sample.id, 2]
+
+# add lakes information 
+lake <- as.character(popmap[,3])
+tab[,10] <- lake
+colnames(tab)[10] <- "lake"
+
+# reorder lakes names
+tab$lake <- popmap[tab$sample.id, 3]
+
+
+ggplot(tab, aes(x = EV1, y = EV2, col = Population)) + geom_point(size = 4) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+
+```
+
+
+```{r  fig.height=8, fig.width=14}
+library(ggforce)
+ggplot(tab, aes(x = EV1, y = EV2, col = Population)) + theme_bw() + 
+  geom_point(aes(shape = lake), size = 4) + 
+  geom_mark_ellipse(aes(group = lake)) + xlim(-0.2, 0.15) + ylim(-0.15, 0.2)+
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+```
+
+
+
+
+
+```{r}
+library(dplyr)
+
+sp <- tab
+sp[, 5:9]<- NULL
+sp[,6] <- NA
+colnames(sp)[6] <- "SP"
+head(sp)
+
+
+# ASP
+groupsp <- function(sp, ev1, ev2, g = 1){
+  SP <- c("ASP", "BSP", "CSP", "DSP", "ESP", "FSP", "GSP")
+  evl <- which(sp$EV1 >= ev1[1])
+  evr <- which(sp$EV1 <= ev1[2])
+  ev1 <- intersect(evl, evr)
+  evl <- which(sp$EV2 >= ev2[1])
+  evr <- which(sp$EV2 <= ev2[2])
+  ev2 <- intersect(evl, evr)
+  ev <- intersect(ev1, ev2)
+  sp[ev, 6] <- SP[g]
+  return(sp)
+}
+
+sp <- groupsp(sp, ev1 = c(-0.15, -0.1), ev2 = c(-0.05, 0), g = 1)
+sp <- groupsp(sp, ev1 = c(-0.215, -0.075), ev2 = c(0, 0.05), g = 2)
+sp <- groupsp(sp, ev1 = c(-0.075, 0), ev2 = c(-0.025, 0.1), g = 3)
+sp <- groupsp(sp, ev1 = c(0, 0.1), ev2 = c(-0.1, 0), g = 4)
+sp <- groupsp(sp, ev1 = c(0.05, 0.1), ev2 = c(0.1, 0.2), g = 5)
+
+
+
+ggplot(sp, aes(x = EV1, y = EV2, col = SP)) + theme_bw() + 
+  geom_point(size = 4) +
+  geom_mark_ellipse(aes(group = lake)) + xlim(-0.2, 0.15) + ylim(-0.15, 0.2)+
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+sp1 <- sp
+hybrsp <- function(sp, ev1, ev2){
+  evl <- which(sp$EV1 >= ev1[1])
+  evr <- which(sp$EV1 <= ev1[2])
+  ev1 <- intersect(evl, evr)
+  evl <- which(sp$EV2 >= ev2[1])
+  evr <- which(sp$EV2 <= ev2[2])
+  ev2 <- intersect(evl, evr)
+  ev <- intersect(ev1, ev2)
+  for (i in 1:length(ev)){
+  SP <- "H"
+  sp[ev[i], 6] <- SP
+  }
+  return(sp)
+}
+
+sp1 <- hybrsp(sp1, ev1 = c(-0.1,-0.08), ev2 = c(0, 0.02))
+sp1 <- hybrsp(sp1, ev1 = c(-0.075,-0.05), ev2 = c(0, 0.02))
+sp1 <- hybrsp(sp1, ev1 = c(-0.015,0), ev2 = c(-0.01, 0.1))
+sp1 <- hybrsp(sp1, ev1 = c(0.01,0.05), ev2 = c(-0.05, 0))
+sp1 <- hybrsp(sp1, ev1 = c(0.05,0.1), ev2 = c(-0.045, 0))
+
+#SP <- paste(sp[ev[i], 6], "H", sep = '')
+#paste(sp[which(rownames(sp) == lhyb[i]), 6], "H", sep = '')
+
+ggplot(sp1, aes(x = EV1, y = EV2, col = SP)) + theme_bw() + 
+  geom_point(size = 4) + 
+  geom_mark_ellipse(aes(group = lake)) + xlim(-0.2, 0.15) + ylim(-0.15, 0.2)+
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+
+hybr_pca <- sp1[grep("H", sp1[,6]), ]
+
+
+```
+

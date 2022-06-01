@@ -1,0 +1,145 @@
+# Note: Individual distributions can be extracted using the `stacks-dist-extract` utility.
+#       e.g. `stacks-dist-extract assem2_filter.recode.p.log.distribs dist_name`
+
+BEGIN batch_progress
+LR778253.1: analyzed 941 loci; filtered 0 loci; 941 loci seen.
+    941 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778254.1: analyzed 366 loci; filtered 0 loci; 366 loci seen.
+    366 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778255.1: analyzed 384 loci; filtered 0 loci; 384 loci seen.
+    384 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778256.1: analyzed 711 loci; filtered 0 loci; 711 loci seen.
+    711 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778257.1: analyzed 373 loci; filtered 0 loci; 373 loci seen.
+    373 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778258.1: analyzed 374 loci; filtered 0 loci; 374 loci seen.
+    374 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778259.1: analyzed 392 loci; filtered 0 loci; 392 loci seen.
+    392 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778260.1: analyzed 594 loci; filtered 0 loci; 594 loci seen.
+    594 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778261.1: analyzed 665 loci; filtered 0 loci; 665 loci seen.
+    665 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778262.1: analyzed 561 loci; filtered 0 loci; 561 loci seen.
+    561 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778263.1: analyzed 636 loci; filtered 0 loci; 636 loci seen.
+    636 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778264.1: analyzed 605 loci; filtered 0 loci; 605 loci seen.
+    605 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778265.1: analyzed 593 loci; filtered 0 loci; 593 loci seen.
+    593 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778266.1: analyzed 472 loci; filtered 0 loci; 472 loci seen.
+    472 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778267.1: analyzed 488 loci; filtered 0 loci; 488 loci seen.
+    488 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778268.1: analyzed 536 loci; filtered 0 loci; 536 loci seen.
+    536 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778269.1: analyzed 427 loci; filtered 0 loci; 427 loci seen.
+    427 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778270.1: analyzed 491 loci; filtered 0 loci; 491 loci seen.
+    491 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778271.1: analyzed 590 loci; filtered 0 loci; 590 loci seen.
+    590 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778272.1: analyzed 559 loci; filtered 0 loci; 559 loci seen.
+    559 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778273.1: analyzed 477 loci; filtered 0 loci; 477 loci seen.
+    477 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778274.1: analyzed 28 loci; filtered 0 loci; 28 loci seen.
+    28 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778275.1: analyzed 497 loci; filtered 0 loci; 497 loci seen.
+    497 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778276.1: analyzed 483 loci; filtered 0 loci; 483 loci seen.
+    483 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778277.1: analyzed 483 loci; filtered 0 loci; 483 loci seen.
+    483 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778278.1: analyzed 438 loci; filtered 0 loci; 438 loci seen.
+    438 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778279.1: analyzed 452 loci; filtered 0 loci; 452 loci seen.
+    452 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778280.1: analyzed 235 loci; filtered 0 loci; 235 loci seen.
+    235 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778281.1: analyzed 439 loci; filtered 0 loci; 439 loci seen.
+    439 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778282.1: analyzed 449 loci; filtered 0 loci; 449 loci seen.
+    449 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778283.1: analyzed 455 loci; filtered 0 loci; 455 loci seen.
+    455 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778284.1: analyzed 127 loci; filtered 0 loci; 127 loci seen.
+    127 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778285.1: analyzed 392 loci; filtered 0 loci; 392 loci seen.
+    392 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778286.1: analyzed 349 loci; filtered 0 loci; 349 loci seen.
+    349 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778287.1: analyzed 272 loci; filtered 0 loci; 272 loci seen.
+    272 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778288.1: analyzed 416 loci; filtered 0 loci; 416 loci seen.
+    416 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778289.1: analyzed 364 loci; filtered 0 loci; 364 loci seen.
+    364 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778290.1: analyzed 83 loci; filtered 0 loci; 83 loci seen.
+    83 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778291.1: analyzed 242 loci; filtered 0 loci; 242 loci seen.
+    242 genomic sites, of which 0 were covered by multiple loci (0.0%).
+LR778292.1: analyzed 13 loci; filtered 0 loci; 13 loci seen.
+    13 genomic sites, of which 0 were covered by multiple loci (0.0%).
+END batch_progress
+
+BEGIN samples_per_loc_prefilters
+# Distribution of valid samples matched to a catalog locus prior to filtering.
+n_samples	n_loci
+273	2463
+274	2457
+275	2817
+276	2922
+277	2912
+278	2510
+279	1371
+END samples_per_loc_prefilters
+
+BEGIN missing_samples_per_loc_prefilters
+# Distribution of missing samples for each catalog locus prior to filtering.
+# Absent samples at locus	Count
+0	1371
+1	2510
+2	2912
+3	2922
+4	2817
+5	2457
+6	2463
+END missing_samples_per_loc_prefilters
+
+BEGIN snps_per_loc_prefilters
+# Distribution of the number of SNPs per catalog locus prior to filtering.
+n_snps	n_loci
+1	17452
+END snps_per_loc_prefilters
+
+BEGIN samples_per_loc_postfilters
+# Distribution of valid samples matched to a catalog locus after filtering.
+n_samples	n_loci
+273	2463
+274	2457
+275	2817
+276	2922
+277	2912
+278	2510
+279	1371
+END samples_per_loc_postfilters
+
+BEGIN missing_samples_per_loc_postfilters
+# Distribution of missing samples for each catalog locus after filtering.
+# Absent samples at locus	Count
+0	1371
+1	2510
+2	2912
+3	2922
+4	2817
+5	2457
+6	2463
+END missing_samples_per_loc_postfilters
+
+BEGIN snps_per_loc_postfilters
+# Distribution of the number of SNPs per catalog locus (after filtering).
+n_snps	n_loci
+1	17452
+END snps_per_loc_postfilters
