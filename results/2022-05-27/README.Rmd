@@ -1,0 +1,234 @@
+---
+title: "PCA with Adegenet"
+author: "J. Ignacio Lucas Lledó"
+date: "27/5/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+In folder `2022-05-09`, Mar performed a PCA analysis using functions from the SNPRelate
+R package. Here I want to reproduce the PCA analysis with Adegenet, in order to solve
+issues with the import of data with Adegenet.
+
+```{r Adegenet}
+suppressMessages(library('ape'))
+suppressMessages(library('pegas'))
+suppressMessages(library('seqinr'))
+suppressMessages(library('ggplot2'))
+suppressMessages(library('adegenet'))
+library('MetBrewer')
+library(kableExtra)
+
+# Mar, observa l'ús d'adreces relatives, que també funcionaran en la teua carpeta:
+VCF <- '../2022-05-04/strict.recode.vcf'
+```
+
+We can use `read.vcf()`, from package `pegas`, to read a VCF into a kind of data frame,
+[see this tutorial by Emmanuel Paradis](https://archive.linux.duke.edu/cran/web/packages/pegas/vignettes/ReadingFiles.pdf)
+which can then be turned into a `genind` object, which is acceptable for the whole
+set of individuals, with exactly 24878 loci after the last filtering.
+
+```{r data}
+snps <- read.vcf(VCF, from = 1, to = 24878, quiet = TRUE)
+snps <- as.data.frame(snps)
+for (i in 1:24878) snps[,i] <- as.character(snps[,i])
+snps[snps == './.'] <- NA
+
+# The argument "NA.char" in df2genind does not work.
+snps.gi <- df2genind(snps, sep = '/', type = 'codom', ploidy = 2)
+sum(is.na(snps.gi@tab))
+```
+
+To run the PCA, I follow the [basic tutorial of the adegenet package](https://github.com/thibautjombart/adegenet/raw/master/tutorials/tutorial-basics.pdf):
+
+```{r pca, fig.width=8, fig.height=14}
+# This changes the genotype data to allele frequency per individual, substituting
+# missing data by average allele frequency. With 2 alleles per locus, this duplicates
+# the number of columns in the table.
+X <- tab(snps.gi, NA.method = 'mean')
+pca1 <- dudi.pca(X, scale=FALSE, scannf=FALSE, nf=3)
+barplot(100 * pca1$eig[1:15] / sum(pca1$eig), main = 'PCA eigenvalues',
+        col = heat.colors(15), ylab = "% of variance explained")
+PercentVar <- head(100 * pca1$eig / sum(pca1$eig))
+par(mfrow = c(2,2))
+plot(pca1$li$Axis1, pca1$li$Axis2,
+     xlab = sprintf("PC 1, %.1f%%", PercentVar[1]),
+     ylab = sprintf("PC 2, %.1f%%", PercentVar[2]), main = '"Alzado"')
+plot(pca1$li$Axis3, pca1$li$Axis2,
+     xlim = c(max(pca1$li$Axis3), min(pca1$li$Axis3)),
+     xlab = sprintf("PC 3, %.1f%%", PercentVar[3]),
+     ylab = sprintf("PC 2, %.1f%%", PercentVar[2]), main = '"Perfil"')
+plot(pca1$li$Axis1, pca1$li$Axis3,
+     xlab = sprintf("PC 1, %.1f%%", PercentVar[1]),
+     ylab = sprintf("PC 3, %.1f%%", PercentVar[3]), main = '"Planta"')
+par(mfrow = c(1,1))
+```
+
+So, the PCA seem to reproduce Mar's results.
+
+Time to assign attributes to the individuals: lake, potential species, PC clúster...
+
+```{r attributes}
+DATA <- '../../data/Fish_clean.tsv'
+Fish <- read.table(DATA, header = TRUE)
+row.names(Fish) <- Fish$Fish_code
+kable(table(Fish$MOL_MORPH_CONSENSUS_ID,
+            Fish$Sci_name_CONSENSUS_ID),
+      useNA = 'always') %>% kable_styling()
+```
+
+Among all fish in the original data (including many not sequenced), the correspondance
+between molecular-morphological labels and scientific names is high. The only ambiguity
+happens for the molecular-morphological label "Balchen2", which is used in 17 fish
+assigned to *C. brienzii* and in 22 fish assigned to *C. steinmanni*. They could be
+synonimous. In all, and excluding the unknown or not dissected fish, 17 labels are
+sufficient if we collapse *C. brienzii* and *C. steinmanni*. Otherwise, 18.
+
+```{r pops}
+snps.gi@pop <- Fish[row.names(snps.gi@tab), 'Sci_name_CONSENSUS_ID']
+col <- funky(18)
+s.class(pca1$li, pop(snps.gi), xax = 1, yax = 3, col=transp(col, .6), axesell=FALSE, cstar=0, cpoint=2, grid = FALSE)
+```
+
+## Separate analyses for the two regions
+
+```{r filters}
+Fish.used <- row.names(snps)
+Fish.alpine <- intersect(Fish.used, row.names(Fish[Fish$Region == 'Alpine',]))
+Fish.arctic <- intersect(Fish.used, row.names(Fish[Fish$Region == 'Arctic',]))
+write.table(Fish.alpine, file = 'Alpine.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+write.table(Fish.arctic, file = 'Arctic.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+```
+
+```{bash}
+VCF='../2022-04-22/assem2_outfiles/assem2.vcf'
+if [ ! -e alpine.recode.vcf ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep Alpine.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out alpine \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --recode --recode-INFO-all
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e arctic.recode.vcf ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep Arctic.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out arctic \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 6 \
+            --recode --recode-INFO-all
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+```
+
+## Alpine lakes
+
+```{r alpine}
+alp <- read.vcf('alpine.recode.vcf', from = 1, to = 100000, quiet = TRUE)
+alp <- as.data.frame(alp)
+for (i in 1:dim(alp)[2]) alp[,i] <- as.character(alp[,i])
+alp[alp == './.'] <- NA
+
+alp.gi <- df2genind(alp, sep = '/', type = 'codom', ploidy = 2)
+alp.gi@pop <- droplevels(Fish[row.names(alp.gi@tab), 'Sci_name_CONSENSUS_ID'])
+#levels(alp.gi@pop) <- c(levels(alp.gi@pop), 'unknown')
+alp.gi@pop[is.na(alp.gi@pop)] <- 'unknown'
+
+X <- tab(alp.gi, NA.method = 'mean')
+pca2 <- dudi.pca(X, scale=FALSE, scannf=FALSE, nf=3)
+barplot(100 * pca2$eig[1:15] / sum(pca2$eig), main = 'PCA eigenvalues',
+        col = heat.colors(15), ylab = "% of variance explained")
+PercentVar <- head(100 * pca2$eig / sum(pca2$eig))
+```
+
+```{r pca2, fig.width=10, fig.height=14}
+library(MetBrewer)
+col  <- met.brewer('Signac', 14)  # Lakota, Juarez, Signac
+#colt <- transp(col, 0.6)
+par(mfrow = c(2,2))
+plot(pca2$li$Axis1, pca2$li$Axis2,
+     xlab = sprintf("PC 1, %.1f%%", PercentVar[1]),
+     ylab = sprintf("PC 2, %.1f%%", PercentVar[2]),
+     col = col[alp.gi@pop], pch = 16, cex = 1.5)
+plot(pca2$li$Axis3, pca2$li$Axis2,
+     xlim = c(max(pca2$li$Axis3), min(pca2$li$Axis3)),
+     xlab = sprintf("PC 3, %.1f%%", PercentVar[3]),
+     ylab = sprintf("PC 2, %.1f%%", PercentVar[2]),
+     col = col[alp.gi@pop], pch = 16, cex = 1.5)
+plot(pca2$li$Axis1, pca2$li$Axis3,
+     xlab = sprintf("PC 1, %.1f%%", PercentVar[1]),
+     ylab = sprintf("PC 3, %.1f%%", PercentVar[3]),
+     col = col[alp.gi@pop], pch = 16, cex = 1.5)
+plot(c(-40, 20), c(-20, 40), type = 'n', axes = FALSE, ann = FALSE)
+legend(-40, y = 40, legend = levels(alp.gi@pop), fill = col, border= col)
+par(mfrow = c(1,1))
+```
+
+## Arctic lakes
+
+```{r arctic}
+arc <- read.vcf('arctic.recode.vcf', from = 1, to = 100000, quiet = TRUE)
+arc <- as.data.frame(arc)
+for (i in 1:dim(arc)[2]) arc[,i] <- as.character(arc[,i])
+arc[arc == './.'] <- NA
+
+arc.gi <- df2genind(arc, sep = '/', type = 'codom', ploidy = 2)
+sum(is.na(arc.gi@tab))
+
+X <- tab(arc.gi, NA.method = 'mean')
+pca3 <- dudi.pca(X, scale=FALSE, scannf=FALSE, nf=3)
+barplot(100 * pca3$eig[1:15] / sum(pca3$eig), main = 'PCA eigenvalues',
+        col = met.brewer('Paquin', 15), ylab = "% of variance explained")
+PercentVar <- head(100 * pca3$eig / sum(pca3$eig))
+```
+
+```{r pca3, fig.width=10, fig.height=14}
+arc.gi@pop <- droplevels(Fish[row.names(arc.gi@tab), 'Sci_name_CONSENSUS_ID'])
+col  <- met.brewer('Hiroshige', 3)  
+#colt <- transp(col, 0.6)
+par(mfrow = c(2,2))
+plot(pca3$li$Axis1, pca3$li$Axis2,
+     xlab = sprintf("PC 1, %.1f%%", PercentVar[1]),
+     ylab = sprintf("PC 2, %.1f%%", PercentVar[2]),
+     col = col[arc.gi@pop], pch = 16, cex = 1.5)
+plot(pca3$li$Axis3, pca3$li$Axis2,
+     xlim = c(max(pca3$li$Axis3), min(pca3$li$Axis3)),
+     xlab = sprintf("PC 3, %.1f%%", PercentVar[3]),
+     ylab = sprintf("PC 2, %.1f%%", PercentVar[2]),
+     col = col[arc.gi@pop], pch = 16, cex = 1.5)
+plot(pca3$li$Axis1, pca3$li$Axis3,
+     xlab = sprintf("PC 1, %.1f%%", PercentVar[1]),
+     ylab = sprintf("PC 3, %.1f%%", PercentVar[3]),
+     col = col[arc.gi@pop], pch = 16, cex = 1.5)
+plot(c(-40, 20), c(-20, 40), type = 'n', axes = FALSE, ann = FALSE)
+legend(-40, y = 40, legend = levels(arc.gi@pop), fill = col, border= col)
+par(mfrow = c(1,1))
+```
+
+```{r info}
+sessionInfo()
+```
