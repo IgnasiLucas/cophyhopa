@@ -1,3 +1,76 @@
+# 2022-05-27
+Using Adegenet to replicate the PCA. I take advantage of the species labeling,
+ignoring lakes for the moment. The correspondence between putative species and
+clusters in the PCA is much better than I expected in the Alpine lakes. I cannot
+say the same for the Arctic ones, which have not been named, but labeled with
+three letters of misterious meaning (D, L, P).
+
+See [the report in this link](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-05-27/README.html).
+
+# 2022-05-09
+## 2022-05-09/admixture
+First attempt at an admixture analysis. Check the report
+[in this link](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-05-09/admixture/README.html).
+
+## 2022-05-09/angsd
+A failed attempt to use angsd for PCA analysis. Work on progress.
+
+## 2022-05-09/fineRADstructure
+Clustering of individuals with fineRADstructure. There is a
+[report of how the analysis was performed](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-05-09/fineRADstructure/README.html),
+but the most interesting results are in the `plots` folder.
+
+## 2022-05-09/SNPRelate
+This is a PCA performed with the SNPRelate package. There is an analysis
+[of the whole data set](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-05-09/SNPRelate/README.html),
+and also [one of only the Alpine populations](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-05-09/SNPRelate/Swiss/README.html).
+
+One problem with the PCA plots is that keeping individuals from the same putative
+species but different lakes separate blows up the number of colors we need to
+represent every population.
+
+# 2022-05-04
+We take the VCF output from ipyrad (2022-04-22) and filter it. First we identify
+the individuals with lowest coverage, and remove 5 of them. Then, we thin out
+loci and remove those with more than 12 individuals with missing data. We end
+up with 22270 loci, with much more complete information. We identify 4 more
+individuals that do not reach 90% of loci with data. We repeat the filtering from
+the beginning, removing the first five and the other 4, namely, we remove:
+BRZ066, BRZ111, SUO095, THU066, THU199,  BRZ108, BRZ110, LAN029 and SUO083.
+And then filter sites again, allowing for up to 12 individuals with missing
+data per site. We end up with 24878 loci, with only two individuals
+(BRZ045 and BIE006) with more than 10% of missing data (but less than 15%).
+
+The report of this analysis can be checked [in this link](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-05-04/README.html).
+
+# 2022-04-29
+This folder assigns 'population'codes to sample identifiers. In principle, we
+combined the morphological assignation of species with the lake, because
+individuals from the same species but in different lakes cannot be in Hardy-
+Weinberg equilibrium, for example, and for testing this or for other purposes
+we wanted to keep lakes identified in the population code.
+
+# 2022-04-22
+Here, ipyrad finishes, by merging the assemblies from the two sequencing runs.
+The output files include a VCF. Reads had been mapped to the reference quite
+successfully. There are 195366 loci identified. Samples have data, on average,
+in 61477 loci. There are no parsimony-informative sites in 112432 loci. Among
+the other 82934 loci, there are 879238 variable sites, 496712 of them parsimony-
+informative. 
+
+There is no html report here, and the folder is not automatically reproducible,
+since it lacks a README.sh or a README.Rmd file. We apologize.
+
+# 2022-04-01
+Here we run ipyrad using as input the symbolic links prepared in 2021-12-21
+(for the file names to be directly interpretable as sample names and read number).
+Only the first steps are run, separately for the datasets from the two sequencing
+runs. A merging of those two "assemblies" is attempted in ipyrad, but then it is
+moved to folder 2022-04-22.
+
+This folder is not automatically reproducible. It lacks a README.sh or README.Rmd
+file. There is no final report.
+
 # 2022-01-26
 Between the two sequencing runs we got 2.447.193.170 pairs of reads assigned
 to real samples. See the [report here](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-01-26/README.html).
