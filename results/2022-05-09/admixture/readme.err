@@ -1,8 +1,26 @@
 
 
 processing file: README.Rmd
-running: bash  -c "INPUT='/gata/mar/cophyhopa/results/2022-05-04/assem2_filter.recode.vcf'
-OUTPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/assem93'
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+if [ ! -e admix.recode.vcf ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --remove /gata/mar/cophyhopa/data/HYBRIDS.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out ADMIX_WH \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --recode --recode-INFO-all
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi"
+running: bash  -c "INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/ADMIX_WH.recode.vcf'
+OUTPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/admix_a93'
 
 plink --vcf \$INPUT --recode --out \$OUTPUT --allow-extra-chr 0
 plink --vcf \$INPUT --make-bed --out \$OUTPUT --allow-extra-chr 0
@@ -10,14 +28,15 @@ plink --vcf \$INPUT --make-bed --out \$OUTPUT --allow-extra-chr 0
 #vcftools --vcf ~/cophyhopa/results/2022-05-04/assem2_filter.recode.vcf --out assem93 --plink
 "
 running: bash  -c "
-INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/assem93.bed'
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/admix_a93.bed'
 
 for K in 2 3 4 5 6 7 8 9 10 11; do admixture --cv \$INPUT \$K | tee log\${K}.out; done
 "
 running: bash  -c 'grep -h CV log*.out
 '
-Read 558 items
-Read 558 items
+Read 506 items
+Read 506 items
+Read 506 items
 output file: README.knit.md
 
 

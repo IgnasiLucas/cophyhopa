@@ -1,0 +1,30 @@
+PLINK v1.90b6.14 64-bit (7 Jan 2020)
+Options in effect:
+  --allow-extra-chr 0
+  --allow-no-sex
+  --file ADMIX_ALL
+  --make-bed
+  --out ADMIX_ALL
+
+Hostname: thermomix
+Working directory: /gata/mar/cophyhopa/results/2022-05-09/admixture
+Start time: Thu Jun 16 09:37:47 2022
+
+Random number seed: 1655365067
+257898 MB RAM detected; reserving 128949 MB for main workspace.
+Scanning .ped file... done.
+Performing single-pass .bed write (20241 variants, 271 people).
+--file: ADMIX_ALL-temporary.bed + ADMIX_ALL-temporary.bim +
+ADMIX_ALL-temporary.fam written.
+20241 variants loaded from .bim file.
+271 people (0 males, 0 females, 271 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to ADMIX_ALL.nosex .
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 271 founders and 0 nonfounders present.
+Calculating allele frequencies... done.
+Total genotyping rate is 0.996262.
+20241 variants and 271 people pass filters and QC.
+Note: No phenotypes present.
+--make-bed to ADMIX_ALL.bed + ADMIX_ALL.bim + ADMIX_ALL.fam ... done.
+
+End time: Thu Jun 16 09:37:47 2022

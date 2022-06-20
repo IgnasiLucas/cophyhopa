@@ -1,0 +1,117 @@
+> rmarkdown::render('README.Rmd', output_file = 'README.html')
+  |                                                                              |                                                                      |   0%  |                                                                              |..                                                                    |   4%
+  ordinary text without R code
+
+  |                                                                              |.....                                                                 |   7%
+label: unnamed-chunk-1 (with options) 
+List of 2
+ $ echo  : logi FALSE
+ $ engine: chr "bash"
+
+  |                                                                              |........                                                              |  11%
+  ordinary text without R code
+
+  |                                                                              |..........                                                            |  14%
+label: unnamed-chunk-2
+  |                                                                              |............                                                          |  18%
+  ordinary text without R code
+
+  |                                                                              |...............                                                       |  21%
+label: unnamed-chunk-3 (with options) 
+List of 1
+ $ engine: chr "bash"
+
+  |                                                                              |..................                                                    |  25%
+  ordinary text without R code
+
+  |                                                                              |....................                                                  |  29%
+label: unnamed-chunk-4 (with options) 
+List of 3
+ $ fig.height: num 7
+ $ fig.width : num 12
+ $ collapse  : logi TRUE
+
+  |                                                                              |......................                                                |  32%
+  ordinary text without R code
+
+  |                                                                              |.........................                                             |  36%
+label: unnamed-chunk-5 (with options) 
+List of 2
+ $ eval  : logi FALSE
+ $ engine: chr "bash"
+
+  |                                                                              |............................                                          |  39%
+  ordinary text without R code
+
+  |                                                                              |..............................                                        |  43%
+label: unnamed-chunk-6 (with options) 
+List of 2
+ $ eval  : logi FALSE
+ $ engine: chr "bash"
+
+  |                                                                              |................................                                      |  46%
+  ordinary text without R code
+
+  |                                                                              |...................................                                   |  50%
+label: unnamed-chunk-7
+  |                                                                              |......................................                                |  54%
+  ordinary text without R code
+
+  |                                                                              |........................................                              |  57%
+label: unnamed-chunk-8 (with options) 
+List of 2
+ $ echo  : logi FALSE
+ $ engine: chr "bash"
+
+  |                                                                              |..........................................                            |  61%
+  ordinary text without R code
+
+  |                                                                              |.............................................                         |  64%
+label: unnamed-chunk-9 (with options) 
+List of 1
+ $ engine: chr "bash"
+
+  |                                                                              |................................................                      |  68%
+  ordinary text without R code
+
+  |                                                                              |..................................................                    |  71%
+label: unnamed-chunk-10 (with options) 
+List of 2
+ $ fig.height: num 7
+ $ fig.width : num 12
+
+  |                                                                              |....................................................                  |  75%
+  ordinary text without R code
+
+  |                                                                              |.......................................................               |  79%
+label: unnamed-chunk-11 (with options) 
+List of 2
+ $ echo  : logi FALSE
+ $ engine: chr "bash"
+
+  |                                                                              |..........................................................            |  82%
+  ordinary text without R code
+
+  |                                                                              |............................................................          |  86%
+label: unnamed-chunk-12
+  |                                                                              |..............................................................        |  89%
+  ordinary text without R code
+
+  |                                                                              |.................................................................     |  93%
+label: unnamed-chunk-13 (with options) 
+List of 1
+ $ engine: chr "bash"
+
+  |                                                                              |....................................................................  |  96%
+  ordinary text without R code
+
+  |                                                                              |......................................................................| 100%
+label: unnamed-chunk-14 (with options) 
+List of 2
+ $ fig.height: num 7
+ $ fig.width : num 12
+
+
+/usr/lib/rstudio-server/bin/pandoc/pandoc +RTS -K512m -RTS README.knit.md --to html4 --from markdown+autolink_bare_uris+tex_math_single_backslash --output README.html --lua-filter /usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/pagebreak.lua --lua-filter /usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/latex-div.lua --self-contained --variable bs3=TRUE --standalone --section-divs --template /usr/local/lib/R/site-library/rmarkdown/rmd/h/default.html --no-highlight --variable highlightjs=1 --variable theme=bootstrap --mathjax --variable 'mathjax-url=https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' --include-in-header /tmp/Rtmp1wkA07/rmarkdown-str9ab47ecbf771.html 
+> 
+> 

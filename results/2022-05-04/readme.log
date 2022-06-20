@@ -1,10 +1,68 @@
-> rmarkdown::render('README.Rmd', output_file='README.html')
-  |                                                                              |                                                                      |   0%  |                                                                              |............                                                          |  17%
+> rmarkdown::render('README.Rmd', output_file = 'README.html')
+  |                                                                              |                                                                      |   0%  |                                                                              |....                                                                  |   5%
   ordinary text without R code
 
-  |                                                                              |.......................                                               |  33%
+  |                                                                              |.......                                                               |  11%
+label: missingness (with options) 
+List of 1
+ $ engine: chr "bash"
+
+  |                                                                              |...........                                                           |  16%
+  ordinary text without R code
+
+  |                                                                              |...............                                                       |  21%
+label: missing
+  |                                                                              |..................                                                    |  26%
+  ordinary text without R code
+
+  |                                                                              |......................                                                |  32%
 label: unnamed-chunk-1 (with options) 
 List of 1
  $ engine: chr "bash"
 
+  |                                                                              |..........................                                            |  37%
+  ordinary text without R code
 
+  |                                                                              |.............................                                         |  42%
+label: unnamed-chunk-2 (with options) 
+List of 1
+ $ engine: chr "bash"
+
+  |                                                                              |.................................                                     |  47%
+  ordinary text without R code
+
+  |                                                                              |.....................................                                 |  53%
+label: unnamed-chunk-3 (with options) 
+List of 1
+ $ engine: chr "bash"
+
+  |                                                                              |.........................................                             |  58%
+  ordinary text without R code
+
+  |                                                                              |............................................                          |  63%
+label: again
+  |                                                                              |................................................                      |  68%
+  ordinary text without R code
+
+  |                                                                              |....................................................                  |  74%
+label: unnamed-chunk-4 (with options) 
+List of 1
+ $ engine: chr "bash"
+
+  |                                                                              |.......................................................               |  79%
+  ordinary text without R code
+
+  |                                                                              |...........................................................           |  84%
+label: last
+  |                                                                              |...............................................................       |  89%
+  ordinary text without R code
+
+  |                                                                              |..................................................................    |  95%
+label: sessioninfo
+  |                                                                              |......................................................................| 100%
+  ordinary text without R code
+
+
+/usr/lib/rstudio-server/bin/pandoc/pandoc +RTS -K512m -RTS README.knit.md --to html4 --from markdown+autolink_bare_uris+tex_math_single_backslash --output README.html --lua-filter /usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/pagebreak.lua --lua-filter /usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/latex-div.lua --self-contained --variable bs3=TRUE --standalone --section-divs --template /usr/local/lib/R/site-library/rmarkdown/rmd/h/default.html --no-highlight --variable highlightjs=1 --variable theme=bootstrap --mathjax --variable 'mathjax-url=https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' --include-in-header /tmp/Rtmpp1f0Xp/rmarkdown-str61ce25852e5c.html 
+> 
+> 

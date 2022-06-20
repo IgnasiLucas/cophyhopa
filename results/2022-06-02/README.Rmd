@@ -1,0 +1,304 @@
+---
+title: "TreeMix"
+author: "Mar Llaberia-Robledillo"
+date: "2/6/2022"
+output: html_document
+---
+
+Treemix assumes unlinked SNPs and requires a special input format. I will use a script that generates this input file (``vcf2treemix.sh`) from a vcf and a clust file, which is a file that provides the information on which sample belongs to which taxon.
+
+The clust file contains three columns, whereby the first and the second column indicate the name of the individual, and the third column indicates the taxon name. We can thus easily generate the clust file from our .pop file that we generated previously.
+
+```{bash echo=FALSE}
+# Create the vcf.gz file (remove the hybrids and zip vcf)
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+if [ ! -e tree.recode.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out tree \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --max-missing 1 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > treedata.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+```
+
+```{r}
+# Create the clust file and save it
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+poptable$lake <- NULL
+poptable$group <- poptable$sample
+write.table(poptable, file = '~/cophyhopa/results/2022-06-02/treedata.clust', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
+```
+
+```{bash}
+# Download the script that generates the input file and execute it 
+#wget https://github.com/speciationgenomics/scripts/blob/master/vcf2treemix.sh
+# Thom Nelson's adaptation of Tomaz Berisa's script to convert plink clustered allele frequencies to treemix format
+#   (https://bitbucket.org/nygcresearch/treemix/downloads/)
+
+#./vcf2treemix.sh treedata.vcf.gz treedata.clust
+
+# Execute the basic treemix command
+treemix -i treedata.treemix.frq.gz \
+        -bootstrap \
+        -o out_tree
+
+```
+
+## Plot the tree 
+I have downloaded an R script (https://speciationgenomics.github.io/Treemix/) to display the output tree 
+```{r fig.height=7, fig.width=12, collapse=TRUE}
+
+library(RColorBrewer)
+library(R.utils)
+source("plotting_funcs.R") # here you need to add the path
+
+plot_tree("out_tree", mbar = FALSE, scale = FALSE, plus = 0.01)
+
+```
+
+Two more options. The first is assuming 7 migration events (= k obtained with ADMIXTURE). (It is the one that is currently reached and that takes 1 day and a half).
+```{bash eval = FALSE}
+# Choose the position of the root
+treemix -i treedata.treemix.frq.gz \
+        -root D P L \
+        -m 7 \
+        -o out_tree
+
+```
+
+The second is an option to test the optimal number of migration events, not executed.
+```{bash eval = FALSE}
+for i in {0..11}
+do
+ treemix -i treedata.treemix.frq.gz \
+         -m $i \
+         -o ./outfiles/edge.$i \
+         -k 100 > treemix_${i}_log &
+done
+```
+
+
+
+
+
+
+
+```{bash echo=FALSE}
+# Create the vcf.gz file (remove the hybrids and zip vcf)
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+if [ ! -e tree.recode.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out tree \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --max-missing 1 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > treedata.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+```
+
+```{r}
+# Create the clust file and save it
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+poptable$lake <- NULL
+poptable$group <- poptable$sample
+poptable[,3] <- as.character(poptable[,3])
+poptable[which(poptable[,3] == "D"), 3] <- "Arctic"
+poptable[which(poptable[,3] == "P"), 3] <- "Arctic"
+poptable[which(poptable[,3] == "L"), 3] <- "Arctic"
+
+write.table(poptable, file = '~/cophyhopa/results/2022-06-02/treedata.clust', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
+```
+
+```{bash}
+# Download the script that generates the input file and execute it 
+#wget https://github.com/speciationgenomics/scripts/blob/master/vcf2treemix.sh
+# Thom Nelson's adaptation of Tomaz Berisa's script to convert plink clustered allele frequencies to treemix format
+#   (https://bitbucket.org/nygcresearch/treemix/downloads/)
+
+#./vcf2treemix.sh treedata.vcf.gz treedata.clust
+
+# Execute the basic treemix command
+treemix -i treedata.treemix.frq.gz \
+        -root Arctic \
+        -o out_tree
+
+```
+
+## Plot the tree 
+I have downloaded an R script (https://speciationgenomics.github.io/Treemix/) to display the output tree 
+```{r fig.height=7, fig.width=12, collapse=TRUE}
+
+library(RColorBrewer)
+library(R.utils)
+source("plotting_funcs.R") # here you need to add the path
+
+plot_tree("out_tree", mbar = FALSE, scale = FALSE, plus = 0.2)
+
+```
+
+Two more options. The first is assuming 7 migration events (= k obtained with ADMIXTURE). (It is the one that is currently reached and that takes 1 day and a half).
+```{bash eval = FALSE}
+# Choose the position of the root
+treemix -i treedata.treemix.frq.gz \
+        -root D P L \
+        -m 7 \
+        -o out_tree
+
+```
+
+The second is an option to test the optimal number of migration events, not executed.
+```{bash eval = FALSE}
+for i in {0..11}
+do
+ treemix -i treedata.treemix.frq.gz \
+         -m $i \
+         -o ./outfiles/edge.$i \
+         -k 100 > treemix_${i}_log &
+done
+```
+
+### Tree with Alpine species
+```{bash echo=FALSE}
+# Create the vcf.gz file (remove the hybrids and zip vcf)
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+if [ ! -e tree_alpine.recode.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep ~/cophyhopa/data/Alpine.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out tree_alpine \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --max-missing 1 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > tree_alpine.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+```
+
+```{r}
+# Create the clust file and save it
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+samples <- readLines("~/cophyhopa/data/Alpine.txt")
+
+poptable$lake <- NULL
+poptable$group <- poptable$sample
+rownames(poptable) <- poptable$sample
+poptable <- poptable[samples, ]
+write.table(poptable, file = '~/cophyhopa/results/2022-06-02/treedata_alpine.clust', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+```
+
+```{bash}
+./vcf2treemix.sh tree_alpine.vcf.gz treedata_alpine.clust
+
+# Execute the basic treemix command
+treemix -i tree_alpine.treemix.frq.gz \
+        -root C.confusus \
+        -o out_alpine
+
+```
+
+## Plot the tree 
+I have downloaded an R script (https://speciationgenomics.github.io/Treemix/) to display the output tree 
+```{r fig.height=7, fig.width=12, collapse=TRUE}
+
+library(RColorBrewer)
+library(R.utils)
+source("plotting_funcs.R") # here you need to add the path
+
+plot_tree("out_alpine", mbar = FALSE, scale = FALSE, plus = 0.01)
+
+```
+
+
+### Tree with Arctic species
+As the Norwegian species seem to be quite far from the rest, I have tried to build the tree only with those Alpine species.
+```{bash echo=FALSE}
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+if [ ! -e arctic_tree.recode.vcf ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep ~/cophyhopa/data/Arctic.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out arctic_tree \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --max-missing 1 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > arctic_tree.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+```
+
+```{r}
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+samples <- readLines("~/cophyhopa/data/Arctic.txt")
+
+poptable$lake <- NULL
+poptable$group <- poptable$sample
+rownames(poptable) <- poptable$sample
+poptable <- poptable[samples, ]
+write.table(poptable, file = '~/cophyhopa/results/2022-06-02/treedata_arctic.clust', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+```
+
+```{bash}
+./vcf2treemix.sh arctic_tree.vcf.gz treedata_arctic.clust
+
+treemix -i arctic_tree.treemix.frq.gz \
+        -root P \
+        -o out_arctic
+
+```
+
+```{r fig.height=7, fig.width=12}
+plot_tree("out_arctic", mbar = FALSE, scale = FALSE, plus = 0.025)
+
+```

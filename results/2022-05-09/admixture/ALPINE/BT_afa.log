@@ -1,0 +1,30 @@
+PLINK v1.90b6.14 64-bit (7 Jan 2020)
+Options in effect:
+  --allow-extra-chr 0
+  --allow-no-sex
+  --file BT_afa
+  --make-bed
+  --out BT_afa
+
+Hostname: thermomix
+Working directory: /gata/mar/cophyhopa/results/2022-05-09/admixture/ALPINE
+Start time: Mon Jun 20 16:43:15 2022
+
+Random number seed: 1655736195
+257898 MB RAM detected; reserving 128949 MB for main workspace.
+Scanning .ped file... done.
+Performing single-pass .bed write (26891 variants, 48 people).
+--file: BT_afa-temporary.bed + BT_afa-temporary.bim + BT_afa-temporary.fam
+written.
+26891 variants loaded from .bim file.
+48 people (0 males, 0 females, 48 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to BT_afa.nosex .
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 48 founders and 0 nonfounders present.
+Calculating allele frequencies... done.
+Total genotyping rate is 0.980994.
+26891 variants and 48 people pass filters and QC.
+Note: No phenotypes present.
+--make-bed to BT_afa.bed + BT_afa.bim + BT_afa.fam ... done.
+
+End time: Mon Jun 20 16:43:15 2022

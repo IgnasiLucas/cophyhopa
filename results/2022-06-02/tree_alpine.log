@@ -1,0 +1,29 @@
+PLINK v1.90b6.14 64-bit (7 Jan 2020)
+Options in effect:
+  --allow-no-sex
+  --bfile tree_alpine
+  --freq
+  --missing
+  --out tree_alpine
+  --within treedata_alpine.clust
+
+Hostname: thermomix
+Working directory: /gata/mar/cophyhopa/results/2022-06-02
+Start time: Wed Jun 15 16:21:51 2022
+
+Random number seed: 1655302911
+257898 MB RAM detected; reserving 128949 MB for main workspace.
+9585 variants loaded from .bim file.
+157 people (0 males, 0 females, 157 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to tree_alpine.nosex .
+--within: 14 clusters loaded, covering a total of 157 people.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 157 founders and 0 nonfounders present.
+Calculating allele frequencies... done.
+--freq: Cluster-stratified allele frequencies (founders only) written to
+tree_alpine.frq.strat .
+--missing: Sample missing data report written to tree_alpine.imiss, and
+variant-based cluster-stratified missing data report written to
+tree_alpine.lmiss.
+
+End time: Wed Jun 15 16:21:51 2022

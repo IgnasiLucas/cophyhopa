@@ -5,19 +5,58 @@ date: "10/5/2022"
 output: html_document
 ---
 
-
 # 1. Convert .vcf file to PLINK format 
 
 Admixture requires input data in PLINK bed format. So, we convert our .vcf file output to PLINK format, that includes .bed, .ped, .fam and .bim formats. 
 
 ```{bash}
-INPUT='/gata/mar/cophyhopa/results/2022-05-04/assem2_filter.recode.vcf'
-OUTPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/assem93'
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+if [ ! -e ADMIX_ALL.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out ADMIX_ALL \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > ADMIX_ALL.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
 
-plink --vcf $INPUT --recode --out $OUTPUT --allow-extra-chr 0
-plink --vcf $INPUT --make-bed --out $OUTPUT --allow-extra-chr 0
+if [ ! -e chromMap.txt ]; then
+   gunzip -c ADMIX_ALL.vcf.gz | \
+   gawk '(/^[^#]/){
+      A[$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr "\t" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
 
-#vcftools --vcf ~/cophyhopa/results/2022-05-04/assem2_filter.recode.vcf --out assem93 --plink
+gawk -v OFS="\t" '{
+   $1 = 1
+   $2 = 1 ":" $4
+   print $0
+}' ADMIX_ALL.map > better.map
+mv better.map ADMIX_ALL.map
+
+vcftools --gzvcf ADMIX_ALL.vcf.gz \
+         --plink --mac 2 --remove-indels --max-alleles 2 \
+         --chrom-map chromMap.txt \
+         --out ADMIX_ALL
+
+plink --file ADMIX_ALL --make-bed --out ADMIX_ALL --allow-no-sex --allow-extra-chr
+
 
 ```
 
@@ -27,9 +66,9 @@ For run admixture, we need to define the K parameter. Here, $K is a number indic
 
 ```{bash}
 
-INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/assem93.bed'
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/ADMIX_ALL.bed'
 
-for K in 2 3 4 5 6 7 8 9 10 11; do admixture --cv $INPUT $K | tee log${K}.out; done
+for K in 7 8 9 10 11 12; do admixture --cv $INPUT $K | tee log${K}.out; done
 
 ```
 
@@ -37,7 +76,6 @@ for K in 2 3 4 5 6 7 8 9 10 11; do admixture --cv $INPUT $K | tee log${K}.out; d
 grep -h CV log*.out
 
 ```
-
 # 3.  Plot Q estimates K=7
 
 We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot 
@@ -45,41 +83,18 @@ We choose the K that has given a lower value of the cross-validation error. We a
 ```{r figure.align = "center", fig.height=6, fig.width=9}
 
 library(RColorBrewer)
-Q <- read.table("assem93.7.Q")
-popmap <- read.table("~/cophyhopa/results/2022-05-09/admixture/popmap.txt", col.names = c("Sample", "Pop"))
+Q <- read.table("ADMIX_ALL.7.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
 
-sample.id <- scan("assem93.nosex", what = "character")
+sample.id <- scan("ADMIX_ALL.nosex", what = "character")
 sample.id <- sample.id[!duplicated(sample.id)]
 rownames(popmap) <- popmap[,1]
 popmap <- popmap[sample.id, ]
 
-rownames(Q) <- paste(substring(sample.id, 4, 6)
-                      , '-', popmap[sample.id, 2], sep = '')
-
-num <- read.delim("~/cophyhopa/results/2022-05-09/species_numerades.txt", header=FALSE)
-rownames(num) <- num[,1]
-Q[,8] <- substring(rownames(Q), 8,9)
-Q[,9] <- NA
-
-for (i in 1:nrow(num)) {
-  class(Q$V8) <- "numeric"
-  s <- (Q$V8 == rownames(num[i,]))
-  a <- num[i, 2]
-  for (j in 1:length(s)) {
-    if (s[j] == TRUE) {
-      Q$V9[j] <- paste0(substring(rownames(Q[j, ]), 5,9), '_' , a, sep = '')
-    }
-  }
-}
-
-Q$V8 <- NULL
-Q$V9 <- make.unique(Q$V9)
-
-pop <- data.frame(rownames(Q), Q$V9)
-rownames(pop) <- pop[,1]
-
-rownames(Q) <- pop[rownames(pop), 2]
-Q$V9 <- NULL
+rownames(Q) <- sample.id
+Q[,8] <- NA
+Q[,8] <- popmap[rownames(Q), 3]
 
 z <- order(round(Q[, 'V1'], 2),
            round(Q[, 'V2'], 2),
@@ -91,7 +106,8 @@ z <- order(round(Q[, 'V1'], 2),
 par(mar=c(7,4,4,2))
 barplot(t(Q[z,]), col = brewer.pal(7, 'Accent'), border = NA,
         xlab = '', ylab = 'Admixture proportions for K=7', las=2,
-        cex.names = 0.5)
+        cex.names = 0.5, 
+        names.arg = t(Q[z,8]))
 
 ```
 
@@ -102,41 +118,18 @@ We choose the K that has given a lower value of the cross-validation error. We a
 ```{r figure.align = "center", fig.height=6, fig.width=9}
 
 library(RColorBrewer)
-Q <- read.table("assem93.8.Q")
-popmap <- read.table("~/cophyhopa/results/2022-05-09/admixture/popmap.txt", col.names = c("Sample", "Pop"))
+Q <- read.table("ADMIX_ALL.8.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
 
-sample.id <- scan("assem93.nosex", what = "character")
+sample.id <- scan("ADMIX_ALL.nosex", what = "character")
 sample.id <- sample.id[!duplicated(sample.id)]
 rownames(popmap) <- popmap[,1]
 popmap <- popmap[sample.id, ]
 
-rownames(Q) <- paste(substring(sample.id, 4, 6)
-                      , '-', popmap[sample.id, 2], sep = '')
-
-num <- read.delim("~/cophyhopa/results/2022-05-09/species_numerades.txt", header=FALSE)
-rownames(num) <- num[,1]
-Q[,9] <- substring(rownames(Q), 8,9)
-Q[,10] <- NA
-
-for (i in 1:nrow(num)) {
-  class(Q$V9) <- "numeric"
-  s <- (Q$V9 == rownames(num[i,]))
-  a <- num[i, 2]
-  for (j in 1:length(s)) {
-    if (s[j] == TRUE) {
-      Q$V10[j] <- paste0(substring(rownames(Q[j, ]), 5,9), '_' , a, sep = '')
-    }
-  }
-}
-
-Q$V9 <- NULL
-Q$V10 <- make.unique(Q$V10)
-
-pop <- data.frame(rownames(Q), Q$V10)
-rownames(pop) <- pop[,1]
-
-rownames(Q) <- pop[rownames(pop), 2]
-Q$V10 <- NULL
+rownames(Q) <- sample.id
+Q[,9] <- NA
+Q[,9] <- popmap[rownames(Q), 3]
 
 z <- order(round(Q[, 'V1'], 2),
            round(Q[, 'V2'], 2),
@@ -147,9 +140,10 @@ z <- order(round(Q[, 'V1'], 2),
            round(Q[, 'V7'], 2), decreasing = TRUE)
 
 par(mar=c(7,4,4,2))
-barplot(t(Q[z,]), col = brewer.pal(7, 'Accent'), border = NA,
-        xlab = '', ylab = 'Admixture proportions for K=7', las=2,
-        cex.names = 0.5)
+barplot(t(Q[z,]), col = brewer.pal(8, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=8', las=2,
+        cex.names = 0.5, 
+        names.arg = t(Q[z,9]))
 
 ```
 
@@ -158,41 +152,20 @@ barplot(t(Q[z,]), col = brewer.pal(7, 'Accent'), border = NA,
 We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot 
 
 ```{r figure.align = "center", fig.height=6, fig.width=9}
-Q <- read.table("assem93.9.Q")
-popmap <- read.table("~/cophyhopa/results/2022-05-09/admixture/popmap.txt", col.names = c("Sample", "Pop"))
 
-sample.id <- scan("assem93.nosex", what = "character")
+library(RColorBrewer)
+Q <- read.table("ADMIX_ALL.9.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("ADMIX_ALL.nosex", what = "character")
 sample.id <- sample.id[!duplicated(sample.id)]
 rownames(popmap) <- popmap[,1]
 popmap <- popmap[sample.id, ]
 
-rownames(Q) <- paste(substring(sample.id, 4, 6)
-                      , '-', popmap[sample.id, 2], sep = '')
-
-num <- read.delim("~/cophyhopa/results/2022-05-09/species_numerades.txt", header=FALSE)
-rownames(num) <- num[,1]
-Q[,10] <- substring(rownames(Q), 8,9)
-Q[,11] <- NA
-
-for (i in 1:nrow(num)) {
-  class(Q$V10) <- "numeric"
-  s <- (Q$V10 == rownames(num[i,]))
-  a <- num[i, 2]
-  for (j in 1:length(s)) {
-    if (s[j] == TRUE) {
-      Q$V11[j] <- paste0(substring(rownames(Q[j, ]), 5,9), '_' , a, sep = '')
-    }
-  }
-}
-
-Q$V10 <- NULL
-Q$V11 <- make.unique(Q$V11)
-
-pop <- data.frame(rownames(Q), Q$V11)
-rownames(pop) <- pop[,1]
-
-rownames(Q) <- pop[rownames(pop), 2]
-Q$V11 <- NULL
+rownames(Q) <- sample.id
+Q[,10] <- NA
+Q[,10] <- popmap[rownames(Q), 3]
 
 z <- order(round(Q[, 'V1'], 2),
            round(Q[, 'V2'], 2),
@@ -205,7 +178,44 @@ z <- order(round(Q[, 'V1'], 2),
 par(mar=c(7,4,4,2))
 barplot(t(Q[z,]), col = brewer.pal(9, 'Accent'), border = NA,
         xlab = '', ylab = 'Admixture proportions for K=9', las=2,
-        cex.names = 0.5)
+        cex.names = 0.5, 
+        names.arg = t(Q[z,10]))
+
+```
+
+# 6.  Plot Q estimates K=10
+
+We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot 
+
+```{r figure.align = "center", fig.height=6, fig.width=9}
+
+library(RColorBrewer)
+Q <- read.table("ADMIX_ALL.10.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("ADMIX_ALL.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+popmap <- popmap[sample.id, ]
+
+rownames(Q) <- sample.id
+Q[,11] <- NA
+Q[,11] <- popmap[rownames(Q), 3]
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),
+           round(Q[, 'V3'], 2),
+           round(Q[, 'V4'], 2),
+           round(Q[, 'V5'], 2),
+           round(Q[, 'V6'], 2),
+           round(Q[, 'V7'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(10, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=8', las=2,
+        cex.names = 0.5, 
+        names.arg = t(Q[z,11]))
 
 ```
 

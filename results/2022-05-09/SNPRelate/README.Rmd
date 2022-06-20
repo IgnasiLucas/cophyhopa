@@ -1,62 +1,170 @@
 ---
-title: "SNPrelate"
+title: "PCA analysis (SNPRelate)"
 author: "Mar Llaberia-Robledillo"
-date: "18/5/2022"
+date: "3/6/2022"
 output: html_document
 ---
 
+```{r}
+library(GWASTools); library(ggplot2); library(SNPRelate); library(stringr); 
+DATA_ALL <- '~/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+setwd('~/cophyhopa/results/2022-05-09/SNPRelate')
 
-```{r message=FALSE, warning=FALSE}
-##SNPrelate 
-library(GWASTools); library(ggplot2); library(SNPRelate); library(stringr)
-#Format conversion from VCF files 
-
-setwd("~/cophyhopa/results/2022-05-09/SNPRelate")
-vcf <- snpgdsVCF2GDS("~/cophyhopa/results/2022-05-04/assem2_filter.recode.vcf", "~/cophyhopa/results/2022-05-09/SNPRelate/geno.gds", method = "biallelic.only")
-#snpgdsSummary("geno.gds")
-
-
-genofile <- snpgdsOpen("geno.gds")
-#snpgdsClose(genofile)
-
-## Add population information
-popmap <- read.delim("~/cophyhopa/results/2022-05-09/SNPRelate/popmap.txt", header=FALSE)
-samp <- snpgdsGetGeno(genofile, sample.id = NULL, with.id = TRUE)
+vcf <- snpgdsVCF2GDS(DATA_ALL, "all_geno.gds", method = "biallelic.only")
+all_geno <- snpgdsOpen("all_geno.gds")
+#snpgdsClose(all_geno)
+popmap <- read.table("~/cophyhopa/data/popmap.txt", quote="\"", comment.char="")
+samp <- snpgdsGetGeno(all_geno, sample.id = NULL, with.id = TRUE)
 
 row.names(popmap) <- popmap[,1]
 popmap <- popmap[samp$sample.id, ]
-#write.table(popmap, file = "pop.txt", row.names = FALSE)
-
-## Add lakes information 
-popmap[,3] <- NA
-colnames(popmap) <- c("sample", "pop", "lake")
- 
-library(stringr)
-for(i in 1:nrow(popmap)){
-  popmap[i, 3] <- substr(popmap[i, 2], 1, 3)
-  }
-
-head(popmap)
-
-popnum <- popmap
-for (i in 1:nrow(popnum)) {
-  class(popnum[,2]) <- "character"
-  a <- substring(popmap$pop, 4, 5)
-  popnum[i , 2] <- a[i]
-}
-
 
 ```
 
-```{r}
-# option to filter SNPs for LD before pca
-#snpset <- snpgdsLDpruning(genofile, ld.threshold=0.2,autosome.only = FALSE)  
-#snpset.id <- unlist(snpset)
-#pca <- snpgdsPCA(genofile, num.thread=2, snp.id=snpset.id, autosome.only = FALSE)
 
-# pca with all SNPs
-pca <- snpgdsPCA(genofile, autosome.only = FALSE, 
-                 num.thread = 8)  
+```{r collapse=TRUE}
+# pca with
+pca <- snpgdsPCA(all_geno, autosome.only = FALSE, 
+                 num.thread = 8)
+# variance proportion (%)
+pc.percent <- pca$varprop*100
+pc.percent <- head(round(pc.percent, 2))
+
+# Manipulate results ----
+# make a data.frame
+tab <- data.frame(sample.id = pca$sample.id,
+                  EV1 = pca$eigenvect[,1],    # the first eigenvector
+                  EV2 = pca$eigenvect[,2],
+                  EV3 = pca$eigenvect[,3],
+                  EV4 = pca$eigenvect[,4],
+                  EV5 = pca$eigenvect[,5],
+                  EV6 = pca$eigenvect[,6],
+                  EV7 = pca$eigenvect[,7],# the second eigenvector
+                  stringsAsFactors = FALSE)
+head(tab)
+
+# add population data
+pop.group <- as.character(popmap[,2])
+tab[,9] <- pop.group
+colnames(tab)[9] <- "Group"
+## reorder pop names
+tab$Group <- popmap[tab$sample.id, 2]
+
+# add possible species data
+pop.sp <- as.character(popmap[,3])
+tab[,10] <- pop.sp
+colnames(tab)[10] <- "Sp"
+## reorder pop names
+tab$Sp <- popmap[tab$sample.id, 3]
+                    
+# add lakes information 
+lake <- as.character(popmap[,4])
+tab[,11] <- lake
+colnames(tab)[11] <- "Lake"
+# reorder lakes names
+tab$Lake <- popmap[tab$sample.id, 4]
+
+```
+
+
+```{r fig.height=8, fig.width=14, collapse=TRUE}
+# PC1, PC2 and PC3
+ggplot(tab, aes(x = EV1, y = EV2, col = Group)) + geom_point(size = 4) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+ggplot(tab, aes(x = EV1, y = EV3, col = Group)) + geom_point(size = 4) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV3", pc.percent[3], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+ggplot(tab, aes(x = EV3, y = EV2, col = Group)) + geom_point(size = 4) + 
+  labs(x = paste("EV3", pc.percent[3],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+```
+
+
+```{r fig.height=8, fig.width=14}
+library(ggforce)
+ggplot(tab, aes(x = EV1, y = EV2, col = Sp)) + theme_bw() + 
+  geom_point(size = 4) + 
+  geom_mark_ellipse(aes(group = Lake)) + xlim(-0.1, 0.15) + ylim(-0.15, 0.15)+
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+```
+
+
+```{r eval=FALSE}
+# Calculate the SNP correlations between eigenvactors and SNP genotypes:
+library(readr)
+
+chr <- read.gdsn(index.gdsn(genofile, "snp.chromosome"))
+chr2 <- parse_number(chr)
+CORR <- snpgdsPCACorr(pca, genofile, eig.which=1:4)
+
+savepar <- par(mfrow=c(3,1), mai=c(0.3, 0.55, 0.1, 0.25))
+for (i in 1:3)
+{
+  plot(abs(CORR$snpcorr[i,]), ylim=c(0,1), xlab="", ylab=paste("PC", i),
+       col=chr2, pch="+")
+}
+
+# plot Figure S1
+savepar <- par(mfrow=c(3,1), mai=c(0.3, 0.55, 0.1, 0.25))
+for (i in 1:3){
+  plot(CORR$snpcorr[i,], ylim=c(-1,1), xlab="", ylab=paste("PC", i),
+       col=chr2, pch="+")
+}
+```
+
+# PCA analysis for Alpine region 
+```{bash}
+VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+if [ ! -e alpine.recode.vcf ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep Alpine.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out alpine \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --recode --recode-INFO-all
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+```
+
+
+```{r collapse=TRUE}
+library(GWASTools); library(ggplot2); library(SNPRelate); library(stringr); 
+ALPINE = '~/cophyhopa/results/2022-05-09/SNPRelate/alpine.recode.vcf'
+
+vcf <- snpgdsVCF2GDS(ALPINE, "alpine.gds", method = "biallelic.only")
+alpine <- snpgdsOpen("alpine.gds")
+#snpgdsClose(alpine)
+popmap <- read.table("~/cophyhopa/data/popmap.txt", quote="\"", comment.char="")
+samp <- snpgdsGetGeno(alpine, sample.id = NULL, with.id = TRUE)
+row.names(popmap) <- popmap[,1]
+popmap <- popmap[samp$sample.id, ]
+```
+
+
+```{r collapse=TRUE}
+# pca with
+pca <- snpgdsPCA(alpine, autosome.only = FALSE, 
+                 num.thread = 8)
 
 # variance proportion (%)
 pc.percent <- pca$varprop*100
@@ -78,64 +186,53 @@ head(tab)
 # add population data
 pop.group <- as.character(popmap[,2])
 tab[,9] <- pop.group
-colnames(tab)[9] <- "Population"
-
+colnames(tab)[9] <- "Group"
 ## reorder pop names
-tab$Population <- popmap[tab$sample.id, 2]
+tab$Group <- popmap[tab$sample.id, 2]
 
+# add possible species data
+pop.sp <- as.character(popmap[,3])
+tab[,10] <- pop.sp
+colnames(tab)[10] <- "Sp"
+## reorder pop names
+tab$Sp <- popmap[tab$sample.id, 3]
+                    
 # add lakes information 
-lake <- as.character(popmap[,3])
-tab[,10] <- lake
-colnames(tab)[10] <- "lake"
-
+lake <- as.character(popmap[,4])
+tab[,11] <- lake
+colnames(tab)[11] <- "Lake"
 # reorder lakes names
-tab$lake <- popmap[tab$sample.id, 3]
-
+tab$Lake <- popmap[tab$sample.id, 4]
 ```
 
 
-```{r fig.height=8, fig.width=14}
-
+```{r fig.height=8, fig.width=14, collapse=TRUE}
 # PC1, PC2 and PC3
-ggplot(tab, aes(x = EV1, y = EV2, col = Population)) + geom_point(size = 4) + 
+ggplot(tab, aes(x = EV1, y = EV2, col = Group)) + geom_point(size = 4) + 
   labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
   theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
                      axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
   theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
 
-ggplot(tab, aes(x = EV1, y = EV3, col = Population)) + geom_point(size = 4) + 
+ggplot(tab, aes(x = EV1, y = EV3, col = Group)) + geom_point(size = 4) + 
   labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV3", pc.percent[3], "%")) + 
   theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
                      axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
   theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
-
-ggplot(tab, aes(x = EV3, y = EV2, col = Population)) + geom_point(size = 4) + 
+  
+ggplot(tab, aes(x = EV3, y = EV2, col = Group)) + geom_point(size = 4) + 
   labs(x = paste("EV3", pc.percent[3],"%"), y = paste("EV2", pc.percent[2], "%")) + 
   theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
                      axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
   theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
-
-
 ```
+
 
 ```{r fig.height=8, fig.width=14}
-
-ggplot(tab, aes(x = EV1, y = EV2, col = Population)) + 
-  geom_point(aes(size = Population, shape = lake)) + 
-  stat_ellipse(aes(group = lake), linetype = 2) +
-  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
-  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
-                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
-  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
-
-
-```
-
-```{r  fig.height=8, fig.width=14}
 library(ggforce)
-ggplot(tab, aes(x = EV1, y = EV2, col = lake)) + theme_bw() + 
-  geom_point(aes(shape = lake), size = 3) + 
-  geom_mark_ellipse(aes(group = lake)) + xlim(-0.2, 0.15) + ylim(-0.15, 0.2)+
+ggplot(tab, aes(x = EV1, y = EV2, col = Sp)) + theme_bw() + 
+  geom_point(size = 4) + 
+  geom_mark_ellipse(aes(group = Lake)) + xlim(-0.2, 0.2) + ylim(-0.4, 0.5) +
   labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
   theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
                      axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
@@ -143,38 +240,50 @@ ggplot(tab, aes(x = EV1, y = EV2, col = lake)) + theme_bw() +
 
 ```
 
-```{r, eval = FALSE}
+# PCA analysis for Arctic region 
 
-# Calculate the SNP correlations between eigenvactors and SNP genotypes:
-library(readr)
-
-chr <- read.gdsn(index.gdsn(genofile, "snp.chromosome"))
-chr2 <- parse_number(chr)
-CORR <- snpgdsPCACorr(pca, genofile, eig.which=1:4)
-
-savepar <- par(mfrow=c(3,1), mai=c(0.3, 0.55, 0.1, 0.25))
-for (i in 1:3)
-{
-  plot(abs(CORR$snpcorr[i,]), ylim=c(0,1), xlab="", ylab=paste("PC", i),
-       col=chr2, pch="+")
-}
-
-# plot Figure S1
-savepar <- par(mfrow=c(3,1), mai=c(0.3, 0.55, 0.1, 0.25))
-for (i in 1:3){
-  plot(CORR$snpcorr[i,], ylim=c(-1,1), xlab="", ylab=paste("PC", i),
-       col=chr2, pch="+")
-}
+```{bash}
+VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+if [ ! -e arctic.recode.vcf ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep Arctic.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out arctic \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --recode --recode-INFO-all
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
 
 ```
 
-# Repeat without the lake information in the initial plot 
 
-```{r ig.height=7, fig.width=12}
-# pca with all SNPs
-pca <- snpgdsPCA(genofile, autosome.only = FALSE, 
+```{r collapse=TRUE}
+ARCTIC <- '~/cophyhopa/results/2022-05-09/SNPRelate/arctic.recode.vcf'
+
+vcf <- snpgdsVCF2GDS(ARCTIC, "arctic.gds", method = "biallelic.only")
+
+arctic <- snpgdsOpen("arctic.gds")
+#snpgdsClose(arctic)
+popmap <- read.table("~/cophyhopa/data/popmap.txt", quote="\"", comment.char="")
+samp <- snpgdsGetGeno(arctic, sample.id = NULL, with.id = TRUE)
+row.names(popmap) <- popmap[,1]
+popmap <- popmap[samp$sample.id, ]
+
+```
+
+
+```{r collapse=TRUE}
+# pca with
+pca <- snpgdsPCA(arctic, autosome.only = FALSE, 
                  num.thread = 8)  
-
 # variance proportion (%)
 pc.percent <- pca$varprop*100
 pc.percent <- head(round(pc.percent, 2))
@@ -191,54 +300,58 @@ tab <- data.frame(sample.id = pca$sample.id,
                   EV7 = pca$eigenvect[,7],# the second eigenvector
                   stringsAsFactors = FALSE)
 head(tab)
-
 # add population data
-pop.group <- as.character(popnum[,2])
+pop.group <- as.character(popmap[,2])
 tab[,9] <- pop.group
-colnames(tab)[9] <- "Population"
-
+colnames(tab)[9] <- "Group"
 ## reorder pop names
-tab$Population <- popnum[tab$sample.id, 2]
+tab$Group <- popmap[tab$sample.id, 2]
 
+# add possible species data
+pop.sp <- as.character(popmap[,3])
+tab[,10] <- pop.sp
+colnames(tab)[10] <- "Sp"
+## reorder pop names
+tab$Sp <- popmap[tab$sample.id, 3]
+                    
 # add lakes information 
-lake <- as.character(popmap[,3])
-tab[,10] <- lake
-colnames(tab)[10] <- "lake"
-
+lake <- as.character(popmap[,4])
+tab[,11] <- lake
+colnames(tab)[11] <- "Lake"
 # reorder lakes names
-tab$lake <- popmap[tab$sample.id, 3]
+tab$Lake <- popmap[tab$sample.id, 4]
+```
 
 
-ggplot(tab, aes(x = EV1, y = EV2, col = Population)) + geom_point(size = 4) + 
+```{r fig.height=8, fig.width=14, collapse=TRUE}
+# PC1, PC2 and PC3
+ggplot(tab, aes(x = EV1, y = EV2, col = Group)) + geom_point(size = 4) + 
   labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
   theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
                      axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
   theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
 
-
-```
-
-```{r fig.height=8, fig.width=14}
-
-ggplot(tab, aes(x = EV1, y = EV2, col = Population)) + 
-  geom_point(aes(shape = lake), size = 4) + 
-  stat_ellipse(aes(group = lake), linetype = 2) +
-  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+ggplot(tab, aes(x = EV1, y = EV3, col = Group)) + geom_point(size = 4) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV3", pc.percent[3], "%")) + 
   theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
                      axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
   theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
 
-
+ggplot(tab, aes(x = EV3, y = EV2, col = Group)) + geom_point(size = 4) + 
+  labs(x = paste("EV3", pc.percent[3],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
 ```
 
-```{r  fig.height=8, fig.width=14}
+
+```{r fig.height=8, fig.width=14, collapse=TRUE}
 library(ggforce)
-ggplot(tab, aes(x = EV1, y = EV2, col = lake)) + theme_bw() + 
-  geom_point(aes(shape = lake), size = 3) + 
-  geom_mark_ellipse(aes(group = lake)) + xlim(-0.1, 0.1) + ylim(-0.15, 0.15)+
+ggplot(tab, aes(x = EV1, y = EV2, col = Sp)) + theme_bw() + 
+  geom_point(aes(shape = Lake), size = 4) + 
+  geom_mark_ellipse(aes(group = Lake))+
   labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
   theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
                      axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
   theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
-
 ```

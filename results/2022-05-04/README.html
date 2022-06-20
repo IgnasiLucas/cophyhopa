@@ -366,6 +366,19 @@ if [ ! -e assem2.imiss ]; then
             --out assem2 \
             --missing-indv
 fi</code></pre>
+<pre><code>## 
+## VCFtools - 0.1.17
+## (C) Adam Auton and Anthony Marcketta 2009
+## 
+## Parameters as interpreted:
+##  --vcf ../2022-04-22/assem2_outfiles/assem2.vcf
+##  --missing-indv
+##  --out assem2
+## 
+## After filtering, kept 280 out of 280 Individuals
+## Outputting Individual Missingness
+## After filtering, kept 879238 out of a possible 879238 Sites
+## Run Time = 37.00 seconds</code></pre>
 <pre class="r"><code>missingness &lt;- read.table('assem2.imiss', header = TRUE)
 plot(ecdf(missingness$F_MISS),
      xlab = 'Fraction of sites missing',
@@ -392,6 +405,22 @@ if [ ! -e assem2_indv.recode.vcf ]; then
             --recode \
             --recode-INFO-all
 fi</code></pre>
+<pre><code>## 
+## VCFtools - 0.1.17
+## (C) Adam Auton and Anthony Marcketta 2009
+## 
+## Parameters as interpreted:
+##  --vcf ../2022-04-22/assem2_outfiles/assem2.vcf
+##  --remove VeryBad.txt
+##  --recode-INFO-all
+##  --out assem2_indv
+##  --recode
+## 
+## Excluding individuals in 'exclude' list
+## After filtering, kept 275 out of 280 Individuals
+## Outputting VCF file...
+## After filtering, kept 879238 out of a possible 879238 Sites
+## Run Time = 262.00 seconds</code></pre>
 </div>
 <div id="site-filtering-options" class="section level1">
 <h1>2. Site Filtering Options</h1>
@@ -425,6 +454,26 @@ fi</code></pre>
             --max-missing-count 12 \
             --recode --recode-INFO-all
 fi</code></pre>
+<pre><code>## 
+## VCFtools - 0.1.17
+## (C) Adam Auton and Anthony Marcketta 2009
+## 
+## Parameters as interpreted:
+##  --vcf assem2_indv.recode.vcf
+##  --recode-INFO-all
+##  --mac 2
+##  --max-alleles 2
+##  --max-missing-count 12
+##  --max-meanDP 1e+03
+##  --thin 500
+##  --out assem2_filter
+##  --recode
+##  --remove-indels
+## 
+## After filtering, kept 275 out of 275 Individuals
+## Outputting VCF file...
+## After filtering, kept 22270 out of a possible 879238 Sites
+## Run Time = 68.00 seconds</code></pre>
 </div>
 </div>
 <div id="output-options" class="section level1">
@@ -449,6 +498,19 @@ OUTPUT='assem2_outstat'
 if [ ! -e assem2_outstat.imiss ]; then
    vcftools --vcf $INPUT --out $OUTPUT --missing-indv
 fi</code></pre>
+<pre><code>## 
+## VCFtools - 0.1.17
+## (C) Adam Auton and Anthony Marcketta 2009
+## 
+## Parameters as interpreted:
+##  --vcf assem2_filter.recode.vcf
+##  --missing-indv
+##  --out assem2_outstat
+## 
+## After filtering, kept 275 out of 275 Individuals
+## Outputting Individual Missingness
+## After filtering, kept 22270 out of a possible 22270 Sites
+## Run Time = 1.00 seconds</code></pre>
 <pre class="r"><code>imiss &lt;- read.table('assem2_outstat.imiss', header = TRUE, row.names = 1)
 plot(ecdf(imiss$F_MISS), xlab = 'Fraction of missing sites per individual',
      main = 'ECDF of fraction of missing sites per individual in filtered VCF')
@@ -497,6 +559,55 @@ if [ ! -e assem2_strict.imiss ]; then
             --out assem2_strict \
             --missing-indv
 fi</code></pre>
+<pre><code>## 
+## VCFtools - 0.1.17
+## (C) Adam Auton and Anthony Marcketta 2009
+## 
+## Parameters as interpreted:
+##  --vcf ../2022-04-22/assem2_outfiles/assem2.vcf
+##  --remove TheWorst.txt
+##  --recode-INFO-all
+##  --out assem2_indv2
+##  --recode
+## 
+## Excluding individuals in 'exclude' list
+## After filtering, kept 271 out of 280 Individuals
+## Outputting VCF file...
+## After filtering, kept 879238 out of a possible 879238 Sites
+## Run Time = 249.00 seconds
+## 
+## VCFtools - 0.1.17
+## (C) Adam Auton and Anthony Marcketta 2009
+## 
+## Parameters as interpreted:
+##  --vcf assem2_indv2.recode.vcf
+##  --recode-INFO-all
+##  --mac 2
+##  --max-alleles 2
+##  --max-missing-count 12
+##  --max-meanDP 1e+03
+##  --thin 500
+##  --out strict
+##  --recode
+##  --remove-indels
+## 
+## After filtering, kept 271 out of 271 Individuals
+## Outputting VCF file...
+## After filtering, kept 24878 out of a possible 879238 Sites
+## Run Time = 68.00 seconds
+## 
+## VCFtools - 0.1.17
+## (C) Adam Auton and Anthony Marcketta 2009
+## 
+## Parameters as interpreted:
+##  --vcf strict.recode.vcf
+##  --missing-indv
+##  --out assem2_strict
+## 
+## After filtering, kept 271 out of 271 Individuals
+## Outputting Individual Missingness
+## After filtering, kept 24878 out of a possible 24878 Sites
+## Run Time = 1.00 seconds</code></pre>
 <pre class="r"><code>imiss2 &lt;- read.table('assem2_strict.imiss', header = TRUE, row.names = 1)
 plot(ecdf(imiss2$F_MISS), xlab = 'Proportion of sites missing per individual',
      main = 'ECDF of proportion of missing sites per individual')

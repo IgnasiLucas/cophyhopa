@@ -1,33 +1,75 @@
 
 
 processing file: README.Rmd
-running: bash  -c "
-INPUT='~/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
-OUTPUT='assem2_indv'
+running: bash  -c "VCF='../2022-04-22/assem2_outfiles/assem2.vcf'
+if [ ! -e assem2.imiss ]; then
+   vcftools --vcf \$VCF \\
+            --out assem2 \\
+            --missing-indv
+fi"
+running: bash  -c "VCF='../2022-04-22/assem2_outfiles/assem2.vcf'
+if [ ! -e assem2_indv.recode.vcf ]; then
+   vcftools --vcf \$VCF \\
+            --out assem2_indv \\
+            --remove VeryBad.txt \\
+            --recode \\
+            --recode-INFO-all
+fi"
+running: bash  -c 'if [ ! -e assem2_filter.recode.vcf ]; then
+   vcftools --vcf assem2_indv.recode.vcf \
+            --out assem2_filter \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 12 \
+            --recode --recode-INFO-all
+fi'
+running: bash  -c "INPUT='assem2_filter.recode.vcf'
+OUTPUT='assem2_outstat'
+#if [ ! -e assem2_outstat.relatedness ]; then
+#   vcftools --vcf \$INPUT --out \$OUTPUT --relatedness
+#fi
+#if [ ! -e assem2_outstat.relatedness2 ]; then
+#   vcftools --vcf \$INPUT --out \$OUTPUT --relatedness2
+#fi
+if [ ! -e assem2_outstat.imiss ]; then
+   vcftools --vcf \$INPUT --out \$OUTPUT --missing-indv
+fi"
+running: bash  -c "VCF='../2022-04-22/assem2_outfiles/assem2.vcf'
+if [ ! -e TheWorst.txt ]; then
+   cat VeryBad.txt NotGood.txt > TheWorst.txt
+fi
+if [ ! -e assem2_indv2.recode.vcf ]; then
+   vcftools --vcf \$VCF \\
+            --out assem2_indv2 \\
+            --remove TheWorst.txt \\
+            --recode \\
+            --recode-INFO-all
+fi
 
-vcftools --vcf \$INPUT --out \$OUTPUT --remove-indv SUO095 --recode --recode-INFO-all
-"
-Quitting from lines 14-20 (README.Rmd) 
-Error in engine(options) : 
-VCFtools - 0.1.17
-(C) Adam Auton and Anthony Marcketta 2009
+# To make sure site filters are applied after individual filters, we now run
+# the following separately:
 
-Parameters as interpreted:
-	--vcf ~/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf
-	--recode-INFO-all
-	--out assem2_indv
-	--recode
-	--remove-indv SUO095
+if [ ! -e strict.recode.vcf ]; then
+   vcftools --vcf assem2_indv2.recode.vcf \\
+            --out strict \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 12 \\
+            --recode --recode-INFO-all
+fi
 
-stat error: No such file or directory
-Error: Can't determine file type of ~/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf
-Calls: <Anonymous> ... process_group.block -> call_block -> block_exec -> in_dir -> engine
-In addition: Warning message:
-In system2(cmd, code, stdout = TRUE, stderr = TRUE, env = options$engine.env) :
-  running command ''bash'  -c "
-INPUT='~/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
-OUTPUT='assem2_indv'
+if [ ! -e assem2_strict.imiss ]; then
+   vcftools --vcf strict.recode.vcf \\
+            --out assem2_strict \\
+            --missing-indv
+fi"
+output file: README.knit.md
 
-vcftools --vcf \$INPUT --out \$OUTPUT --remove-indv SUO095 --recode --recode-INFO-all
-" 2>&1' had status 1
-Execution halted
+
+Output created: README.html

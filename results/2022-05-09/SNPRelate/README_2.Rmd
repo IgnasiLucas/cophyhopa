@@ -1,0 +1,396 @@
+---
+title: "PCA with hybrids"
+author: "Mar Llaberia-Robledillo"
+date: "3/6/2022"
+output: html_document
+---
+
+# PCA analysis for Walen and Zurich lakes 
+
+```{r}
+# Creating the tables for separate analysis for the two regions
+Walen <- readLines("~/cophyhopa/data/Walen.txt")
+Zurich <- readLines("~/cophyhopa/data/Zurich.txt")
+walzur <- c(Walen, Zurich)
+write.table(walzur, file = 'WalZur.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
+```
+
+
+```{bash collapse = TRUE}
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+if [ ! -e walzur.recode.vcf ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep WalZur.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out walzur \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --recode --recode-INFO-all
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+```
+
+
+```{r collapse=TRUE}
+library(GWASTools); library(ggplot2); library(SNPRelate); library(stringr); 
+
+WALZUR = '~/cophyhopa/results/2022-05-09/SNPRelate/walzur.recode.vcf'
+vcf <- snpgdsVCF2GDS(WALZUR, "walzur.gds", method = "biallelic.only")
+
+walzur <- snpgdsOpen("walzur.gds")
+#snpgdsClose(walzur)
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                      col.names = c('sample', 'group', 'pop', 'lake'))
+samp <- snpgdsGetGeno(walzur, sample.id = NULL, with.id = TRUE)
+row.names(popmap) <- popmap[,1]
+popmap <- popmap[samp$sample.id, ]
+```
+
+
+```{r collapse=TRUE}
+# pca with
+pca <- snpgdsPCA(walzur, autosome.only = FALSE, 
+                 num.thread = 8)
+
+# variance proportion (%)
+pc.percent <- pca$varprop*100
+pc.percent <- head(round(pc.percent, 2))
+
+# Manipulate results ----
+# make a data.frame
+tab <- data.frame(sample.id = pca$sample.id,
+                  EV1 = pca$eigenvect[,1],    # the first eigenvector
+                  EV2 = pca$eigenvect[,2],
+                  EV3 = pca$eigenvect[,3],
+                  EV4 = pca$eigenvect[,4],
+                  EV5 = pca$eigenvect[,5],
+                  EV6 = pca$eigenvect[,6],
+                  EV7 = pca$eigenvect[,7],# the second eigenvector
+                  stringsAsFactors = FALSE)
+head(tab)
+
+# add population data
+pop.group <- as.character(popmap[,2])
+tab[,9] <- pop.group
+colnames(tab)[9] <- "Group"
+## reorder pop names
+tab$Group <- popmap[tab$sample.id, 2]
+
+# add possible species data
+pop.sp <- as.character(popmap[,3])
+tab[,10] <- pop.sp
+colnames(tab)[10] <- "Sp"
+## reorder pop names
+tab$Sp <- popmap[tab$sample.id, 3]
+                    
+# add lakes information 
+lake <- as.character(popmap[,4])
+tab[,11] <- lake
+colnames(tab)[11] <- "Lake"
+# reorder lakes names
+tab$Lake <- popmap[tab$sample.id, 4]
+```
+
+
+```{r  fig.height=8, fig.width=14, collapse=TRUE}
+# PC1, PC2 and PC3
+ggplot(tab, aes(x = EV1, y = EV2, col = Group)) + geom_point(size = 4) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+ggplot(tab, aes(x = EV1, y = EV3, col = Group)) + geom_point(size = 4) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV3", pc.percent[3], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+  
+ggplot(tab, aes(x = EV3, y = EV2, col = Group)) + geom_point(size = 4) + 
+  labs(x = paste("EV3", pc.percent[3],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+```
+
+```{r  fig.height=8, fig.width=14, collapse=TRUE}
+library(ggforce)
+ggplot(tab, aes(x = EV1, y = EV2, col = Sp)) + theme_bw() + 
+  geom_point(size = 4) +  
+  geom_mark_ellipse(aes(group = Lake)) + xlim(-0.25, 0.3) + ylim(-0.3, 0.3) +
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+```
+
+```{r  fig.height=8, fig.width=14, collapse=TRUE}
+tab_hyb <- tab
+tab_hyb$Sp <- as.character(tab_hyb$Sp) 
+hybrsp <- function(sp, ev1, ev2){
+  evl <- which(sp$EV1 >= ev1[1])
+  evr <- which(sp$EV1 <= ev1[2])
+  ev1 <- intersect(evl, evr)
+  evl <- which(sp$EV2 >= ev2[1])
+  evr <- which(sp$EV2 <= ev2[2])
+  ev2 <- intersect(evl, evr)
+  ev <- intersect(ev1, ev2)
+  for (i in 1:length(ev)){
+    sp[ev[i], 10] <- "Hybrid"
+  }
+  return(sp)
+}
+
+tab_hyb <- hybrsp(tab_hyb, ev1 = c(-0.11, -0.09), ev2 = c(0, 0.02))
+tab_hyb <- hybrsp(tab_hyb, ev1 = c(0.1, 0.15), ev2 = c(-0.1, -0.05))
+
+#tab_hyb <- hybrsp(tab_hyb, ev1 = c(, ), ev2 = c(, ))
+hybrids <- tab_hyb[which(tab_hyb$Sp == "Hybrid"), 1]
+write.table(hybrids, file = 'Hybrids_walzur.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
+ggplot(tab, aes(x = EV1, y = EV2, col = Sp)) + theme_bw() + 
+  geom_point(size = 4) + 
+  geom_text(aes(label = hybrids[1], x = -0.12, y = 0.03), col = "black") +
+  geom_text(aes(label = hybrids[2], x = 0.12, y = -0.06), col = "black") +
+  geom_text(aes(label = hybrids[3], x = 0.14, y = -0.05), col = "black") +
+  geom_mark_ellipse(aes(group = Lake)) + xlim(-0.25, 0.3) + ylim(-0.3, 0.3) +
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+```
+
+
+
+# PCA analysis for Bienne, Brienz and Thun lakes 
+
+```{r}
+# Creating the tables for separate analysis for the two regions
+Bienne <- readLines("~/cophyhopa/data/Bienne.txt")
+Brienz <- readLines("~/cophyhopa/data/Brienz.txt")
+Thun <- readLines("~/cophyhopa/data/Thun.txt")
+BBT <- c(Bienne, Brienz, Thun)
+write.table(BBT, file = 'BieBriThu.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
+```
+
+
+```{bash collapse = TRUE}
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+if [ ! -e BBT.recode.vcf ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep BieBriThu.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out BBT \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --recode --recode-INFO-all
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+```
+
+
+```{r collapse=TRUE}
+library(GWASTools); library(ggplot2); library(SNPRelate); library(stringr); 
+
+BBT = '~/cophyhopa/results/2022-05-09/SNPRelate/BBT.recode.vcf'
+vcf <- snpgdsVCF2GDS(BBT, "BBT.gds", method = "biallelic.only")
+
+bbt <- snpgdsOpen("BBT.gds")
+#snpgdsClose(bbt)
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                      col.names = c('sample', 'group', 'pop', 'lake'))
+samp <- snpgdsGetGeno(bbt, sample.id = NULL, with.id = TRUE)
+row.names(popmap) <- popmap[,1]
+popmap <- popmap[samp$sample.id, ]
+```
+
+
+```{r collapse=TRUE}
+# pca with
+pca <- snpgdsPCA(bbt, autosome.only = FALSE, 
+                 num.thread = 8)
+
+# variance proportion (%)
+pc.percent <- pca$varprop*100
+pc.percent <- head(round(pc.percent, 2))
+
+# Manipulate results ----
+# make a data.frame
+tab <- data.frame(sample.id = pca$sample.id,
+                  EV1 = pca$eigenvect[,1],    # the first eigenvector
+                  EV2 = pca$eigenvect[,2],
+                  EV3 = pca$eigenvect[,3],
+                  EV4 = pca$eigenvect[,4],
+                  EV5 = pca$eigenvect[,5],
+                  EV6 = pca$eigenvect[,6],
+                  EV7 = pca$eigenvect[,7],# the second eigenvector
+                  stringsAsFactors = FALSE)
+head(tab)
+
+# add population data
+pop.group <- as.character(popmap[,2])
+tab[,9] <- pop.group
+colnames(tab)[9] <- "Group"
+## reorder pop names
+tab$Group <- popmap[tab$sample.id, 2]
+
+# add possible species data
+pop.sp <- as.character(popmap[,3])
+tab[,10] <- pop.sp
+colnames(tab)[10] <- "Sp"
+## reorder pop names
+tab$Sp <- popmap[tab$sample.id, 3]
+                    
+# add lakes information 
+lake <- as.character(popmap[,4])
+tab[,11] <- lake
+colnames(tab)[11] <- "Lake"
+# reorder lakes names
+tab$Lake <- popmap[tab$sample.id, 4]
+```
+
+```{r  fig.height=8, fig.width=14, collapse=TRUE}
+# PC1, PC2 and PC3
+ggplot(tab, aes(x = EV1, y = EV2, col = Group)) + geom_point(size = 4) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+ggplot(tab, aes(x = EV1, y = EV3, col = Group)) + geom_point(size = 4) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV3", pc.percent[3], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+  
+ggplot(tab, aes(x = EV3, y = EV2, col = Group)) + geom_point(size = 4) + 
+  labs(x = paste("EV3", pc.percent[3],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+```
+
+```{r  fig.height=8, fig.width=14, collapse=TRUE}
+library(ggforce)
+ggplot(tab, aes(x = EV1, y = EV2, col = Sp)) + theme_bw() + 
+  geom_point(size = 4) +  
+  geom_mark_ellipse(aes(group = Lake)) + xlim(-0.25, 0.2) + ylim(-0.25, 0.20) +
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+```
+
+```{r  fig.height=8, fig.width=14, collapse=TRUE}
+tab_hyb <- tab
+tab_hyb$Sp <- as.character(tab_hyb$Sp) 
+hybrsp <- function(sp, ev1, ev2){
+  evl <- which(sp$EV1 >= ev1[1])
+  evr <- which(sp$EV1 <= ev1[2])
+  ev1 <- intersect(evl, evr)
+  evl <- which(sp$EV2 >= ev2[1])
+  evr <- which(sp$EV2 <= ev2[2])
+  ev2 <- intersect(evl, evr)
+  ev <- intersect(ev1, ev2)
+  for (i in 1:length(ev)){
+    sp[ev[i], 10] <- "Hybrid"
+  }
+  return(sp)
+}
+
+tab_hyb <- hybrsp(tab_hyb, ev1 = c(-0.2, -0.16), ev2 = c(0.05, 0.11))
+tab_hyb <- hybrsp(tab_hyb, ev1 = c(-0.15, 0.1), ev2 = c(-0.05, 0.01))
+tab_hyb <- hybrsp(tab_hyb, ev1 = c(-0.1, 0), ev2 = c(0.05, 0.1))
+
+#tab_hyb <- hybrsp(tab_hyb, ev1 = c(, ), ev2 = c(, ))
+hybrids2 <- tab_hyb[which(tab_hyb$Sp == "Hybrid"), 1]
+write.table(hybrids2, file = 'Hybrids_bbt.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
+cor_hyb <- tab
+rownames(cor_hyb) <- cor_hyb$sample.id
+cor_hyb <- cor_hyb[hybrids2, ]
+
+ggplot(tab, aes(x = EV1, y = EV2, col = Sp)) + theme_bw() + 
+  geom_point(size = 4) +
+  geom_mark_ellipse(aes(group = Lake)) + xlim(-0.25, 0.2) + ylim(-0.25, 0.2) +
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10)) + 
+  geom_text(aes(label = cor_hyb[1,1], x = cor_hyb[1,2], y = cor_hyb[1,3]), col = "black", size = 2) + 
+  geom_text(aes(label = cor_hyb[2,1], x = cor_hyb[2,2], y = cor_hyb[2,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[3,1], x = cor_hyb[3,2], y = cor_hyb[3,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[4,1], x = cor_hyb[4,2], y = cor_hyb[4,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[5,1], x = cor_hyb[5,2], y = cor_hyb[5,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[6,1], x = cor_hyb[6,2], y = cor_hyb[6,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[7,1], x = cor_hyb[7,2], y = cor_hyb[7,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[8,1], x = cor_hyb[8,2], y = cor_hyb[8,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[9,1], x = cor_hyb[9,2], y = cor_hyb[9,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[10,1], x = cor_hyb[10,2], y = cor_hyb[10,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[11,1], x = cor_hyb[11,2], y = cor_hyb[11,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[12,1], x = cor_hyb[12,2], y = cor_hyb[12,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[13,1], x = cor_hyb[13,2], y = cor_hyb[13,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[14,1], x = cor_hyb[14,2], y = cor_hyb[14,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[15,1], x = cor_hyb[15,2], y = cor_hyb[15,3]), col = "black", size = 2) 
+
+```
+
+## Without hybrids and only hybrids
+
+```{r  fig.height=8, fig.width=14, collapse=TRUE}
+without_hyb <- tab_hyb[-which(tab_hyb$Sp == "Hybrid"), ]
+ggplot(without_hyb, aes(x = EV1, y = EV2, col = Sp)) + theme_bw() + 
+  geom_point(aes(shape = Lake), size = 4) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+
+ggplot(cor_hyb, aes(x = EV1, y = EV2, col = Sp)) + theme_bw() + 
+  geom_point(size = 4) +
+  geom_mark_ellipse(aes(group = Lake)) + xlim(-0.25, 0.1) + ylim(-0.05, 0.11) +
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10)) + 
+  geom_text(aes(label = cor_hyb[1,1], x = cor_hyb[1,2], y = cor_hyb[1,3]), col = "black", size = 2) + 
+  geom_text(aes(label = cor_hyb[2,1], x = cor_hyb[2,2], y = cor_hyb[2,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[3,1], x = cor_hyb[3,2], y = cor_hyb[3,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[4,1], x = cor_hyb[4,2], y = cor_hyb[4,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[5,1], x = cor_hyb[5,2], y = cor_hyb[5,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[6,1], x = cor_hyb[6,2], y = cor_hyb[6,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[7,1], x = cor_hyb[7,2], y = cor_hyb[7,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[8,1], x = cor_hyb[8,2], y = cor_hyb[8,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[9,1], x = cor_hyb[9,2], y = cor_hyb[9,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[10,1], x = cor_hyb[10,2], y = cor_hyb[10,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[11,1], x = cor_hyb[11,2], y = cor_hyb[11,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[12,1], x = cor_hyb[12,2], y = cor_hyb[12,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[13,1], x = cor_hyb[13,2], y = cor_hyb[13,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[14,1], x = cor_hyb[14,2], y = cor_hyb[14,3]), col = "black", size = 2) +
+  geom_text(aes(label = cor_hyb[15,1], x = cor_hyb[15,2], y = cor_hyb[15,3]), col = "black", size = 2) 
+
+```
