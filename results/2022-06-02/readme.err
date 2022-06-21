@@ -2,156 +2,85 @@
 
 processing file: README.Rmd
 running: bash  -c "# Create the vcf.gz file (remove the hybrids and zip vcf)
-VCF='gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
-if [ ! -e treedata.vcf.gz ]; then
-vcftools --vcf ~/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf \\
-         --max-missing 1 \\
-         --remove ~/cophyhopa/data/HYBRIDS.txt \\
-         --recode \\
-         --stdout \\
-         | gzip > treedata.vcf.gz
-fi"
-running: bash  -c "# Download the script that generates the input file and execute it 
-#wget https://github.com/speciationgenomics/scripts/blob/master/vcf2treemix.sh
-# Thom Nelson's adaptation of Tomaz Berisa's script to convert plink clustered allele frequencies to treemix format
-#   (https://bitbucket.org/nygcresearch/treemix/downloads/)
-
-./vcf2treemix.sh treedata.vcf.gz treedata.clust
-
-# Execute the basic treemix command
-treemix -i treedata.treemix.frq.gz -o out_tree
-"
-running: bash  -c "# Pop D (arctic) as outgroup
 VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
-if [ ! -e alpine_outD.recode.vcf ]; then
+FILE=TREE
+if [ ! -e \$FILE.vcf.gz ]; then
    vcftools --vcf \$VCF \\
             --out dirty \\
-            --keep outD.clust \\
+            --keep ~/cophyhopa/data/ADMX/ALL.txt \\
             --recode \\
             --recode-INFO-all
    vcftools --vcf dirty.recode.vcf \\
-            --out alpine_outD \\
+            --out \$FILE \\
             --thin 500 \\
             --remove-indels \\
             --mac 2 \\
             --max-alleles 2 \\
             --max-meanDP 1000 \\
             --max-missing-count 7 \\
-            --recode --recode-INFO-all
+            --max-missing 1 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > ./TREE/\$FILE.vcf.gz
 fi
-if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi"
+Loading required package: R.oo
+Loading required package: R.methodsS3
+R.methodsS3 v1.8.1 (2020-08-26 16:20:06 UTC) successfully loaded. See ?R.methodsS3 for help.
+R.oo v1.24.0 (2020-08-26 16:11:58 UTC) successfully loaded. See ?R.oo for help.
 
-if [ ! -e alpine_outD.vcf.gz ]; then
-vcftools --vcf alpine_outD.recode.vcf \\
-         --max-missing 1 \\
-         --remove ~/cophyhopa/data/HYBRIDS.txt \\
-         --recode \\
-         --stdout \\
-         | gzip > alpine_outD.vcf.gz
-fi
+Attaching package: 'R.oo'
 
-# Pop P (arctic) as outgroup
-if [ ! -e alpine_outP.recode.vcf ]; then
+The following object is masked from 'package:R.methodsS3':
+
+    throw
+
+The following objects are masked from 'package:methods':
+
+    getClasses, getMethods
+
+The following objects are masked from 'package:base':
+
+    attach, detach, load, save
+
+R.utils v2.11.0 (2021-09-26 08:30:02 UTC) successfully loaded. See ?R.utils for help.
+
+Attaching package: 'R.utils'
+
+The following object is masked from 'package:utils':
+
+    timestamp
+
+The following objects are masked from 'package:base':
+
+    cat, commandArgs, getOption, inherits, isOpen, nullfile, parse,
+    warnings
+
+running: bash  -c "# Create the vcf.gz file (remove the hybrids and zip vcf)
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=ALP_TREE
+if [ ! -e ./ALP_TREE/\$FILE.vcf.gz ]; then
    vcftools --vcf \$VCF \\
             --out dirty \\
-            --keep outP.clust \\
+            --keep ~/cophyhopa/data/ADMX/ALP.txt \\
             --recode \\
             --recode-INFO-all
    vcftools --vcf dirty.recode.vcf \\
-            --out alpine_outP \\
+            --out \$FILE \\
             --thin 500 \\
             --remove-indels \\
             --mac 2 \\
             --max-alleles 2 \\
             --max-meanDP 1000 \\
             --max-missing-count 7 \\
-            --recode --recode-INFO-all
+            --max-missing 1 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > ./ALP_TREE/\$FILE.vcf.gz
 fi
-if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
-
-if [ ! -e alpine_outP.vcf.gz ]; then
-vcftools --vcf alpine_outP.recode.vcf \\
-         --max-missing 1 \\
-         --remove ~/cophyhopa/data/HYBRIDS.txt \\
-         --recode \\
-         --stdout \\
-         | gzip > alpine_outP.vcf.gz
-fi
-
-# Pop L (arctic) as outgroup
-if [ ! -e alpine_outL.recode.vcf ]; then
-   vcftools --vcf \$VCF \\
-            --out dirty \\
-            --keep outL.clust \\
-            --recode \\
-            --recode-INFO-all
-   vcftools --vcf dirty.recode.vcf \\
-            --out alpine_outL \\
-            --thin 500 \\
-            --remove-indels \\
-            --mac 2 \\
-            --max-alleles 2 \\
-            --max-meanDP 1000 \\
-            --max-missing-count 7 \\
-            --recode --recode-INFO-all
-fi
-if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
-
-if [ ! -e alpine_outL.vcf.gz ]; then
-vcftools --vcf alpine_outL.recode.vcf \\
-         --max-missing 1 \\
-         --remove ~/cophyhopa/data/HYBRIDS.txt \\
-         --recode \\
-         --stdout \\
-         | gzip > alpine_outL.vcf.gz
-fi"
-running: bash  -c '# Pop D (arctic) as outgroup
-./vcf2treemix.sh alpine_outD.vcf.gz outD.clust
-treemix -i alpine_outD.treemix.frq.gz \
-        -o alpine_outD_tree
-        
-# Pop P (arctic) as outgroup
-./vcf2treemix.sh alpine_outP.vcf.gz outP.clust
-treemix -i alpine_outP.treemix.frq.gz \
-        -o alpine_outP_tree
-
-# Pop L (arctic) as outgroup
-./vcf2treemix.sh alpine_outL.vcf.gz outL.clust
-treemix -i alpine_outL.treemix.frq.gz \
-        -o alpine_outL_tree'
-running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
-if [ ! -e alpine_tree.recode.vcf ]; then
-   vcftools --vcf \$VCF \\
-            --out dirty \\
-            --keep ~/cophyhopa/data/Alpine.txt \\
-            --recode \\
-            --recode-INFO-all
-   vcftools --vcf dirty.recode.vcf \\
-            --out alpine_tree \\
-            --thin 500 \\
-            --remove-indels \\
-            --mac 2 \\
-            --max-alleles 2 \\
-            --max-meanDP 1000 \\
-            --max-missing-count 7 \\
-            --recode --recode-INFO-all
-fi
-if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
-
-if [ ! -e treedata_alpine.vcf.gz ]; then
-vcftools --vcf alpine_tree.recode.vcf \\
-         --max-missing 1 \\
-         --remove ~/cophyhopa/data/HYBRIDS.txt \\
-         --recode \\
-         --stdout \\
-         | gzip > treedata_alpine.vcf.gz
-fi"
-running: bash  -c './vcf2treemix.sh treedata_alpine.vcf.gz treedata_alpine.clust
-
-treemix -i treedata_alpine.treemix.frq.gz \
-        -o alpine_tree
-'
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi"
 output file: README.knit.md
 
 
 Output created: README.html
+There were 50 or more warnings (use warnings() to see the first 50)

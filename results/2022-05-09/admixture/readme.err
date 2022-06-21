@@ -2,42 +2,766 @@
 
 processing file: README.Rmd
 running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
-if [ ! -e admix.recode.vcf ]; then
+FILE=ALL
+if [ ! -e \$FILE.vcf.gz ]; then
    vcftools --vcf \$VCF \\
             --out dirty \\
-            --remove /gata/mar/cophyhopa/data/HYBRIDS.txt \\
+            --keep ~/cophyhopa/data/ADMX/ALL.txt \\
             --recode \\
             --recode-INFO-all
    vcftools --vcf dirty.recode.vcf \\
-            --out ADMIX_WH \\
+            --out \$FILE \\
             --thin 500 \\
             --remove-indels \\
             --mac 2 \\
             --max-alleles 2 \\
             --max-meanDP 1000 \\
             --max-missing-count 7 \\
-            --recode --recode-INFO-all
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > \$FILE.vcf.gz
 fi
-if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi"
-running: bash  -c "INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/ADMIX_WH.recode.vcf'
-OUTPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/admix_a93'
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
 
-plink --vcf \$INPUT --recode --out \$OUTPUT --allow-extra-chr 0
-plink --vcf \$INPUT --make-bed --out \$OUTPUT --allow-extra-chr 0
+if [ ! -e chromMap.txt ]; then
+   gunzip -c \$FILE\".vcf.gz\" | \\
+   gawk '(/^[^#]/){
+      A[\$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr \"\\t\" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
 
-#vcftools --vcf ~/cophyhopa/results/2022-05-04/assem2_filter.recode.vcf --out assem93 --plink
+vcftools --gzvcf \$FILE\".vcf.gz\" \\
+         --plink --mac 2 --remove-indels --max-alleles 2 \\
+         --chrom-map chromMap.txt \\
+         --out \$FILE
+
+gawk -v OFS=\"\\t\" '{
+   \$1 = 1
+   \$2 = 1 \":\" \$4
+   print \$0
+}' \$FILE\".map\" > better.map
+mv better.map \$FILE.map
+
+plink --file \$FILE --make-bed --out \$FILE --allow-no-sex --allow-extra-chr 0
 "
 running: bash  -c "
-INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/admix_a93.bed'
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/ALL.bed'
 
-for K in 2 3 4 5 6 7 8 9 10 11; do admixture --cv \$INPUT \$K | tee log\${K}.out; done
-"
-running: bash  -c 'grep -h CV log*.out
+for K in 7 8 9 10 11; do 
+  if [ ! -e log\${K}.ALL.out ]; then
+    admixture --cv \$INPUT \$K | tee log\${K}.ALL.out; 
+  fi 
+done
+    "
+running: bash  -c 'grep -h CV log*.ALL.out
 '
-Read 506 items
-Read 506 items
-Read 506 items
+Read 512 items
+Read 512 items
+Read 512 items
+Read 512 items
+Read 512 items
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=WZ
+if [ ! -e \$FILE.vcf.gz ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep ~/cophyhopa/data/Walen.txt \\
+            --keep ~/cophyhopa/data/Zurich.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out \$FILE \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > \$FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c \$FILE\".vcf.gz\" | \\
+   gawk '(/^[^#]/){
+      A[\$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr \"\\t\" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf \$FILE\".vcf.gz\" \\
+         --plink --mac 2 --remove-indels --max-alleles 2 \\
+         --chrom-map chromMap.txt \\
+         --out \$FILE
+
+gawk -v OFS=\"\\t\" '{
+   \$1 = 1
+   \$2 = 1 \":\" \$4
+   print \$0
+}' \$FILE\".map\" > better.map
+mv better.map \$FILE.map
+
+plink --file \$FILE --make-bed --out \$FILE --allow-no-sex --allow-extra-chr 0
+"
+running: bash  -c "
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/WZ.bed'
+
+for K in 2 3 4; do 
+  if [ ! -e log\${K}.WZ.out ]; then
+    admixture --cv \$INPUT \$K | tee log\${K}.WZ.out; 
+  fi 
+done
+    "
+running: bash  -c 'grep -h CV log*.WZ.out
+'
+Read 96 items
+Read 96 items
+Read 96 items
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=BT_all
+if [ ! -e \$FILE.vcf.gz ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep ~/cophyhopa/data/ADMX/BT_all.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out \$FILE \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > \$FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c \$FILE\".vcf.gz\" | \\
+   gawk '(/^[^#]/){
+      A[\$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr \"\\t\" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf \$FILE\".vcf.gz\" \\
+         --plink --mac 2 --remove-indels --max-alleles 2 \\
+         --chrom-map chromMap.txt \\
+         --out \$FILE
+
+gawk -v OFS=\"\\t\" '{
+   \$1 = 1
+   \$2 = 1 \":\" \$4
+   print \$0
+}' \$FILE\".map\" > better.map
+mv better.map \$FILE.map
+
+plink --file \$FILE --make-bed --out \$FILE --allow-no-sex --allow-extra-chr 0
+"
+running: bash  -c "
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/BT_all.bed'
+
+for K in 4 5 6; do 
+  if [ ! -e log\${K}.BT_all.out ]; then
+    admixture --cv \$INPUT \$K | tee log\${K}.BT_all.out; 
+  fi 
+done
+    "
+running: bash  -c 'grep -h CV log*.BT_all.out
+'
+Read 160 items
+Read 160 items
+Read 160 items
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=BT_afap
+if [ ! -e \$FILE.vcf.gz ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep ~/cophyhopa/data/ADMX/BT_afap.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out \$FILE \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > \$FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c \$FILE\".vcf.gz\" | \\
+   gawk '(/^[^#]/){
+      A[\$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr \"\\t\" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf \$FILE\".vcf.gz\" \\
+         --plink --mac 2 --remove-indels --max-alleles 2 \\
+         --chrom-map chromMap.txt \\
+         --out \$FILE
+
+gawk -v OFS=\"\\t\" '{
+   \$1 = 1
+   \$2 = 1 \":\" \$4
+   print \$0
+}' \$FILE\".map\" > better.map
+mv better.map \$FILE.map
+
+plink --file \$FILE --make-bed --out \$FILE --allow-no-sex --allow-extra-chr 0
+"
+running: bash  -c "
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/BT_afap.bed'
+
+for K in 3 4 5; do 
+  if [ ! -e log\${K}.BT_afap.out ]; then
+    admixture --cv \$INPUT \$K | tee log\${K}.BT_afap.out; 
+  fi 
+done
+    "
+running: bash  -c 'grep -h CV log*.BT_afap.out
+'
+Read 140 items
+Read 140 items
+Read 140 items
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=BT_afa
+if [ ! -e \$FILE.vcf.gz ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep ~/cophyhopa/data/ADMX/BT_afa.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out \$FILE \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > \$FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c \$FILE\".vcf.gz\" | \\
+   gawk '(/^[^#]/){
+      A[\$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr \"\\t\" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf \$FILE\".vcf.gz\" \\
+         --plink --mac 2 --remove-indels --max-alleles 2 \\
+         --chrom-map chromMap.txt \\
+         --out \$FILE
+
+gawk -v OFS=\"\\t\" '{
+   \$1 = 1
+   \$2 = 1 \":\" \$4
+   print \$0
+}' \$FILE\".map\" > better.map
+mv better.map \$FILE.map
+
+plink --file \$FILE --make-bed --out \$FILE --allow-no-sex --allow-extra-chr 0
+"
+running: bash  -c "
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/BT_afa.bed'
+
+for K in 2 3 4; do 
+  if [ ! -e log\${K}.BT_afa.out ]; then
+    admixture --cv \$INPUT \$K | tee log\${K}.BT_afa.out; 
+  fi 
+done
+    "
+running: bash  -c 'grep -h CV log*.BT_afa.out
+'
+Read 96 items
+Read 96 items
+Read 96 items
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=BT_fa
+if [ ! -e \$FILE.vcf.gz ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep ~/cophyhopa/data/ADMX/BT_fa.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out \$FILE \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > \$FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c \$FILE\".vcf.gz\" | \\
+   gawk '(/^[^#]/){
+      A[\$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr \"\\t\" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf \$FILE\".vcf.gz\" \\
+         --plink --mac 2 --remove-indels --max-alleles 2 \\
+         --chrom-map chromMap.txt \\
+         --out \$FILE
+
+gawk -v OFS=\"\\t\" '{
+   \$1 = 1
+   \$2 = 1 \":\" \$4
+   print \$0
+}' \$FILE\".map\" > better.map
+mv better.map \$FILE.map
+
+plink --file \$FILE --make-bed --out \$FILE --allow-no-sex --allow-extra-chr 0
+"
+running: bash  -c "
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/BT_fa.bed'
+
+for K in 2 3; do 
+  if [ ! -e log\${K}.BT_fa.out ]; then
+    admixture --cv \$INPUT \$K | tee log\${K}.BT_fa.out; 
+  fi 
+done
+    "
+running: bash  -c 'grep -h CV log*.BT_fa.out
+'
+Read 76 items
+Read 76 items
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=BT_afs
+if [ ! -e \$FILE.vcf.gz ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep ~/cophyhopa/data/ADMX/BT_afs.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out \$FILE \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > \$FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c \$FILE\".vcf.gz\" | \\
+   gawk '(/^[^#]/){
+      A[\$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr \"\\t\" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf \$FILE\".vcf.gz\" \\
+         --plink --mac 2 --remove-indels --max-alleles 2 \\
+         --chrom-map chromMap.txt \\
+         --out \$FILE
+
+gawk -v OFS=\"\\t\" '{
+   \$1 = 1
+   \$2 = 1 \":\" \$4
+   print \$0
+}' \$FILE\".map\" > better.map
+mv better.map \$FILE.map
+
+plink --file \$FILE --make-bed --out \$FILE --allow-no-sex --allow-extra-chr 0
+"
+running: bash  -c "
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/BT_afs.bed'
+
+for K in 2 3 4; do 
+  if [ ! -e log\${K}.BT_afs.out ]; then
+    admixture --cv \$INPUT \$K | tee log\${K}.BT_afs.out; 
+  fi 
+done
+    "
+running: bash  -c 'grep -h CV log*.BT_afs.out
+'
+Read 60 items
+Read 60 items
+Read 60 items
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=BT_af
+if [ ! -e \$FILE.vcf.gz ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep ~/cophyhopa/data/ADMX/BT_af.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out \$FILE \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > \$FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c \$FILE\".vcf.gz\" | \\
+   gawk '(/^[^#]/){
+      A[\$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr \"\\t\" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf \$FILE\".vcf.gz\" \\
+         --plink --mac 2 --remove-indels --max-alleles 2 \\
+         --chrom-map chromMap.txt \\
+         --out \$FILE
+
+gawk -v OFS=\"\\t\" '{
+   \$1 = 1
+   \$2 = 1 \":\" \$4
+   print \$0
+}' \$FILE\".map\" > better.map
+mv better.map \$FILE.map
+
+plink --file \$FILE --make-bed --out \$FILE --allow-no-sex --allow-extra-chr 0
+"
+running: bash  -c "
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/BT_af.bed'
+
+for K in 2 3; do 
+  if [ ! -e log\${K}.BT_af.out ]; then
+    admixture --cv \$INPUT \$K | tee log\${K}.BT_af.out; 
+  fi 
+done
+    "
+running: bash  -c 'grep -h CV log*.BT_af.out
+'
+Read 40 items
+Read 40 items
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=BTB_all
+if [ ! -e \$FILE.vcf.gz ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep ~/cophyhopa/data/ADMX/BTB_all.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out \$FILE \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > \$FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c \$FILE\".vcf.gz\" | \\
+   gawk '(/^[^#]/){
+      A[\$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr \"\\t\" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf \$FILE\".vcf.gz\" \\
+         --plink --mac 2 --remove-indels --max-alleles 2 \\
+         --chrom-map chromMap.txt \\
+         --out \$FILE
+
+gawk -v OFS=\"\\t\" '{
+   \$1 = 1
+   \$2 = 1 \":\" \$4
+   print \$0
+}' \$FILE\".map\" > better.map
+mv better.map \$FILE.map
+
+plink --file \$FILE --make-bed --out \$FILE --allow-no-sex --allow-extra-chr 0
+"
+running: bash  -c "
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/BTB_all.bed'
+
+for K in 4 5 6; do 
+  if [ ! -e log\${K}.BTB_all.out ]; then
+    admixture --cv \$INPUT \$K | tee log\${K}.BTB_all.out; 
+  fi 
+done
+    "
+running: bash  -c 'grep -h CV log*.BTB_all.out
+'
+Read 188 items
+Read 188 items
+Read 188 items
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=BTB_afapc
+if [ ! -e \$FILE.vcf.gz ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep ~/cophyhopa/data/ADMX/BTB_afapc.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out \$FILE \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > \$FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c \$FILE\".vcf.gz\" | \\
+   gawk '(/^[^#]/){
+      A[\$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr \"\\t\" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf \$FILE\".vcf.gz\" \\
+         --plink --mac 2 --remove-indels --max-alleles 2 \\
+         --chrom-map chromMap.txt \\
+         --out \$FILE
+
+gawk -v OFS=\"\\t\" '{
+   \$1 = 1
+   \$2 = 1 \":\" \$4
+   print \$0
+}' \$FILE\".map\" > better.map
+mv better.map \$FILE.map
+
+plink --file \$FILE --make-bed --out \$FILE --allow-no-sex --allow-extra-chr 0
+"
+running: bash  -c "
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/BTB_afapc.bed'
+
+for K in 4 5 6; do 
+  if [ ! -e log\${K}.BTB_afapc.out ]; then
+    admixture --cv \$INPUT \$K | tee log\${K}.BTB_afapc.out; 
+  fi 
+done
+    "
+running: bash  -c 'grep -h CV log*.BTB_afapc.out
+'
+Read 168 items
+Read 168 items
+Read 168 items
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=ALP
+if [ ! -e \$FILE.vcf.gz ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep ~/cophyhopa/data/ADMX/ALP.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out \$FILE \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > \$FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c \$FILE\".vcf.gz\" | \\
+   gawk '(/^[^#]/){
+      A[\$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr \"\\t\" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf \$FILE\".vcf.gz\" \\
+         --plink --mac 2 --remove-indels --max-alleles 2 \\
+         --chrom-map chromMap.txt \\
+         --out \$FILE
+
+gawk -v OFS=\"\\t\" '{
+   \$1 = 1
+   \$2 = 1 \":\" \$4
+   print \$0
+}' \$FILE\".map\" > better.map
+mv better.map \$FILE.map
+
+plink --file \$FILE --make-bed --out \$FILE --allow-no-sex --allow-extra-chr 0
+"
+running: bash  -c "
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/ALP.bed'
+
+for K in 7 8 9 10; do 
+  if [ ! -e log\${K}.ALP.out ]; then
+    admixture --cv \$INPUT \$K | tee log\${K}.ALP.out; 
+  fi 
+done
+    "
+running: bash  -c 'grep -h CV log*.ALP.out
+'
+Read 284 items
+Read 284 items
+Read 284 items
+Read 284 items
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=ARC
+if [ ! -e \$FILE.vcf.gz ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep ~/cophyhopa/data/Arctic.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out \$FILE \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > \$FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c \$FILE\".vcf.gz\" | \\
+   gawk '(/^[^#]/){
+      A[\$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr \"\\t\" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf \$FILE\".vcf.gz\" \\
+         --plink --mac 2 --remove-indels --max-alleles 2 \\
+         --chrom-map chromMap.txt \\
+         --out \$FILE
+
+gawk -v OFS=\"\\t\" '{
+   \$1 = 1
+   \$2 = 1 \":\" \$4
+   print \$0
+}' \$FILE\".map\" > better.map
+mv better.map \$FILE.map
+
+plink --file \$FILE --make-bed --out \$FILE --allow-no-sex --allow-extra-chr 0
+"
+running: bash  -c "
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/ARC.bed'
+
+for K in 2 3 4 5; do 
+  if [ ! -e log\${K}.ARC.out ]; then
+    admixture --cv \$INPUT \$K | tee log\${K}.ARC.out; 
+  fi 
+done
+    "
+running: bash  -c 'grep -h CV log*.ARC.out
+'
+Read 228 items
+Read 228 items
+Read 228 items
+Read 228 items
 output file: README.knit.md
 
 
 Output created: README.html
+There were 11 warnings (use warnings() to see them)

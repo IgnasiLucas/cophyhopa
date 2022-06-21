@@ -1,0 +1,29 @@
+
+TreeMix v. 1.13
+$Revision: 231 $
+
+npop:9 nsnp:9995
+Estimating covariance matrix in 9995 blocks of size 1
+SEED: 1655818603
+Starting from:
+((C.heglingus:0.0146888,C.acrinasus:0.007623):0.00157713,C.steinmanni:0.00157713);
+Adding C.albellus [4/9]
+ln(likelihood): -553.98663 
+((C.acrinasus:0.00534193,(C.steinmanni:0,C.albellus:0.0120119):0.00038108):0.00828384,C.heglingus:0.00828384);
+Adding C.profundus [5/9]
+ln(likelihood): -327.04414 
+((C.acrinasus:0.00605316,(C.steinmanni:1.92361e-05,(C.albellus:0.0107308,C.profundus:0.0171646):0.00247475):0.000672682):0.00853416,C.heglingus:0.00853416);
+Adding C.zuerichensis [6/9]
+ln(likelihood): -214.01572 
+((C.acrinasus:0.00650735,(C.heglingus:0.00254796,C.zuerichensis:0):0.0147465):0.00153865,(C.steinmanni:0.00103234,(C.albellus:0.0114452,C.profundus:0.0178548):0.00270604):0.00153865);
+Adding C.fatioi [7/9]
+ln(likelihood): -214.17364 
+((C.acrinasus:0.0056701,(((C.albellus:0.00725291,C.fatioi:0.00386143):0.00450342,C.steinmanni:0):0.00181971,C.profundus:0.018169):0.00349978):0.00737195,(C.heglingus:0.00418701,C.zuerichensis:0.00164641):0.00737195);
+Adding C.confusus [8/9]
+ln(likelihood): -151.56089 
+((C.heglingus:0.00313781,C.zuerichensis:0.000516023):0.00711597,((C.acrinasus:0.00571497,(((C.albellus:0.00737406,C.fatioi:0.00394615):0.00456609,C.steinmanni:0):0.00197626,C.profundus:0.0182307):0.00412799):0.000771783,C.confusus:0.00521591):0.00711597);
+Adding C.duplex [9/9]
+ln(likelihood): -151.62628 
+(((C.acrinasus:0.00539617,(((C.albellus:0.00723562,C.fatioi:0.00371652):0.00482686,C.steinmanni:0):0.00209514,C.profundus:0.018007):0.00446161):0.000891932,C.confusus:0.00495184):0.00273608,((C.heglingus:0.00287086,C.zuerichensis:0.000210031):0.00859636,C.duplex:0.00980161):0.00273608);
+Set root above C.confusus
+DONE.
