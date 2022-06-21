@@ -1,85 +1,120 @@
 ---
-title: "Admixture analysis"
+title: "Separate Admixture analysis"
 author: "Mar Llaberia-Robledillo"
-date: "10/5/2022"
-output: html_document
+date: "16/6/2022"
+output: 
+   html_document:
+      toc: true
 ---
 
+# Alpine and Arctic species 
 
-# 1. Convert .vcf file to PLINK format 
+#### Removing species with less than 10 individuals/samples
 
-Admixture requires input data in PLINK bed format. So, we convert our .vcf file output to PLINK format, that includes .bed, .ped, .fam and .bim formats. 
+```{r}
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
 
-```{bash}
-INPUT='/gata/mar/cophyhopa/results/2022-05-04/assem2_filter.recode.vcf'
-OUTPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/assem93'
+poptable <- poptable[-which(poptable[,3] == "C.alpinus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.alpinus/C.steinmanni"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii"), ]
+poptable <- poptable[-which(poptable[,3] == "C.fatioi/C.albellus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii/C.fatioi"), ]
 
-plink --vcf $INPUT --recode --out $OUTPUT --allow-extra-chr 0
-plink --vcf $INPUT --make-bed --out $OUTPUT --allow-extra-chr 0
-
-#vcftools --vcf ~/cophyhopa/results/2022-05-04/assem2_filter.recode.vcf --out assem93 --plink
+write.table(poptable[,1], file = '~/cophyhopa/data/ADMX/ALL.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
 
 ```
 
-# 2.  Admixture analysis with variant K 
+#### Data selecting and filtering 
 
-For run admixture, we need to define the K parameter. Here, $K is a number indicating the number of clusters (populations) we want to infer. Since we don't know exactly how many clusters to define, we run the analysis with several number of clusters K (from 2 to 8), computing the cross-validation error. Then, we extract these values. 
+```{bash, results = 'hide'}
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=ALL
+if [ ! -e $FILE.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep ~/cophyhopa/data/ADMX/ALL.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out $FILE \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > $FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
 
-```{bash}
+if [ ! -e chromMap.txt ]; then
+   gunzip -c $FILE".vcf.gz" | \
+   gawk '(/^[^#]/){
+      A[$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr "\t" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
 
-INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/assem93.bed'
+vcftools --gzvcf $FILE".vcf.gz" \
+         --plink --mac 2 --remove-indels --max-alleles 2 \
+         --chrom-map chromMap.txt \
+         --out $FILE
 
-for K in 2 3 4 5 6 7 8 9 10 11; do admixture --cv $INPUT $K | tee log${K}.out; done
+gawk -v OFS="\t" '{
+   $1 = 1
+   $2 = 1 ":" $4
+   print $0
+}' $FILE".map" > better.map
+mv better.map $FILE.map
 
+plink --file $FILE --make-bed --out $FILE --allow-no-sex --allow-extra-chr 0
+
+```
+
+#### Admixture analysis with variant K 
+
+We define the K parameter from 7 to 11, computing the cross-validation error. Then, we extract these values. 
+
+```{bash, results = "hide"}
+
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/ALL.bed'
+
+for K in 7 8 9 10 11; do 
+  if [ ! -e log${K}.ALL.out ]; then
+    admixture --cv $INPUT $K | tee log${K}.ALL.out; 
+  fi 
+done
+    
 ```
 
 ```{bash echo = TRUE}
-grep -h CV log*.out
+grep -h CV log*.ALL.out
 
 ```
 
-# 3.  Plot Q estimates K=7
-
+#### Plot Q estimates for K = 7, 8, 9 and 10 
 We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot 
 
-```{r figure.align = "center", fig.height=6, fig.width=9}
-
+```{r figure.align = "center", fig.height=5, fig.width=12, echo=FALSE, warning = FALSE}
+setwd("~/cophyhopa/results/2022-05-09/admixture")
 library(RColorBrewer)
-Q <- read.table("assem93.7.Q")
-popmap <- read.table("~/cophyhopa/results/2022-05-09/admixture/popmap.txt", col.names = c("Sample", "Pop"))
+Q <- read.table("ALL.7.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
 
-sample.id <- scan("assem93.nosex", what = "character")
+sample.id <- scan("ALL.nosex", what = "character")
 sample.id <- sample.id[!duplicated(sample.id)]
 rownames(popmap) <- popmap[,1]
-popmap <- popmap[sample.id, ]
-
-rownames(Q) <- paste(substring(sample.id, 4, 6)
-                      , '-', popmap[sample.id, 2], sep = '')
-
-num <- read.delim("~/cophyhopa/results/2022-05-09/species_numerades.txt", header=FALSE)
-rownames(num) <- num[,1]
-Q[,8] <- substring(rownames(Q), 8,9)
-Q[,9] <- NA
-
-for (i in 1:nrow(num)) {
-  class(Q$V8) <- "numeric"
-  s <- (Q$V8 == rownames(num[i,]))
-  a <- num[i, 2]
-  for (j in 1:length(s)) {
-    if (s[j] == TRUE) {
-      Q$V9[j] <- paste0(substring(rownames(Q[j, ]), 5,9), '_' , a, sep = '')
-    }
-  }
-}
-
-Q$V8 <- NULL
-Q$V9 <- make.unique(Q$V9)
-
-pop <- data.frame(rownames(Q), Q$V9)
-rownames(pop) <- pop[,1]
-
-rownames(Q) <- pop[rownames(pop), 2]
-Q$V9 <- NULL
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
 
 z <- order(round(Q[, 'V1'], 2),
            round(Q[, 'V2'], 2),
@@ -91,55 +126,21 @@ z <- order(round(Q[, 'V1'], 2),
 par(mar=c(7,4,4,2))
 barplot(t(Q[z,]), col = brewer.pal(7, 'Accent'), border = NA,
         xlab = '', ylab = 'Admixture proportions for K=7', las=2,
-        cex.names = 0.5)
+        cex.names = 0.5, 
+        main = "ALL ALPINE SPECIES")
 
-```
 
-# 4.  Plot Q estimates K=8
+Q <- read.table("ALL.8.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
 
-We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot 
-
-```{r figure.align = "center", fig.height=6, fig.width=9}
-
-library(RColorBrewer)
-Q <- read.table("assem93.8.Q")
-popmap <- read.table("~/cophyhopa/results/2022-05-09/admixture/popmap.txt", col.names = c("Sample", "Pop"))
-
-sample.id <- scan("assem93.nosex", what = "character")
+sample.id <- scan("ALL.nosex", what = "character")
 sample.id <- sample.id[!duplicated(sample.id)]
 rownames(popmap) <- popmap[,1]
-popmap <- popmap[sample.id, ]
-
-rownames(Q) <- paste(substring(sample.id, 4, 6)
-                      , '-', popmap[sample.id, 2], sep = '')
-
-num <- read.delim("~/cophyhopa/results/2022-05-09/species_numerades.txt", header=FALSE)
-rownames(num) <- num[,1]
-Q[,9] <- substring(rownames(Q), 8,9)
-Q[,10] <- NA
-
-for (i in 1:nrow(num)) {
-  class(Q$V9) <- "numeric"
-  s <- (Q$V9 == rownames(num[i,]))
-  a <- num[i, 2]
-  for (j in 1:length(s)) {
-    if (s[j] == TRUE) {
-      Q$V10[j] <- paste0(substring(rownames(Q[j, ]), 5,9), '_' , a, sep = '')
-    }
-  }
-}
-
-Q$V9 <- NULL
-Q$V10 <- make.unique(Q$V10)
-
-pop <- data.frame(rownames(Q), Q$V10)
-rownames(pop) <- pop[,1]
-
-rownames(Q) <- pop[rownames(pop), 2]
-Q$V10 <- NULL
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
 
 z <- order(round(Q[, 'V1'], 2),
-           round(Q[, 'V2'], 2),
+           round(Q[, 'V2'], 2),    
            round(Q[, 'V3'], 2),
            round(Q[, 'V4'], 2),
            round(Q[, 'V5'], 2),
@@ -147,52 +148,20 @@ z <- order(round(Q[, 'V1'], 2),
            round(Q[, 'V7'], 2), decreasing = TRUE)
 
 par(mar=c(7,4,4,2))
-barplot(t(Q[z,]), col = brewer.pal(7, 'Accent'), border = NA,
-        xlab = '', ylab = 'Admixture proportions for K=7', las=2,
-        cex.names = 0.5)
+barplot(t(Q[z,]), col = brewer.pal(8, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=8', las=2,
+        cex.names = 0.5, 
+        main = "ALL ALPINE SPECIES")
 
-```
 
-# 5.  Plot Q estimates K=9
+Q <- read.table("ALL.9.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
 
-We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot 
-
-```{r figure.align = "center", fig.height=6, fig.width=9}
-Q <- read.table("assem93.9.Q")
-popmap <- read.table("~/cophyhopa/results/2022-05-09/admixture/popmap.txt", col.names = c("Sample", "Pop"))
-
-sample.id <- scan("assem93.nosex", what = "character")
+sample.id <- scan("ALL.nosex", what = "character")
 sample.id <- sample.id[!duplicated(sample.id)]
 rownames(popmap) <- popmap[,1]
-popmap <- popmap[sample.id, ]
-
-rownames(Q) <- paste(substring(sample.id, 4, 6)
-                      , '-', popmap[sample.id, 2], sep = '')
-
-num <- read.delim("~/cophyhopa/results/2022-05-09/species_numerades.txt", header=FALSE)
-rownames(num) <- num[,1]
-Q[,10] <- substring(rownames(Q), 8,9)
-Q[,11] <- NA
-
-for (i in 1:nrow(num)) {
-  class(Q$V10) <- "numeric"
-  s <- (Q$V10 == rownames(num[i,]))
-  a <- num[i, 2]
-  for (j in 1:length(s)) {
-    if (s[j] == TRUE) {
-      Q$V11[j] <- paste0(substring(rownames(Q[j, ]), 5,9), '_' , a, sep = '')
-    }
-  }
-}
-
-Q$V10 <- NULL
-Q$V11 <- make.unique(Q$V11)
-
-pop <- data.frame(rownames(Q), Q$V11)
-rownames(pop) <- pop[,1]
-
-rownames(Q) <- pop[rownames(pop), 2]
-Q$V11 <- NULL
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
 
 z <- order(round(Q[, 'V1'], 2),
            round(Q[, 'V2'], 2),
@@ -200,12 +169,1900 @@ z <- order(round(Q[, 'V1'], 2),
            round(Q[, 'V4'], 2),
            round(Q[, 'V5'], 2),
            round(Q[, 'V6'], 2),
-           round(Q[, 'V7'], 2), decreasing = TRUE)
+           round(Q[, 'V7'], 2),
+           round(Q[, 'V8'], 2), decreasing = TRUE)
 
 par(mar=c(7,4,4,2))
 barplot(t(Q[z,]), col = brewer.pal(9, 'Accent'), border = NA,
         xlab = '', ylab = 'Admixture proportions for K=9', las=2,
-        cex.names = 0.5)
+        cex.names = 0.5, 
+        main = "ALL ALPINE SPECIES")
+
+
+Q <- read.table("ALL.10.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("ALL.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),
+           round(Q[, 'V3'], 2),
+           round(Q[, 'V4'], 2),
+           round(Q[, 'V5'], 2),
+           round(Q[, 'V6'], 2),
+           round(Q[, 'V7'], 2),
+           round(Q[, 'V8'], 2),
+           round(Q[, 'V9'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(10, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=10', las=2,
+        cex.names = 0.5, 
+        main = "ALL ALPINE SPECIES")
+
+Q <- read.table("ALL.11.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("ALL.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),
+           round(Q[, 'V3'], 2),
+           round(Q[, 'V4'], 2),
+           round(Q[, 'V5'], 2),
+           round(Q[, 'V6'], 2),
+           round(Q[, 'V7'], 2),
+           round(Q[, 'V8'], 2),
+           round(Q[, 'V9'], 2),
+           round(Q[, 'V10'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(11, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=11', las=2,
+        cex.names = 0.5, 
+        main = "ALL ALPINE SPECIES")
+```
+
+# Species in Alpine lakes 
+
+## Lakes Walen and Zurichesse 
+
+### Data selecting and filtering 
+
+```{bash, results = "hide"}
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=WZ
+if [ ! -e $FILE.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep ~/cophyhopa/data/Walen.txt \
+            --keep ~/cophyhopa/data/Zurich.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out $FILE \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > $FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c $FILE".vcf.gz" | \
+   gawk '(/^[^#]/){
+      A[$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr "\t" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf $FILE".vcf.gz" \
+         --plink --mac 2 --remove-indels --max-alleles 2 \
+         --chrom-map chromMap.txt \
+         --out $FILE
+
+gawk -v OFS="\t" '{
+   $1 = 1
+   $2 = 1 ":" $4
+   print $0
+}' $FILE".map" > better.map
+mv better.map $FILE.map
+
+plink --file $FILE --make-bed --out $FILE --allow-no-sex --allow-extra-chr 0
 
 ```
 
+### Admixture analysis with variant K 
+
+We define the K parameter from 2 to 4, computing the cross-validation error. Then, we extract these values. 
+
+```{bash, results = "hide"}
+
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/WZ.bed'
+
+for K in 2 3 4; do 
+  if [ ! -e log${K}.WZ.out ]; then
+    admixture --cv $INPUT $K | tee log${K}.WZ.out; 
+  fi 
+done
+    
+```
+
+```{bash echo = TRUE}
+grep -h CV log*.WZ.out
+
+```
+
+### Plot Q estimates for K = 2, 3 and 4 
+
+We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot 
+
+```{r figure.align = "center", fig.height=5, fig.width=10, echo=FALSE, warning = FALSE}
+library(RColorBrewer)
+
+Q <- read.table("WZ.2.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+sample.id <- scan("WZ.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(2, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=2', las=2,
+        cex.names = 0.6, main = "C.duplex - C.heglingus - C.zuerichensis")
+
+
+Q <- read.table("WZ.3.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("WZ.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(3, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=3', las=2,
+        cex.names = 0.6, main = "C.duplex - C.heglingus - C.zuerichensis")
+
+
+Q <- read.table("WZ.4.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("WZ.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),
+           round(Q[, 'V3'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(4, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=4', las=2,
+        cex.names = 0.6, main = "C.duplex - C.heglingus - C.zuerichensis")
+
+```
+
+
+## Lakes Brienz and Thun 
+### All species
+
+#### Removing species with less than 10 individuals/samples
+
+Additionally, keep only those species that are present in lakes Brienz and Thun. 
+
+```{r}
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+poptable <- poptable[-which(poptable[,3] == "C.alpinus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.alpinus/C.steinmanni"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii"), ]
+poptable <- poptable[-which(poptable[,3] == "C.fatioi/C.albellus"), ]
+poptable <- poptable[-which(poptable[,3] == "D"), ]
+poptable <- poptable[-which(poptable[,3] == "L"), ]
+poptable <- poptable[-which(poptable[,3] == "P"), ]
+poptable <- poptable[-which(poptable[,3] == "C.duplex"), ]
+poptable <- poptable[-which(poptable[,3] == "C.heglingus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.zuerichensis"), ]
+poptable <- poptable[-which(poptable[,3] == "C.confusus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii/C.fatioi"), ]
+
+write.table(poptable[,1], file = '~/cophyhopa/data/ADMX/BT_all.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
+```
+
+#### Data selecting and filtering 
+
+```{bash, results = "hide"}
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=BT_all
+if [ ! -e $FILE.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep ~/cophyhopa/data/ADMX/BT_all.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out $FILE \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > $FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c $FILE".vcf.gz" | \
+   gawk '(/^[^#]/){
+      A[$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr "\t" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf $FILE".vcf.gz" \
+         --plink --mac 2 --remove-indels --max-alleles 2 \
+         --chrom-map chromMap.txt \
+         --out $FILE
+
+gawk -v OFS="\t" '{
+   $1 = 1
+   $2 = 1 ":" $4
+   print $0
+}' $FILE".map" > better.map
+mv better.map $FILE.map
+
+plink --file $FILE --make-bed --out $FILE --allow-no-sex --allow-extra-chr 0
+
+```
+
+#### Admixture analysis with variant K 
+
+We define the K parameter from 4 to 6, computing the cross-validation error. Then, we extract these values. 
+
+```{bash, results = "hide"}
+
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/BT_all.bed'
+
+for K in 4 5 6; do 
+  if [ ! -e log${K}.BT_all.out ]; then
+    admixture --cv $INPUT $K | tee log${K}.BT_all.out; 
+  fi 
+done
+    
+```
+
+```{bash echo = TRUE}
+grep -h CV log*.BT_all.out
+
+```
+
+#### Plot Q estimates for K = 4, 5 and 6 
+
+We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot 
+
+```{r figure.align = "center", fig.height=5, fig.width=12, echo=FALSE, warning=FALSE}
+library(RColorBrewer)
+Q <- read.table("BT_all.4.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BT_all.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),
+           round(Q[, 'V3'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(4, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=4', las=2,
+        cex.names = 0.6, main = "C.acrinasus - C.fatioi - C.albellus - C.profundus - C.steinmanni")
+
+
+Q <- read.table("BT_all.5.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BT_all.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),
+           round(Q[, 'V3'], 2),
+           round(Q[, 'V4'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(5, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=5', las=2,
+        cex.names = 0.6, main = "C.acrinasus - C.fatioi - C.albellus - C.profundus - C.steinmanni")
+
+
+Q <- read.table("BT_all.6.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BT_all.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),
+           round(Q[, 'V3'], 2),
+           round(Q[, 'V4'], 2),
+           round(Q[, 'V5'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(6, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=6', las=2,
+        cex.names = 0.6, main = "C.acrinasus - C.fatioi - C.albellus - C.profundus - C.steinmanni")
+
+```
+
+
+
+### C.acrinasus - C.fatioi - C.albellus - C.profundus
+We exclude C.steinmanni because it seems to have the more confuse association in clusters. 
+
+#### Removing species with less than 10 individuals/samples
+
+Additionally, keep only those species that are present in lakes Brienz and Thun. 
+
+```{r}
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+poptable <- poptable[-which(poptable[,3] == "C.alpinus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.alpinus/C.steinmanni"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii"), ]
+poptable <- poptable[-which(poptable[,3] == "C.fatioi/C.albellus"), ]
+poptable <- poptable[-which(poptable[,3] == "D"), ]
+poptable <- poptable[-which(poptable[,3] == "L"), ]
+poptable <- poptable[-which(poptable[,3] == "P"), ]
+poptable <- poptable[-which(poptable[,3] == "C.duplex"), ]
+poptable <- poptable[-which(poptable[,3] == "C.heglingus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.zuerichensis"), ]
+poptable <- poptable[-which(poptable[,3] == "C.confusus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii/C.fatioi"), ]
+poptable <- poptable[-which(poptable[,3] == "C.steinmanni"), ]
+
+write.table(poptable[,1], file = '~/cophyhopa/data/ADMX/BT_afap.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
+```
+
+#### Data selecting and filtering 
+
+```{bash, results = 'hide'}
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=BT_afap
+if [ ! -e $FILE.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep ~/cophyhopa/data/ADMX/BT_afap.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out $FILE \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > $FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c $FILE".vcf.gz" | \
+   gawk '(/^[^#]/){
+      A[$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr "\t" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf $FILE".vcf.gz" \
+         --plink --mac 2 --remove-indels --max-alleles 2 \
+         --chrom-map chromMap.txt \
+         --out $FILE
+
+gawk -v OFS="\t" '{
+   $1 = 1
+   $2 = 1 ":" $4
+   print $0
+}' $FILE".map" > better.map
+mv better.map $FILE.map
+
+plink --file $FILE --make-bed --out $FILE --allow-no-sex --allow-extra-chr 0
+
+```
+
+#### Admixture analysis with variant K 
+
+We define the K parameter from 3 to 5, computing the cross-validation error. Then, we extract these values. 
+
+```{bash, results = "hide"}
+
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/BT_afap.bed'
+
+for K in 3 4 5; do 
+  if [ ! -e log${K}.BT_afap.out ]; then
+    admixture --cv $INPUT $K | tee log${K}.BT_afap.out; 
+  fi 
+done
+    
+```
+
+```{bash echo = TRUE}
+grep -h CV log*.BT_afap.out
+
+```
+
+#### Plot Q estimates for K = 3, 4 and 5 
+
+We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot 
+
+```{r figure.align = "center", fig.height=5, fig.width=12, echo=FALSE, warning = FALSE}
+
+Q <- read.table("BT_afap.3.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BT_afap.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(3, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=3', las=2,
+        cex.names = 0.6, main = "C.acrinasus - C.fatioi - C.albellus - C.profundus")
+
+
+Q <- read.table("BT_afap.4.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BT_afap.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),           
+           round(Q[, 'V3'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(4, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=4', las=2,
+        cex.names = 0.6, main = "C.acrinasus - C.fatioi - C.albellus - C.profundus")
+
+
+Q <- read.table("BT_afap.5.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BT_afap.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),
+           round(Q[, 'V3'], 2),
+           round(Q[, 'V4'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(5, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=5', las=2,
+        cex.names = 0.6, main = "C.acrinasus - C.fatioi - C.albellus - C.profundus")
+
+```
+
+
+### C.acrinasus - C.fatioi - C.albellus
+We exclude C.profundus because it seems to be a clearly cluster itself. 
+
+#### Removing species with less than 10 individuals/samples
+
+Additionally, keep only those species that are present in lakes Brienz and Thun. 
+
+```{r}
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+poptable <- poptable[-which(poptable[,3] == "C.alpinus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.alpinus/C.steinmanni"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii"), ]
+poptable <- poptable[-which(poptable[,3] == "C.fatioi/C.albellus"), ]
+poptable <- poptable[-which(poptable[,3] == "D"), ]
+poptable <- poptable[-which(poptable[,3] == "L"), ]
+poptable <- poptable[-which(poptable[,3] == "P"), ]
+poptable <- poptable[-which(poptable[,3] == "C.duplex"), ]
+poptable <- poptable[-which(poptable[,3] == "C.heglingus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.zuerichensis"), ]
+poptable <- poptable[-which(poptable[,3] == "C.confusus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii/C.fatioi"), ]
+
+poptable <- poptable[-which(poptable[,3] == "C.steinmanni"), ]
+poptable <- poptable[-which(poptable[,3] == "C.profundus"), ]
+
+write.table(poptable[,1], file = '~/cophyhopa/data/ADMX/BT_afa.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
+```
+
+#### Data selecting and filtering 
+
+```{bash, results = 'hide'}
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=BT_afa
+if [ ! -e $FILE.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep ~/cophyhopa/data/ADMX/BT_afa.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out $FILE \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > $FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c $FILE".vcf.gz" | \
+   gawk '(/^[^#]/){
+      A[$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr "\t" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf $FILE".vcf.gz" \
+         --plink --mac 2 --remove-indels --max-alleles 2 \
+         --chrom-map chromMap.txt \
+         --out $FILE
+
+gawk -v OFS="\t" '{
+   $1 = 1
+   $2 = 1 ":" $4
+   print $0
+}' $FILE".map" > better.map
+mv better.map $FILE.map
+
+plink --file $FILE --make-bed --out $FILE --allow-no-sex --allow-extra-chr 0
+
+```
+
+#### Admixture analysis with variant K 
+
+We define the K parameter from 2 to 4, computing the cross-validation error. Then, we extract these values. 
+
+```{bash, results = "hide"}
+
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/BT_afa.bed'
+
+for K in 2 3 4; do 
+  if [ ! -e log${K}.BT_afa.out ]; then
+    admixture --cv $INPUT $K | tee log${K}.BT_afa.out; 
+  fi 
+done
+    
+```
+
+```{bash echo = TRUE}
+grep -h CV log*.BT_afa.out
+
+```
+
+#### Plot Q estimates for K = 2, 3 and 4 
+
+We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot.
+
+```{r figure.align = "center", fig.height=5, fig.width=10, echo=FALSE, warning=FALSE}
+
+Q <- read.table("BT_afa.2.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BT_afa.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(2, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=2', las=2,
+        cex.names = 0.8, main = "C.acrinasus - C.fatioi - C.albellus")
+
+
+Q <- read.table("BT_afa.3.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BT_afa.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(3, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=3', las=2,
+        cex.names = 0.8, main = "C.acrinasus - C.fatioi - C.albellus")
+
+
+Q <- read.table("BT_afa.4.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BT_afa.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),           
+           round(Q[, 'V3'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(4, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=4', las=2,
+        cex.names = 0.8, main = "C.acrinasus - C.fatioi - C.albellus")
+
+```
+
+
+
+### C.fatioi - C.albellus
+Now, we exclude C.acrinasus because it seems to be confused with C.albellus. We gonna exclude those 2 species to observe the classification without one or the other. 
+
+#### Removing species with less than 10 individuals/samples
+
+Additionally, keep only those species that are present in lakes Brienz and Thun. 
+
+```{r}
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+poptable <- poptable[-which(poptable[,3] == "C.alpinus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.alpinus/C.steinmanni"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii"), ]
+poptable <- poptable[-which(poptable[,3] == "C.fatioi/C.albellus"), ]
+poptable <- poptable[-which(poptable[,3] == "D"), ]
+poptable <- poptable[-which(poptable[,3] == "L"), ]
+poptable <- poptable[-which(poptable[,3] == "P"), ]
+poptable <- poptable[-which(poptable[,3] == "C.duplex"), ]
+poptable <- poptable[-which(poptable[,3] == "C.heglingus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.zuerichensis"), ]
+poptable <- poptable[-which(poptable[,3] == "C.confusus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii/C.fatioi"), ]
+
+poptable <- poptable[-which(poptable[,3] == "C.steinmanni"), ]
+poptable <- poptable[-which(poptable[,3] == "C.profundus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.acrinasus"), ]
+
+write.table(poptable[,1], file = '~/cophyhopa/data/ADMX/BT_fa.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
+```
+
+#### Data selecting and filtering 
+
+```{bash, results = 'hide'}
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=BT_fa
+if [ ! -e $FILE.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep ~/cophyhopa/data/ADMX/BT_fa.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out $FILE \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > $FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c $FILE".vcf.gz" | \
+   gawk '(/^[^#]/){
+      A[$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr "\t" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf $FILE".vcf.gz" \
+         --plink --mac 2 --remove-indels --max-alleles 2 \
+         --chrom-map chromMap.txt \
+         --out $FILE
+
+gawk -v OFS="\t" '{
+   $1 = 1
+   $2 = 1 ":" $4
+   print $0
+}' $FILE".map" > better.map
+mv better.map $FILE.map
+
+plink --file $FILE --make-bed --out $FILE --allow-no-sex --allow-extra-chr 0
+
+```
+
+#### Admixture analysis with variant K 
+
+We define the K parameter from 2 to 3, computing the cross-validation error. Then, we extract these values. 
+
+```{bash, results = "hide"}
+
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/BT_fa.bed'
+
+for K in 2 3; do 
+  if [ ! -e log${K}.BT_fa.out ]; then
+    admixture --cv $INPUT $K | tee log${K}.BT_fa.out; 
+  fi 
+done
+    
+```
+
+```{bash echo = TRUE}
+grep -h CV log*.BT_fa.out
+
+```
+
+#### Plot Q estimates for K = 2 and 3
+
+We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot.
+
+```{r figure.align = "center", fig.height=5, fig.width=10, echo=FALSE, warning = FALSE}
+
+Q <- read.table("BT_fa.2.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BT_fa.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(2, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=2', las=2,
+        cex.names = 0.8, main = "C.fatioi - C.albellus")
+
+Q <- read.table("BT_fa.3.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BT_fa.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(3, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=3', las=2,
+        cex.names = 0.8, main = "C.fatioi - C.albellus")
+
+```
+
+
+### C.acrinasus - C.fatioi - C.steinmanni
+We exclude C.profundus because it seems to be a clearly cluster itself. 
+
+#### Removing species with less than 10 individuals/samples
+
+Additionally, keep only those species that are present in lakes Brienz and Thun. 
+
+```{r}
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+poptable <- poptable[-which(poptable[,3] == "C.alpinus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.alpinus/C.steinmanni"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii"), ]
+poptable <- poptable[-which(poptable[,3] == "C.fatioi/C.albellus"), ]
+poptable <- poptable[-which(poptable[,3] == "D"), ]
+poptable <- poptable[-which(poptable[,3] == "L"), ]
+poptable <- poptable[-which(poptable[,3] == "P"), ]
+poptable <- poptable[-which(poptable[,3] == "C.duplex"), ]
+poptable <- poptable[-which(poptable[,3] == "C.heglingus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.zuerichensis"), ]
+poptable <- poptable[-which(poptable[,3] == "C.confusus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii/C.fatioi"), ]
+
+poptable <- poptable[-which(poptable[,3] == "C.profundus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.albellus"), ]
+
+write.table(poptable[,1], file = '~/cophyhopa/data/ADMX/BT_afs.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
+```
+
+#### Data selecting and filtering 
+
+```{bash, results = 'hide'}
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=BT_afs
+if [ ! -e $FILE.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep ~/cophyhopa/data/ADMX/BT_afs.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out $FILE \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > $FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c $FILE".vcf.gz" | \
+   gawk '(/^[^#]/){
+      A[$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr "\t" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf $FILE".vcf.gz" \
+         --plink --mac 2 --remove-indels --max-alleles 2 \
+         --chrom-map chromMap.txt \
+         --out $FILE
+
+gawk -v OFS="\t" '{
+   $1 = 1
+   $2 = 1 ":" $4
+   print $0
+}' $FILE".map" > better.map
+mv better.map $FILE.map
+
+plink --file $FILE --make-bed --out $FILE --allow-no-sex --allow-extra-chr 0
+
+```
+
+#### Admixture analysis with variant K 
+
+We define the K parameter from 2 to 4, computing the cross-validation error. Then, we extract these values. 
+
+```{bash, results = "hide"}
+
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/BT_afs.bed'
+
+for K in 2 3 4; do 
+  if [ ! -e log${K}.BT_afs.out ]; then
+    admixture --cv $INPUT $K | tee log${K}.BT_afs.out; 
+  fi 
+done
+    
+```
+
+```{bash echo = TRUE}
+grep -h CV log*.BT_afs.out
+
+```
+
+#### Plot Q estimates for K = 2, 3 and 4 
+
+We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot.
+
+```{r figure.align = "center", fig.height=5, fig.width=10, echo=FALSE, warning = FALSE}
+
+Q <- read.table("BT_afs.2.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BT_afs.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(2, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=2', las=2,
+        cex.names = 0.8, main = "C.acrinasus - C.fatioi - C.steinmanni")
+
+
+Q <- read.table("BT_afs.3.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BT_afs.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(3, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=3', las=2,
+        cex.names = 0.8, main = "C.acrinasus - C.fatioi - C.steinmanni")
+
+
+Q <- read.table("BT_afs.4.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BT_afs.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),           
+           round(Q[, 'V3'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(4, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=4', las=2,
+        cex.names = 0.8, main = "C.acrinasus - C.fatioi - C.steinmanni")
+
+```
+
+### C.acrinasus - C.fatioi
+
+Now, we exclude C.acrinasus because it seems to be confused with C.albellus. We gonna exclude those 2 species to observe the classification without one or the other. 
+
+#### Removing species with less than 10 individuals/samples
+
+Additionally, keep only those species that are present in lakes Brienz and Thun. 
+
+```{r}
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+poptable <- poptable[-which(poptable[,3] == "C.alpinus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.alpinus/C.steinmanni"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii"), ]
+poptable <- poptable[-which(poptable[,3] == "C.fatioi/C.albellus"), ]
+poptable <- poptable[-which(poptable[,3] == "D"), ]
+poptable <- poptable[-which(poptable[,3] == "L"), ]
+poptable <- poptable[-which(poptable[,3] == "P"), ]
+poptable <- poptable[-which(poptable[,3] == "C.duplex"), ]
+poptable <- poptable[-which(poptable[,3] == "C.heglingus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.zuerichensis"), ]
+poptable <- poptable[-which(poptable[,3] == "C.confusus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii/C.fatioi"), ]
+
+poptable <- poptable[-which(poptable[,3] == "C.steinmanni"), ]
+poptable <- poptable[-which(poptable[,3] == "C.profundus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.albellus"), ]
+
+write.table(poptable[,1], file = '~/cophyhopa/data/ADMX/BT_af.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
+```
+
+#### Data selecting and filtering 
+
+```{bash, results = 'hide'}
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=BT_af
+if [ ! -e $FILE.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep ~/cophyhopa/data/ADMX/BT_af.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out $FILE \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > $FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c $FILE".vcf.gz" | \
+   gawk '(/^[^#]/){
+      A[$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr "\t" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf $FILE".vcf.gz" \
+         --plink --mac 2 --remove-indels --max-alleles 2 \
+         --chrom-map chromMap.txt \
+         --out $FILE
+
+gawk -v OFS="\t" '{
+   $1 = 1
+   $2 = 1 ":" $4
+   print $0
+}' $FILE".map" > better.map
+mv better.map $FILE.map
+
+plink --file $FILE --make-bed --out $FILE --allow-no-sex --allow-extra-chr 0
+
+```
+
+#### Admixture analysis with variant K 
+
+We define the K parameter from 2 to 3, computing the cross-validation error. Then, we extract these values. 
+
+```{bash, results = "hide"}
+
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/BT_af.bed'
+
+for K in 2 3; do 
+  if [ ! -e log${K}.BT_af.out ]; then
+    admixture --cv $INPUT $K | tee log${K}.BT_af.out; 
+  fi 
+done
+    
+```
+
+```{bash echo = TRUE}
+grep -h CV log*.BT_af.out
+
+```
+
+#### Plot Q estimates for K = 2 and 3
+
+We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot.
+
+```{r figure.align = "center", fig.height=5, fig.width=10, echo=FALSE, warning = FALSE}
+
+Q <- read.table("BT_af.2.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BT_af.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(2, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=2', las=2,
+        cex.names = 0.8, main = "C.acrinasus - C.fatioi")
+
+Q <- read.table("BT_af.3.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BT_af.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(3, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=3', las=2,
+        cex.names = 0.8, main = "C.acrinasus - C.fatioi")
+
+```
+
+## Lakes Brienz, Thun and Bienne 
+
+### C.acrinasus - C.fatioi - C.albellus - C.profundus - C.steinmanni - C.confusus
+We add C.confusus, the only species in lake Bienne.
+
+#### Removing species with less than 10 individuals/samples
+
+Additionally, keep only those species that are present in lakes Brienz and Thun. 
+
+```{r}
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+poptable <- poptable[-which(poptable[,3] == "C.alpinus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.alpinus/C.steinmanni"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii"), ]
+poptable <- poptable[-which(poptable[,3] == "C.fatioi/C.albellus"), ]
+poptable <- poptable[-which(poptable[,3] == "D"), ]
+poptable <- poptable[-which(poptable[,3] == "L"), ]
+poptable <- poptable[-which(poptable[,3] == "P"), ]
+poptable <- poptable[-which(poptable[,3] == "C.duplex"), ]
+poptable <- poptable[-which(poptable[,3] == "C.heglingus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.zuerichensis"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii/C.fatioi"), ]
+
+write.table(poptable[,1], file = '~/cophyhopa/data/ADMX/BTB_all.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
+```
+
+#### Data selecting and filtering 
+
+```{bash, results = 'hide'}
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=BTB_all
+if [ ! -e $FILE.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep ~/cophyhopa/data/ADMX/BTB_all.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out $FILE \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > $FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c $FILE".vcf.gz" | \
+   gawk '(/^[^#]/){
+      A[$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr "\t" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf $FILE".vcf.gz" \
+         --plink --mac 2 --remove-indels --max-alleles 2 \
+         --chrom-map chromMap.txt \
+         --out $FILE
+
+gawk -v OFS="\t" '{
+   $1 = 1
+   $2 = 1 ":" $4
+   print $0
+}' $FILE".map" > better.map
+mv better.map $FILE.map
+
+plink --file $FILE --make-bed --out $FILE --allow-no-sex --allow-extra-chr 0
+
+```
+
+#### Admixture analysis with variant K 
+
+We define the K parameter from 4 to 6, computing the cross-validation error. Then, we extract these values. 
+
+```{bash, results = "hide"}
+
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/BTB_all.bed'
+
+for K in 4 5 6; do 
+  if [ ! -e log${K}.BTB_all.out ]; then
+    admixture --cv $INPUT $K | tee log${K}.BTB_all.out; 
+  fi 
+done
+    
+```
+
+```{bash echo = TRUE}
+grep -h CV log*.BTB_all.out
+
+```
+
+#### Plot Q estimates for K = 4, 5 and 6 
+
+We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot 
+
+```{r figure.align = "center", fig.height=5, fig.width=12, echo=FALSE, warning = FALSE}
+
+Q <- read.table("BTB_all.4.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BTB_all.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),
+           round(Q[, 'V3'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(5, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=5', las=2,
+        cex.names = 0.5, 
+        main = "C.acrinasus - C.fatioi - C.albellus - C.profundus - C.steinmanni - C.confusus")
+
+
+Q <- read.table("BTB_all.5.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BTB_all.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),    
+           round(Q[, 'V3'], 2),
+           round(Q[, 'V4'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(5, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=5', las=2,
+        cex.names = 0.5, 
+        main = "C.acrinasus - C.fatioi - C.albellus - C.profundus - C.steinmanni - C.confusus")
+
+
+Q <- read.table("BTB_all.6.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BTB_all.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),
+           round(Q[, 'V3'], 2),
+           round(Q[, 'V4'], 2),
+           round(Q[, 'V5'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(6, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=6', las=2,
+        cex.names = 0.5, 
+        main = "C.acrinasus - C.fatioi - C.albellus - C.profundus - C.steinmanni - C.confusus")
+```
+
+
+
+### C.acrinasus - C.fatioi - C.albellus - C.profundus - C.confusus
+We add C.confusus, the only species in lake Bienne, and exclude C.steinmanni. 
+
+#### Removing species with less than 10 individuals/samples
+
+Additionally, keep only those species that are present in lakes Brienz and Thun. 
+
+```{r}
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+poptable <- poptable[-which(poptable[,3] == "C.alpinus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.alpinus/C.steinmanni"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii"), ]
+poptable <- poptable[-which(poptable[,3] == "C.fatioi/C.albellus"), ]
+poptable <- poptable[-which(poptable[,3] == "D"), ]
+poptable <- poptable[-which(poptable[,3] == "L"), ]
+poptable <- poptable[-which(poptable[,3] == "P"), ]
+poptable <- poptable[-which(poptable[,3] == "C.duplex"), ]
+poptable <- poptable[-which(poptable[,3] == "C.heglingus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.zuerichensis"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii/C.fatioi"), ]
+
+poptable <- poptable[-which(poptable[,3] == "C.steinmanni"), ]
+
+
+write.table(poptable[,1], file = '~/cophyhopa/data/ADMX/BTB_afapc.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
+```
+
+#### Data selecting and filtering 
+
+```{bash, results = 'hide'}
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=BTB_afapc
+if [ ! -e $FILE.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep ~/cophyhopa/data/ADMX/BTB_afapc.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out $FILE \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > $FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c $FILE".vcf.gz" | \
+   gawk '(/^[^#]/){
+      A[$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr "\t" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf $FILE".vcf.gz" \
+         --plink --mac 2 --remove-indels --max-alleles 2 \
+         --chrom-map chromMap.txt \
+         --out $FILE
+
+gawk -v OFS="\t" '{
+   $1 = 1
+   $2 = 1 ":" $4
+   print $0
+}' $FILE".map" > better.map
+mv better.map $FILE.map
+
+plink --file $FILE --make-bed --out $FILE --allow-no-sex --allow-extra-chr 0
+
+```
+
+#### Admixture analysis with variant K 
+
+We define the K parameter from 2 to 4, computing the cross-validation error. Then, we extract these values. 
+
+```{bash, results = "hide"}
+
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/BTB_afapc.bed'
+
+for K in 4 5 6; do 
+  if [ ! -e log${K}.BTB_afapc.out ]; then
+    admixture --cv $INPUT $K | tee log${K}.BTB_afapc.out; 
+  fi 
+done
+    
+```
+
+```{bash echo = TRUE}
+grep -h CV log*.BTB_afapc.out
+
+```
+
+#### Plot Q estimates for K = 4, 5 and 6 
+
+We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot 
+
+```{r figure.align = "center", fig.height=5, fig.width=12, echo=FALSE, warning = FALSE}
+
+Q <- read.table("BTB_afapc.4.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BTB_afapc.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),
+           round(Q[, 'V3'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(5, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=5', las=2,
+        cex.names = 0.5, 
+        main = "C.acrinasus - C.fatioi - C.albellus - C.profundus - C.confusus")
+
+
+Q <- read.table("BTB_afapc.5.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BTB_afapc.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),    
+           round(Q[, 'V3'], 2),
+           round(Q[, 'V4'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(5, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=5', las=2,
+        cex.names = 0.5, 
+        main = "C.acrinasus - C.fatioi - C.albellus - C.profundus - C.confusus")
+
+
+Q <- read.table("BTB_afapc.6.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("BTB_afapc.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),    
+           round(Q[, 'V3'], 2),
+           round(Q[, 'V4'], 2),
+           round(Q[, 'V5'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(6, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=6', las=2,
+        cex.names = 0.5, 
+        main = "C.acrinasus - C.fatioi - C.albellus - C.profundus - C.confusus")
+
+```
+
+## All Alpine lakes
+
+#### Removing species with less than 10 individuals/samples
+Additionally, keep only those species that are present in lakes Brienz and Thun. 
+
+```{r}
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+poptable <- poptable[-which(poptable[,3] == "C.alpinus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.alpinus/C.steinmanni"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii"), ]
+poptable <- poptable[-which(poptable[,3] == "C.fatioi/C.albellus"), ]
+poptable <- poptable[-which(poptable[,3] == "D"), ]
+poptable <- poptable[-which(poptable[,3] == "L"), ]
+poptable <- poptable[-which(poptable[,3] == "P"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii/C.fatioi"), ]
+
+write.table(poptable[,1], file = '~/cophyhopa/data/ADMX/ALP.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
+```
+
+#### Data selecting and filtering 
+
+```{bash, results = 'hide'}
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=ALP
+if [ ! -e $FILE.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep ~/cophyhopa/data/ADMX/ALP.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out $FILE \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > $FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c $FILE".vcf.gz" | \
+   gawk '(/^[^#]/){
+      A[$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr "\t" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf $FILE".vcf.gz" \
+         --plink --mac 2 --remove-indels --max-alleles 2 \
+         --chrom-map chromMap.txt \
+         --out $FILE
+
+gawk -v OFS="\t" '{
+   $1 = 1
+   $2 = 1 ":" $4
+   print $0
+}' $FILE".map" > better.map
+mv better.map $FILE.map
+
+plink --file $FILE --make-bed --out $FILE --allow-no-sex --allow-extra-chr 0
+
+```
+
+#### Admixture analysis with variant K 
+
+We define the K parameter from 7 to 10, computing the cross-validation error. Then, we extract these values. 
+
+```{bash, results = "hide"}
+
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/ALP.bed'
+
+for K in 7 8 9 10; do 
+  if [ ! -e log${K}.ALP.out ]; then
+    admixture --cv $INPUT $K | tee log${K}.ALP.out; 
+  fi 
+done
+    
+```
+
+```{bash echo = TRUE}
+grep -h CV log*.ALP.out
+
+```
+
+#### Plot Q estimates for K = 7, 8, 9 and 10 
+We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot 
+
+```{r figure.align = "center", fig.height=5, fig.width=12, echo=FALSE, warning = FALSE}
+
+Q <- read.table("ALP.7.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("ALP.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),
+           round(Q[, 'V3'], 2),
+           round(Q[, 'V4'], 2),
+           round(Q[, 'V5'], 2),
+           round(Q[, 'V6'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(7, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=7', las=2,
+        cex.names = 0.5, 
+        main = "ALL ALPINE SPECIES")
+
+
+Q <- read.table("ALP.8.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("ALP.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),    
+           round(Q[, 'V3'], 2),
+           round(Q[, 'V4'], 2),
+           round(Q[, 'V5'], 2),
+           round(Q[, 'V6'], 2),
+           round(Q[, 'V7'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(8, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=8', las=2,
+        cex.names = 0.5, 
+        main = "ALL ALPINE SPECIES")
+
+
+Q <- read.table("ALP.9.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("ALP.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),
+           round(Q[, 'V3'], 2),
+           round(Q[, 'V4'], 2),
+           round(Q[, 'V5'], 2),
+           round(Q[, 'V6'], 2),
+           round(Q[, 'V7'], 2),
+           round(Q[, 'V8'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(9, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=9', las=2,
+        cex.names = 0.5, 
+        main = "ALL ALPINE SPECIES")
+
+
+Q <- read.table("ALP.10.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("ALP.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),
+           round(Q[, 'V3'], 2),
+           round(Q[, 'V4'], 2),
+           round(Q[, 'V5'], 2),
+           round(Q[, 'V6'], 2),
+           round(Q[, 'V7'], 2),
+           round(Q[, 'V8'], 2),
+           round(Q[, 'V9'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(10, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=10', las=2,
+        cex.names = 0.5, 
+        main = "ALL ALPINE SPECIES")
+```
+
+# Species in Arctic lakes
+
+## Lakes Suohpatjavri and Langfjordvatn 
+
+#### Data selecting and filtering 
+
+```{bash, results = 'hide'}
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=ARC
+if [ ! -e $FILE.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep ~/cophyhopa/data/Arctic.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out $FILE \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > $FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c $FILE".vcf.gz" | \
+   gawk '(/^[^#]/){
+      A[$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr "\t" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf $FILE".vcf.gz" \
+         --plink --mac 2 --remove-indels --max-alleles 2 \
+         --chrom-map chromMap.txt \
+         --out $FILE
+
+gawk -v OFS="\t" '{
+   $1 = 1
+   $2 = 1 ":" $4
+   print $0
+}' $FILE".map" > better.map
+mv better.map $FILE.map
+
+plink --file $FILE --make-bed --out $FILE --allow-no-sex --allow-extra-chr 0
+
+```
+
+#### Admixture analysis with variant K 
+
+We define the K parameter from 2 to 4, computing the cross-validation error. Then, we extract these values. 
+
+```{bash, results = "hide"}
+
+INPUT='/gata/mar/cophyhopa/results/2022-05-09/admixture/ARC.bed'
+
+for K in 2 3 4 5; do 
+  if [ ! -e log${K}.ARC.out ]; then
+    admixture --cv $INPUT $K | tee log${K}.ARC.out; 
+  fi 
+done
+    
+```
+
+```{bash echo = TRUE}
+grep -h CV log*.ARC.out
+
+```
+
+#### Plot Q estimates for K = 2, 3, 4 and 5
+
+We choose the K that has given a lower value of the cross-validation error. We add the sample names and display a barplot.
+
+```{r figure.align = "center", fig.height=5, fig.width=10, echo=FALSE, warning=FALSE}
+
+Q <- read.table("ARC.2.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("ARC.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(2, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=2', las=2,
+        cex.names = 0.6, main = "LAN & SUO")
+
+
+Q <- read.table("ARC.3.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("ARC.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(3, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=3', las=2,
+        cex.names = 0.6, main = "LAN & SUO")
+
+
+Q <- read.table("ARC.4.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("ARC.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),
+           round(Q[, 'V3'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(5, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=5', las=2,
+        cex.names = 0.6, main = "LAN & SUO")
+
+
+Q <- read.table("ARC.5.Q")
+popmap <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+sample.id <- scan("ARC.nosex", what = "character")
+sample.id <- sample.id[!duplicated(sample.id)]
+rownames(popmap) <- popmap[,1]
+rownames(Q) <- paste(sample.id, substring(popmap[sample.id, 3], 1, 5), sep = "_")
+
+z <- order(round(Q[, 'V1'], 2),
+           round(Q[, 'V2'], 2),    
+           round(Q[, 'V3'], 2),
+           round(Q[, 'V4'], 2), decreasing = TRUE)
+
+par(mar=c(7,4,4,2))
+barplot(t(Q[z,]), col = brewer.pal(5, 'Accent'), border = NA,
+        xlab = '', ylab = 'Admixture proportions for K=5', las=2,
+        cex.names = 0.6, main = "LAN & SUO")
+
+```

@@ -1,0 +1,43 @@
+
+
+processing file: README_2.Rmd
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+if [ ! -e walzur.recode.vcf ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep WalZur.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out walzur \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --recode --recode-INFO-all
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi"
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+if [ ! -e BBT.recode.vcf ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep BieBriThu.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out BBT \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --recode --recode-INFO-all
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi"
+output file: README_2.knit.md
+
+
+Output created: README_2.html

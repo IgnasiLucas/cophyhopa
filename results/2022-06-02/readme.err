@@ -1,0 +1,86 @@
+
+
+processing file: README.Rmd
+running: bash  -c "# Create the vcf.gz file (remove the hybrids and zip vcf)
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=TREE
+if [ ! -e \$FILE.vcf.gz ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep ~/cophyhopa/data/ADMX/ALL.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out \$FILE \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --max-missing 1 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > ./TREE/\$FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi"
+Loading required package: R.oo
+Loading required package: R.methodsS3
+R.methodsS3 v1.8.1 (2020-08-26 16:20:06 UTC) successfully loaded. See ?R.methodsS3 for help.
+R.oo v1.24.0 (2020-08-26 16:11:58 UTC) successfully loaded. See ?R.oo for help.
+
+Attaching package: 'R.oo'
+
+The following object is masked from 'package:R.methodsS3':
+
+    throw
+
+The following objects are masked from 'package:methods':
+
+    getClasses, getMethods
+
+The following objects are masked from 'package:base':
+
+    attach, detach, load, save
+
+R.utils v2.11.0 (2021-09-26 08:30:02 UTC) successfully loaded. See ?R.utils for help.
+
+Attaching package: 'R.utils'
+
+The following object is masked from 'package:utils':
+
+    timestamp
+
+The following objects are masked from 'package:base':
+
+    cat, commandArgs, getOption, inherits, isOpen, nullfile, parse,
+    warnings
+
+running: bash  -c "# Create the vcf.gz file (remove the hybrids and zip vcf)
+VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+FILE=ALP_TREE
+if [ ! -e ./ALP_TREE/\$FILE.vcf.gz ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep ~/cophyhopa/data/ADMX/ALP.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out \$FILE \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --max-missing 1 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > ./ALP_TREE/\$FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi"
+output file: README.knit.md
+
+
+Output created: README.html
+There were 50 or more warnings (use warnings() to see the first 50)
