@@ -53,12 +53,16 @@ BRZ040 BRZ040 C.albellus
 BRZ041 BRZ041 C.albellus
 BRZ052 BRZ052 C.fatioi
 BRZ054 BRZ054 C.fatioi
+BRZ066 BRZ066 C.albellus
 BRZ068 BRZ068 C.albellus
 BRZ070 BRZ070 C.albellus
 BRZ071 BRZ071 C.albellus
 BRZ083 BRZ083 C.fatioi
 BRZ099 BRZ099 C.fatioi
 BRZ107 BRZ107 C.fatioi
+BRZ108 BRZ108 C.fatioi
+BRZ110 BRZ110 C.fatioi
+BRZ111 BRZ111 C.fatioi
 THU001 THU001 C.acrinasus
 THU002 THU002 C.acrinasus
 THU004 THU004 C.acrinasus
@@ -72,6 +76,7 @@ THU039 THU039 C.steinmanni
 THU056 THU056 C.profundus
 THU060 THU060 C.profundus
 THU061 THU061 C.profundus
+THU066 THU066 C.albellus
 THU067 THU067 C.acrinasus
 THU073 THU073 C.steinmanni
 THU077 THU077 C.albellus
@@ -114,6 +119,7 @@ THU187 THU187 C.acrinasus
 THU190 THU190 C.steinmanni
 THU197 THU197 C.steinmanni
 THU198 THU198 C.steinmanni
+THU199 THU199 C.acrinasus
 WAL003 WAL003 C.duplex
 WAL004 WAL004 C.duplex
 WAL006 WAL006 C.duplex
