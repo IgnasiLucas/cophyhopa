@@ -15,7 +15,7 @@ The clust file contains three columns, whereby the first and the second column i
 #### Removing species with less than 10 individuals/samples and creating the .clust file 
 
 ```{r, eval = FALSE}
-poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+poptable <- read.table('~/cophyhopa/data/popmap0.txt', 
                        col.names = c('sample', 'group', 'pop', 'lake'))
 
 poptable <- poptable[-which(poptable[,3] == "C.alpinus"), ]
@@ -36,9 +36,9 @@ write.table(poptable, file = '~/cophyhopa/results/2022-06-02/TREE/TREE.clust', q
 
 ```{bash, results = 'hide'}
 # Create the vcf.gz file (remove the hybrids and zip vcf)
-VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
 FILE=TREE
-if [ ! -e $FILE.vcf.gz ]; then
+if [ ! -e ./TREE/$FILE.vcf.gz ]; then
    vcftools --vcf $VCF \
             --out dirty \
             --keep ~/cophyhopa/data/ADMX/ALL.txt \
@@ -151,7 +151,7 @@ The clust file contains three columns, whereby the first and the second column i
 #### Removing species with less than 10 individuals/samples and creating the .clust file 
 
 ```{r, eval = FALSE}
-poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+poptable <- read.table('~/cophyhopa/data/popmap0.txt', 
                        col.names = c('sample', 'group', 'pop', 'lake'))
 
 poptable <- poptable[-which(poptable[,3] == "C.alpinus"), ]
@@ -175,7 +175,7 @@ write.table(poptable, file = '~/cophyhopa/results/2022-06-02/ALP_TREE/ALP_TREE.c
 
 ```{bash echo=FALSE}
 # Create the vcf.gz file (remove the hybrids and zip vcf)
-VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
 FILE=ALP_TREE
 if [ ! -e ./ALP_TREE/$FILE.vcf.gz ]; then
    vcftools --vcf $VCF \
@@ -239,7 +239,7 @@ plot_tree("ALP_TREE/outALP_TREE.12", mbar = FALSE, scale = FALSE, lwd = 2)
 
 ```{r, eval=FALSE, include=FALSE}
 # Create the clust file and save it
-poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+poptable <- read.table('~/cophyhopa/data/popmap0.txt', 
                        col.names = c('sample', 'group', 'pop', 'lake'))
 samples <- readLines("~/cophyhopa/data/Alpine.txt")
 

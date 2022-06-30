@@ -2,7 +2,7 @@
 
 processing file: README.Rmd
 running: bash  -c "# Create the vcf.gz file (remove the hybrids and zip vcf)
-VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
 FILE=TREE
 if [ ! -e \$FILE.vcf.gz ]; then
    vcftools --vcf \$VCF \\
@@ -57,7 +57,7 @@ The following objects are masked from 'package:base':
     warnings
 
 running: bash  -c "# Create the vcf.gz file (remove the hybrids and zip vcf)
-VCF='/gata/mar/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf'
+VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
 FILE=ALP_TREE
 if [ ! -e ./ALP_TREE/\$FILE.vcf.gz ]; then
    vcftools --vcf \$VCF \\
