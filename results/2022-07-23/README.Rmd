@@ -1,0 +1,359 @@
+---
+title: "Using fastsimcoal"
+author: "J. Ignacio Lucas Lledó"
+date: "23/7/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## The data
+
+Here the goal is to use fastsimcoal2 to model the split of the ancestral fish population
+that colonized the two lakes sampled in Norway. Thus, I need first to filter the VCF
+to include only fish from the Arctic region. As usual, we start from the original, dirty
+VCF, we remove unwanted individuals and then filter sites again. In order to determine
+what individuals are from the Arctic lakes, I would use the original file. Note that in
+folder `2022-05-04` we created a file, `2022-05-04/TheWorst.txt`, with the identifiers of
+fish with the least data, that should be removed. They include some Arctic fish.
+
+```{bash filteringFish}
+VCF='../2022-04-22/assem2_outfiles/assem2.vcf'
+REMOVABLE='../2022-05-04/TheWorst.txt'
+FISHDATA='../../data/Fish_clean.tsv'
+
+if [ ! -e Arctic.txt ]; then
+   cut -f 1,4 $FISHDATA | grep "Arctic" | cut -f 1 > Arctic.txt
+fi
+
+if [ ! -e arctic.recode.vcf ]; then
+   if [ ! -e dirty.recode.vcf ]; then
+      vcftools --vcf $VCF \
+               --out dirty \
+               --keep Arctic.txt \
+               --remove $REMOVABLE \
+               --recode \
+               --recode-INFO-all
+   fi
+   vcftools --vcf dirty.recode.vcf \
+            --out arctic \
+            --thin 500 \
+            --remove-indels \
+            --mac 1 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 12 \
+            --recode --recode-INFO-all
+   if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+fi
+```
+
+I note that `vcftools --max-missing-count 12` is more conservative than expected. It does
+not "exclude sites with more than this number of missing genotypes over all individuals",
+but it seems to remove sites with more than this number of missing **alleles** over all
+individuals. In this case of diploid genotypes, it removes individuals with more than 6
+missing genotypes! I counted the number of reference, alternative and missing alleles in the
+following way:
+
+```{bash counting}
+if [ ! -e arctic.recode.alleleCount.txt ]; then
+   gawk 'BEGIN{
+      print "#REF\tALT\tMissing\tTotal"
+   }(/^[^#]/){
+      delete F
+      for (i=10;i<=NF;i++) {
+         split($i, A, /:/)
+         split(A[1], B, /\//)
+         F[B[1]]++
+         F[B[2]]++
+      }
+      print F["0"] "\t" F["1"] "\t" F["."] + 0 "\t" F["0"] + F["1"] + F["."]
+   }' arctic.recode.vcf > arctic.recode.alleleCount.txt
+fi
+```
+
+Note that when filtering the VCF, I use `--mac 1`, while we had used `--mac 2` in other
+occasions. The reason is to avoid biases in the SFS. However, I am afraid the SFS will
+necessarily be biased, due to ascertainment and downsampling. First, sites are selected for
+being variable, and indeed all sites in `arctic.recode.vcf` have at least one allele different
+from the rest. Thus, the zero category in the SFS should be empty. However, to deal with
+missing data we will downsample the populations with `easySFS` (see below). That is, instead
+of estimating the SFS for the 54 fish from Langfjordvatn and the 60 fish from Suopatjavri,
+we estimate an SFS for a theoritcal sample of, say 50 and 50 fish, with no missing data. The
+problem is that then, because the original VCF includes sites where only one individual
+is heterozygous, when downsampling we expect those sites to be monomorphic. The zero-category
+in the SFS becomes populated, but in a very biased way. Because I don't know how this bias
+will affect the inferece, I need to estimate two different SFSs: with and without downsampling.
+
+## PCA
+
+Just to make sure that the lake is a good criteria to separate populations in the Arctic region.
+
+```{r pca}
+suppressMessages(library('ape'))
+suppressMessages(library('pegas'))
+suppressMessages(library('seqinr'))
+suppressMessages(library('ggplot2'))
+suppressMessages(library('adegenet'))
+library('MetBrewer')
+library(kableExtra)
+
+arc <- read.vcf('arctic.recode.vcf', from = 1, to = 100000, quiet = TRUE)
+arc <- as.data.frame(arc)
+for (i in 1:dim(arc)[2]) arc[,i] <- as.character(arc[,i])
+arc[arc == './.'] <- NA
+
+arc.gi <- df2genind(arc, sep = '/', type = 'codom', ploidy = 2)
+sum(is.na(arc.gi@tab))
+
+X <- tab(arc.gi, NA.method = 'mean')
+pca3 <- dudi.pca(X, scale=FALSE, scannf=FALSE, nf=3)
+barplot(100 * pca3$eig[1:15] / sum(pca3$eig), main = 'PCA eigenvalues',
+        col = met.brewer('Paquin', 15), ylab = "% of variance explained")
+PercentVar <- head(100 * pca3$eig / sum(pca3$eig))
+
+DATA <- '../../data/Fish_clean2.tsv'
+Fish <- read.table(DATA, header = TRUE, sep = '\t')
+row.names(Fish) <- Fish$Fish_code
+arc.gi@pop <- droplevels(Fish[row.names(arc.gi@tab), 'Lake'])
+col  <- met.brewer('Hiroshige', 2)  
+#colt <- transp(col, 0.6)
+par(mfrow = c(2,2))
+plot(pca3$li$Axis1, pca3$li$Axis2,
+     xlab = sprintf("PC 1, %.1f%%", PercentVar[1]),
+     ylab = sprintf("PC 2, %.1f%%", PercentVar[2]),
+     col = col[arc.gi@pop], pch = 16, cex = 1.5)
+plot(pca3$li$Axis3, pca3$li$Axis2,
+     xlim = c(max(pca3$li$Axis3), min(pca3$li$Axis3)),
+     xlab = sprintf("PC 3, %.1f%%", PercentVar[3]),
+     ylab = sprintf("PC 2, %.1f%%", PercentVar[2]),
+     col = col[arc.gi@pop], pch = 16, cex = 1.5)
+plot(pca3$li$Axis1, pca3$li$Axis3,
+     xlab = sprintf("PC 1, %.1f%%", PercentVar[1]),
+     ylab = sprintf("PC 3, %.1f%%", PercentVar[3]),
+     col = col[arc.gi@pop], pch = 16, cex = 1.5)
+plot(c(-40, 20), c(-20, 40), type = 'n', axes = FALSE, ann = FALSE)
+legend(-40, y = 40, legend = levels(arc.gi@pop), fill = col, border= col)
+par(mfrow = c(1,1))
+```
+
+The first component, accumulating more than 20% of the variation, separates fish
+between lakes. Thus, I assume the two lakes are two populations or species.
+
+## Estimation of the site frequency spectrum (SFS)
+
+I have installed [easySFS](https://github.com/isaacovercast/easySFS), by Isaac Overcast.
+To run it, I need to activate the conda environment called "easySFS". And I need a
+population file. I assume the population file may include individuals other than those
+in the VCF.
+
+```{bash sfs,  engine.opts='-i'}
+eval "$(command conda 'shell.bash' 'hook' 2> /dev/null)"
+FISHDATA='../../data/Fish_clean2.tsv'
+conda activate easySFS
+if [ ! -e popmap.txt ]; then
+   # Using lakes as population, because I only have Arctic fish in the VCF.
+   if [ ! -e SamplesInVCF.txt ]; then
+      grep "#CHROM" arctic.recode.vcf | \
+      gawk '{for (i = 10; i <= NF; i++) print $i}' > SamplesInVCF.txt
+   fi
+   cut -f 1,2 $FISHDATA | tail -n +2 | grep -F -f SamplesInVCF.txt > popmap.txt
+fi
+
+if [ ! -d downsample ]; then
+   if [ ! -e projection_preview.txt ]; then
+      easySFS -a -i arctic.recode.vcf -p popmap.txt --preview > projection_preview.txt
+   fi
+   easySFS -a -i arctic.recode.vcf -p popmap.txt --proj 96,110 -o downsample
+fi
+
+if [ ! -d fullsample ]; then
+   easySFS -a -i arctic.recode.vcf -p popmap.txt --proj 108,120 -o fullsample
+fi
+```
+
+```{r plotSFS}
+joint <- as.matrix(read.table('fullsample/fastsimcoal2/arctic_jointMAFpop1_0.obs',
+                              skip = 1, header = TRUE))
+Lang  <- t(as.matrix(read.table('fullsample/fastsimcoal2/Langfjordvatn_MAFpop0.obs',
+                                skip = 1, header = TRUE)))
+Suo   <- t(as.matrix(read.table('fullsample/fastsimcoal2/Suopatjavri_MAFpop0.obs',
+                                skip = 1, header = TRUE)))
+plot(Lang[1:55], type = 'l', xlab = 'Allele frequency',
+     ylab = 'Number of SNPs', main = 'Langfjordvatn')
+plot(Suo[1:60], type = 'l', xlab = 'Allele frequency',
+     ylab = 'Number of SNPs', main = 'Suopatjavri')
+library("RColorBrewer")
+col <- colorRampPalette(brewer.pal(10, "RdYlBu"))(256)
+heatmap(log(joint + 1), Rowv = NA, Colv = NA, xlab = 'Langfjordvatn',
+        ylab = 'Supatjavri', col = col, scale = 'none')
+```
+
+The site frequency spectra of the two lakes suggest that Langfjordvatn has much
+more genetic diversity than Suopatjavri. This is in agreement with the ML phylogeny
+of the individuals, where fish from Suopatjavri form a clade inside the clade formed
+by Langfjordvatn fish.
+
+The SFS obtained are *projections*, even when the number of chromosomes *subsampled*
+is equal to the total number of available chromosomes. For example, there are 54
+fish from Langfjordvatn (108 chromosomes) and 60 fish from Suopatjavri (120 chromosomes)
+and when all of them were requested to the easysSFS program, we end up with much fewer
+SNPs than there were originally: 19541 SNPs in Langfjordvatn; 22024, in Suopatjavri;
+and only 16830 in the joint dataset. Originally, there were 31411 SNPs in the VCF.
+Therefore, it is not surprising that the row- or column totals in the joint SFS are
+different from the numbers of SNPs in each populations.
+
+The joint SFS suggests a common recent history of the two populations: few SNPs are
+common in one population and rare in the other. And the most abundant class of SNPs
+are those the minor allele of which is at low frequency in both populations.
+
+## Running Fastsimcoal2
+
+### Template file
+
+Below I transcribe a template file describing a model with two populations that split
+a while ago, and might have exchanged some individuals at some time afterwards. The
+two populations are the two lakes. Instead of using a migration matrix to represent the
+admixture event, I will assume it was a single event. To simplify, in the following
+template, I assume that population 1 (Suopatjavri, I think) is the one founded later and
+receiving migrants from population 0.
+
+```{bash template, eval=FALSE}
+//Number of population samples (demes)
+2
+//Population effective sizes (number of genes)
+NPOP0
+NPOP1
+//Sample sizes
+96
+110
+//Growth rates
+0
+0
+//Number of migration matrices
+0
+//historical event: time, source, sink, migrants, new size, new growth rate, migr. matrix.
+3 historical event
+T1 1 0 MIG     1 0 0
+T2 1 1   0 0.001 0 0
+T2 1 0   1     1 0 0
+//Number of independent loci [chromosomes]
+1 0
+//Per chromosome: Number of linkage blocks
+1
+//per Block: data type, num loci, rec. rate and mut rate + optional parameters
+FREQ 1 0 1.0e-8 OUTEXP
+```
+
+### Estimation file
+
+```{bash ranges, eval=FALSE}
+// Priors and rules file
+// *********************
+
+[PARAMETERS]
+//#isInt? #name #dist. #min #max
+//all N are in number of haploid individuals
+1 NPOP0 unif    100 1000000 output
+1 NPOP1 unif    100 1000000 output
+1 T1    logunif  10   10000 output
+0 MIG   unif      0     0.5 output
+1 T2    unif     T1   50000 output
+
+[COMPLEX PARAMETERS]
+```
+
+I noticed the program fails without an error message (other than "core dumped")
+if "[COMPLEX PARAMETERS]" is not present in the file. Also, I suspect that the
+limits of log-uniformly-distributed variables are limits in the log scale.
+
+### Execution to estimate the parameters of model 0
+
+In order to estimate the parameters, the data (observed SFS) must be in the
+same folder, and with a specific name. The name of the input file encodes the
+kind of SFS being used: derived allele frequencies (DAF) or minor allele frequencies
+("folded" SFS or MAF); one, two or more populations
+
+```{bash estimate}
+for run in $(seq 1 100); do
+   rundir=$(printf "model0/run%03i" $run)
+   if [ ! -d $rundir ]; then
+      mkdir $rundir
+   fi
+   if [ ! -e $rundir/arctic.tpl ]; then
+      cp model0/arctic.tpl $rundir/arctic.tpl
+   fi
+   if [ ! -e $rundir/arctic.est ]; then
+      cp model0/arctic.est $rundir/arctic.est
+   fi
+   if [ ! -e $rundir/arctic_jointMAFpop1_0.obs ]; then
+      ln -sr downsample/fastsimcoal2/arctic_jointMAFpop1_0.obs \
+             $rundir/arctic_jointMAFpop1_0.obs
+   fi
+   if [ ! -e $rundir/arctic.par ]; then
+      cd $rundir
+      fsc27 -t arctic.tpl \
+            -n 10000 \
+            -m \
+            -e arctic.est \
+            -M \
+            -L 40 \
+            -c 0 \
+            -q &> fsc27.log
+      cd ../..
+   fi
+done
+
+if [ ! -e model0/summary.txt ]; then
+   echo -e "NPOP0\tNPOP1\tT1\tMIG\tT2\tMaxEstLhood\tMaxObsLhood" > model0/summary.txt
+   find model0 -name arctic.bestlhoods -exec cat '{}' \; | \
+   grep -v "^NPOP0" >> model0/summary.txt
+fi
+```
+
+## Results
+
+The absolute value of the population size estimates depend on the
+predetermined mutation rate. And estimates of times of events depend
+in turn on population sizes. If I express times relative to population
+sizes, I may understand this better. For example, the time to an assumed
+migration event from Langfjordvatn (population 0) to Suopatjavri (populatin 1)
+can be expressed in units of coalescence in Suopatjavri by dividing T1
+by NPOP1. Recall population sizes are expressed as chromosome numbers, as if
+populations were haploid. Thus, a number of generations equal to the population
+size is the expected time of coalescence of two randomly picked genes.
+The time T2 when Suopatjavri's population started can also be expressed in
+the same units.
+
+```{r results}
+library(ggplot2)
+model0 <- read.table('model0/summary.txt', header = TRUE)
+model0$T2c <- model0$T2 / model0$NPOP1
+model0$T1c <- model0$T1 / model0$NPOP1
+ggplot(data = model0, mapping = aes(x = T1c, y = T2c, color = MaxEstLhood)) +
+   geom_point() + xlim(0, 0.015) + ylim(0.25, 0.75)
+# Using xlim() and ylim() to focus in the region with highest likelihood.
+```
+
+Thus, it seems as if Suopatjavri's population started around half a coalescence
+unit ago. That is, half the time expected for two random lineages to coalesce.
+Quite recently. And the assumed migration event is even more recent.
+
+Let's see how the two populations compare.
+
+```{r relativeSize}
+model0$N0overN1 <- model0$NPOP0 / model0$NPOP1
+ggplot(data = model0, mapping = aes(x = N0overN1, y = MaxEstLhood)) +
+   geom_point() + xlim(50,300) + ylim(-97000, -96000)
+# I use xlim() and ylim() to focus on the most likely values.
+```
+
+So, it seems that Langfjordvatn maintains a population around 100 times
+larger than that in Suopatjavri.
+
+## Session Information
+```{r sessionInfo}
+sessionInfo()
+```
