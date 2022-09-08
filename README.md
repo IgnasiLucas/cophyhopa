@@ -1,11 +1,10 @@
 # 2022-07-23
 I finally managed to run fastsimcoal2, using the estimated site frequency spectra of
-the two arctic populations. The first and very simple model fitted suggests that
-Suopatjavri was populated relatively recently: half a coalescent unit ago, and that
-Langfjordvatn maintains a population around 100 times larger. It is just a start, and
-more models need to be fitted and compared gain confidence on this results. In particular,
-the fixed mutation rate chosen may be too low, because populatin size estimates are
-very high.
+the two arctic populations. The first and very simple models fitted suggest that
+Suopatjavri holds a much smaller population than Langfjordvatn, and that they are
+very different, probably due to a long time of divergence. In the last runs, I made
+sure monomorphic SNPs are not taken into account. But the SFS from Langfjordvatn may
+be biased and need to be checked.
 
 See the [report in this link](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-07-23/README.html).
 

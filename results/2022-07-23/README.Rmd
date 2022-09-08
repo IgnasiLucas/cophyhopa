@@ -84,8 +84,9 @@ of estimating the SFS for the 54 fish from Langfjordvatn and the 60 fish from Su
 we estimate an SFS for a theoritcal sample of, say 50 and 50 fish, with no missing data. The
 problem is that then, because the original VCF includes sites where only one individual
 is heterozygous, when downsampling we expect those sites to be monomorphic. The zero-category
-in the SFS becomes populated, but in a very biased way. Because I don't know how this bias
-will affect the inferece, I need to estimate two different SFSs: with and without downsampling.
+in the SFS becomes populated, but in a very biased way. I definitely don't want to use
+the count of monomorphic sites in the estimation. See below how Fastsimcoal2 let us
+ignore (partially) those sites.
 
 ## PCA
 
@@ -168,10 +169,7 @@ if [ ! -d downsample ]; then
    fi
    easySFS -a -i arctic.recode.vcf -p popmap.txt --proj 96,110 -o downsample
 fi
-
-if [ ! -d fullsample ]; then
-   easySFS -a -i arctic.recode.vcf -p popmap.txt --proj 108,120 -o fullsample
-fi
+conda deactivate
 ```
 
 ```{r plotSFS}
@@ -194,7 +192,9 @@ heatmap(log(joint + 1), Rowv = NA, Colv = NA, xlab = 'Langfjordvatn',
 The site frequency spectra of the two lakes suggest that Langfjordvatn has much
 more genetic diversity than Suopatjavri. This is in agreement with the ML phylogeny
 of the individuals, where fish from Suopatjavri form a clade inside the clade formed
-by Langfjordvatn fish.
+by Langfjordvatn fish. However, the small number of sites where the minor allele
+appears only once in Langfjordvatn makes me doubt of the validity of this SFS. I
+suspect it could be an artifact, due to lack of power to detect singletons. 
 
 The SFS obtained are *projections*, even when the number of chromosomes *subsampled*
 is equal to the total number of available chromosomes. For example, there are 54
@@ -217,8 +217,8 @@ Below I transcribe a template file describing a model with two populations that 
 a while ago, and might have exchanged some individuals at some time afterwards. The
 two populations are the two lakes. Instead of using a migration matrix to represent the
 admixture event, I will assume it was a single event. To simplify, in the following
-template, I assume that population 1 (Suopatjavri, I think) is the one founded later and
-receiving migrants from population 0.
+template, I assume that population 1 (Suopatjavri) is the one founded later and
+receiving migrants from population 0. This is the template file for **model 0**.
 
 ```{bash template, eval=FALSE}
 //Number of population samples (demes)
@@ -244,10 +244,20 @@ T2 1 0   1     1 0 0
 //Per chromosome: Number of linkage blocks
 1
 //per Block: data type, num loci, rec. rate and mut rate + optional parameters
-FREQ 1 0 1.0e-8 OUTEXP
+FREQ 1 0 2.5e-8 OUTEXP
 ```
 
 ### Estimation file
+
+In the SFS, we do not have an unbiased estimate of the zero class (the monomorphic
+sites). Thus, we need to exclude them from the analysis, using the `--removezeroSFS`
+option in the command line. The manual warns that this option requieres one parameter
+to  be *fixed*. That is, I need to declare one of the parameters as a *reference* in
+the .est file. I choose the ancestral population size, NPOP0. This forces me to use
+the `--minnumloops` option as well. This option makes the optimization process to
+use whatever count of monomorphic sites we have in the SFS during the first *n*
+steps, and then fix the reference parameter to the value obtained, to end up estimating
+the rest of the parameters without taking the monomorphic sites into account. Bizarre.
 
 ```{bash ranges, eval=FALSE}
 // Priors and rules file
@@ -256,11 +266,11 @@ FREQ 1 0 1.0e-8 OUTEXP
 [PARAMETERS]
 //#isInt? #name #dist. #min #max
 //all N are in number of haploid individuals
-1 NPOP0 unif    100 1000000 output
-1 NPOP1 unif    100 1000000 output
-1 T1    logunif  10   10000 output
-0 MIG   unif      0     0.5 output
-1 T2    unif     T1   50000 output
+1 NPOP0 unif    100    1000000 output reference
+1 NPOP1 unif    100    1000000 output
+1 T1    logunif  10      10000 output
+0 MIG   unif      0        0.5 output
+1 T2    unif     T1      50000 output paramInRange
 
 [COMPLEX PARAMETERS]
 ```
@@ -269,6 +279,11 @@ I noticed the program fails without an error message (other than "core dumped")
 if "[COMPLEX PARAMETERS]" is not present in the file. Also, I suspect that the
 limits of log-uniformly-distributed variables are limits in the log scale.
 
+In **model 0** I assume Suopatjavri population was started by a few fish, representing
+no more than 0.001 the final population size in that lake. The only difference
+in **model 1** is that the relative size of the bottleneck is set as another
+parameter to be estimated (*NECK*).
+
 ### Execution to estimate the parameters of model 0
 
 In order to estimate the parameters, the data (observed SFS) must be in the
@@ -276,7 +291,7 @@ same folder, and with a specific name. The name of the input file encodes the
 kind of SFS being used: derived allele frequencies (DAF) or minor allele frequencies
 ("folded" SFS or MAF); one, two or more populations
 
-```{bash estimate}
+```{bash estimate0}
 for run in $(seq 1 100); do
    rundir=$(printf "model0/run%03i" $run)
    if [ ! -d $rundir ]; then
@@ -294,28 +309,75 @@ for run in $(seq 1 100); do
    fi
    if [ ! -e $rundir/arctic.par ]; then
       cd $rundir
-      fsc27 -t arctic.tpl \
-            -n 10000 \
-            -m \
-            -e arctic.est \
-            -M \
-            -L 40 \
-            -c 0 \
-            -q &> fsc27.log
+      fsc27 --tplfile arctic.tpl \
+            --numsims 10000 \
+            --msfs \
+            --estfile arctic.est \
+            --maxlhood \
+            --numloops 50 \
+            --minnumloops 25 \
+            --cores 0 \
+            --removeZeroSFS \
+            --quiet &> fsc27.log
       cd ../..
    fi
 done
 
 if [ ! -e model0/summary.txt ]; then
-   echo -e "NPOP0\tNPOP1\tT1\tMIG\tT2\tMaxEstLhood\tMaxObsLhood" > model0/summary.txt
+   echo -e "NPOP0\tNPOP1\tT1\tMIG\tT2\tRescale\tMaxEstLhood\tMaxObsLhood" > model0/summary.txt
    find model0 -name arctic.bestlhoods -exec cat '{}' \; | \
    grep -v "^NPOP0" >> model0/summary.txt
 fi
 ```
 
+### Execution to estimate the parameters of model 1
+
+In model0 the bottleneck suffered during colonization of Suopatjavri was fixed
+to one thousandth the population size. In model 1 I relax this assumption and
+estimate the bottleneck relative to the final size of that population.
+
+```{bash estimate1}
+for run in $(seq 1 100); do
+   rundir=$(printf "model1/run%03i" $run)
+   if [ ! -d $rundir ]; then
+      mkdir $rundir
+   fi
+   if [ ! -e $rundir/arctic.tpl ]; then
+      cp model1/arctic.tpl $rundir/arctic.tpl
+   fi
+   if [ ! -e $rundir/arctic.est ]; then
+      cp model1/arctic.est $rundir/arctic.est
+   fi
+   if [ ! -e $rundir/arctic_jointMAFpop1_0.obs ]; then
+      ln -sr downsample/fastsimcoal2/arctic_jointMAFpop1_0.obs \
+             $rundir/arctic_jointMAFpop1_0.obs
+   fi
+   if [ ! -e $rundir/arctic.par ]; then
+      cd $rundir
+      fsc27 --tplfile arctic.tpl \
+            --numsims 10000 \
+            --msfs \
+            --estfile arctic.est \
+            --maxlhood \
+            --numloops 50 \
+            --minnumloops 25 \
+            --cores 0 \
+            --removeZeroSFS \
+            --quiet &> fsc27.log
+      cd ../..
+   fi
+done
+
+if [ ! -e model1/summary.txt ]; then
+   echo -e "NPOP0\tNPOP1\tT1\tMIG\tT2\tRescale\tMaxEstLhood\tMaxObsLhood" > model1/summary.txt
+   find model1 -name arctic.bestlhoods -exec cat '{}' \; | \
+   grep -v "^NPOP0" >> model1/summary.txt
+fi
+```
+
 ## Results
 
-The absolute value of the population size estimates depend on the
+The absolute value of the population size estimates probably depend on the
 predetermined mutation rate. And estimates of times of events depend
 in turn on population sizes. If I express times relative to population
 sizes, I may understand this better. For example, the time to an assumed
@@ -330,28 +392,52 @@ the same units.
 ```{r results}
 library(ggplot2)
 model0 <- read.table('model0/summary.txt', header = TRUE)
+model1 <- read.table('model1/summary.txt', header = TRUE)
+plot(ecdf(model0$MaxEstLhood), main = '')
+par(new = TRUE)
+plot(ecdf(model1$MaxEstLhood), col = 'blue', xaxt = 'n', yaxt = 'n',
+     main = 'Likelihood ECDF models 0 (black) and 1 (blue)')
+par(new = FALSE)
+# A few estimates from each model are much less likely than others.
+# I select only the 75 best estimates in each model:
+model0 <- model0[model0$MaxEstLhood > quantile(model0$MaxEstLhood, 0.25),]
+model1 <- model1[model1$MaxEstLhood > quantile(model1$MaxEstLhood, 0.25),]
+   
+   
 model0$T2c <- model0$T2 / model0$NPOP1
 model0$T1c <- model0$T1 / model0$NPOP1
 ggplot(data = model0, mapping = aes(x = T1c, y = T2c, color = MaxEstLhood)) +
-   geom_point() + xlim(0, 0.015) + ylim(0.25, 0.75)
-# Using xlim() and ylim() to focus in the region with highest likelihood.
+   geom_point() + ggtitle('Model 0')
+
+model1$T2c <- model1$T2 / model1$NPOP1
+model1$T1c <- model1$T1 / model1$NPOP1
+ggplot(data = model1, mapping = aes(x = T1c, y = T2c, color = MaxEstLhood)) +
+   geom_point() + ggtitle('Model 1')
 ```
 
-Thus, it seems as if Suopatjavri's population started around half a coalescence
-unit ago. That is, half the time expected for two random lineages to coalesce.
-Quite recently. And the assumed migration event is even more recent.
+Both models suggest a recent migration event must have happened very recently
+(a small fraction of a coalescent unit of time ago). But they differ in the
+time of divergence: if we allow for a less dramatic bottleneck when founding
+Suopatjavri, then the divergence seem to have happened a much longer time ago
+(100 coalescence time units ago, instead of 0.5). Why? The two models accomodate
+the fact that the two populations are very different. The large effect of drift
+between them can be explained by a long time in isolation (model 1) or by a
+very strong founder effect (model 0).
 
 Let's see how the two populations compare.
 
 ```{r relativeSize}
 model0$N0overN1 <- model0$NPOP0 / model0$NPOP1
+model1$N0overN1 <- model1$NPOP0 / model1$NPOP1
+
 ggplot(data = model0, mapping = aes(x = N0overN1, y = MaxEstLhood)) +
-   geom_point() + xlim(50,300) + ylim(-97000, -96000)
-# I use xlim() and ylim() to focus on the most likely values.
+   geom_point() + ggtitle('Model 0')
+ggplot(data = model1, mapping = aes(x = N0overN1, y = MaxEstLhood)) +
+   geom_point() + ggtitle('Model 1')
 ```
 
-So, it seems that Langfjordvatn maintains a population around 100 times
-larger than that in Suopatjavri.
+So, it seems that Langfjordvatn maintains a population around either 20
+(model 0) or 200 (model 1) times larger than that in Suopatjavri. 
 
 ## Session Information
 ```{r sessionInfo}

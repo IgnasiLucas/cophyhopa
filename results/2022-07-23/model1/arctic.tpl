@@ -13,9 +13,9 @@ NPOP1
 0
 //historical event: time, source, sink, migrants, new size, new growth rate, migr. matrix.
 3 historical event
-T1 1 0 MIG     1 0 0
-T2 1 1   0 0.001 0 0
-T2 1 0   1     1 0 0
+T1 1 0 MIG    1 0 0
+T2 1 1   0 NECK 0 0
+T2 1 0   1    1 0 0
 //Number of independent loci [chromosomes]
 1 0
 //Per chromosome: Number of linkage blocks
