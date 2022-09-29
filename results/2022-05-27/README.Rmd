@@ -73,8 +73,8 @@ So, the PCA seem to reproduce Mar's results.
 Time to assign attributes to the individuals: lake, potential species, PC clúster...
 
 ```{r attributes}
-DATA <- '../../data/Fish_clean.tsv'
-Fish <- read.table(DATA, header = TRUE)
+DATA <- '../../data/Fish_clean2.tsv'
+Fish <- read.delim(DATA)
 row.names(Fish) <- Fish$Fish_code
 kable(table(Fish$MOL_MORPH_CONSENSUS_ID,
             Fish$Sci_name_CONSENSUS_ID),

@@ -122,6 +122,6 @@ List of 2
  $ include: logi FALSE
 
 
-/usr/lib/rstudio-server/bin/pandoc/pandoc +RTS -K512m -RTS README.knit.md --to html4 --from markdown+autolink_bare_uris+tex_math_single_backslash --output README.html --lua-filter /usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/pagebreak.lua --lua-filter /usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/latex-div.lua --self-contained --variable bs3=TRUE --standalone --section-divs --table-of-contents --toc-depth 3 --template /usr/local/lib/R/site-library/rmarkdown/rmd/h/default.html --no-highlight --variable highlightjs=1 --variable theme=bootstrap --mathjax --variable 'mathjax-url=https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' --include-in-header /tmp/RtmptVAx0C/rmarkdown-strc8854b4dbaff.html 
+/usr/lib/rstudio-server/bin/pandoc/pandoc +RTS -K512m -RTS README.knit.md --to html4 --from markdown+autolink_bare_uris+tex_math_single_backslash --output README.html --lua-filter /usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/pagebreak.lua --lua-filter /usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/latex-div.lua --self-contained --variable bs3=TRUE --standalone --section-divs --table-of-contents --toc-depth 3 --template /usr/local/lib/R/site-library/rmarkdown/rmd/h/default.html --no-highlight --variable highlightjs=1 --variable theme=bootstrap --mathjax --variable 'mathjax-url=https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' --include-in-header /tmp/Rtmpud3RQB/rmarkdown-str35ea17050289.html 
 > 
 > 

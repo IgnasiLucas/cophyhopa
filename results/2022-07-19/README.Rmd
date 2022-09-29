@@ -1,0 +1,76 @@
+---
+title: "IQ-Tree v.1.6"
+author: "Mar Llaberia-Robledillo"
+date: "5/7/2022"
+output: html_document
+---
+
+# Filtering vcf file
+
+```{bash, eval = FALSE}
+VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+FILE=iqtree
+if [ ! -e $FILE.vcf ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --remove ~/cophyhopa/results/2022-05-04/TheWorst.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out $FILE \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing 1 \
+            --recode --recode-INFO-all
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+```
+
+
+IQtree expects input data to be in Nexus or Fasta format; however, the filtered SNP dataset is in VCF format. We thus need to convert the dataset into Nexus format. One option to do that is by using the Python script vcf2phylip.py, kindly provided by Edgardo M. Ortiz on his Github repository. Download this script into your activity directory with the following command:
+
+```{bash}
+#wget https://raw.githubusercontent.com/edgardomortiz/vcf2phylip/master/vcf2phylip.py
+```
+
+Use the vcf2phylip.py script to convert the first filtered dataset to Nexus/Fasta format. Use the -p option to turn off the default output in Phylip format, the -b option to enable binary Nexus format output, -n option to enable non-binary Nexus format output and -f option to enable Fasta format output.
+
+```{bash, eval = FALSE}
+## NEXUs file option
+VCF='/gata/mar/cophyhopa/results/2022-07-19/iqtree.recode.vcf'
+./vcf2phylip.py -i  $VCF -p -n --output-folder /gata/mar/cophyhopa/results/2022-07-19/ --output-prefix TREE   ## non-binary option
+```
+
+```{bash, eval = FALSE}
+## FASTA file option 
+VCF='/gata/mar/cophyhopa/results/2022-07-19/iqtree.recode.vcf'
+chmod +x vcf2phylip.py
+./vcf2phylip.py -i  $VCF -p -f --output-folder /gata/mar/cophyhopa/results/2022-07-19/ --output-prefix TREE 
+```
+
+Then, we run the iqtree program with the -m option set to TEST (the program will run MODEL-FINDER to find which model is more optimal for our data -  Standard model selection followed by tree inference-). 
+
+```{bash, eval = FALSE}
+## with old Fis clean 
+#iqtree -s TREE.min4.nexus -m TEST -nt 6 -pre TREE
+
+```
+
+## Bootstrapping 
+
+IQ-TREE can perform the (ultrafast) bootstrap with/out partition models. 
+
+```{bash, eval = FALSE}
+iqtree -s TREE.min4.nexus -m GTR -b 1000 -nt 12 -pre TREE2
+
+```
+
+```{bash}
+## With corrected Fish_clean and second round with 10.000 runs of bootstrap 
+iqtree -s TREE.min4.nexus -m GTR -b 1000 -nt 24 -pre TREE3
+
+```

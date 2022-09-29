@@ -4,10 +4,11 @@ processing file: README.Rmd
 running: bash  -c "# Create the vcf.gz file (remove the hybrids and zip vcf)
 VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
 FILE=TREE
-if [ ! -e \$FILE.vcf.gz ]; then
+if [ ! -e ./TREE/\$FILE.vcf.gz ]; then
    vcftools --vcf \$VCF \\
             --out dirty \\
-            --keep ~/cophyhopa/data/ADMX/ALL.txt \\
+            --keep ./TREE/ALL.txt \\
+            --remove ~/cophyhopa/results/2022-05-04/TheWorst.txt \\
             --recode \\
             --recode-INFO-all
    vcftools --vcf dirty.recode.vcf \\
@@ -17,7 +18,6 @@ if [ ! -e \$FILE.vcf.gz ]; then
             --mac 2 \\
             --max-alleles 2 \\
             --max-meanDP 1000 \\
-            --max-missing-count 7 \\
             --max-missing 1 \\
             --stdout \\
             --recode --recode-INFO-all \\
@@ -62,7 +62,8 @@ FILE=ALP_TREE
 if [ ! -e ./ALP_TREE/\$FILE.vcf.gz ]; then
    vcftools --vcf \$VCF \\
             --out dirty \\
-            --keep ~/cophyhopa/data/ADMX/ALP.txt \\
+            --remove ~/cophyhopa/results/2022-05-04/TheWorst.txt \\
+            --keep ./ALP_TREE/ALP.txt \\
             --recode \\
             --recode-INFO-all
    vcftools --vcf dirty.recode.vcf \\
@@ -78,7 +79,8 @@ if [ ! -e ./ALP_TREE/\$FILE.vcf.gz ]; then
             --recode --recode-INFO-all \\
             | gzip > ./ALP_TREE/\$FILE.vcf.gz
 fi
-if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi"
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+"
 output file: README.knit.md
 
 

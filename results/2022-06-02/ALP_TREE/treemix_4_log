@@ -2,360 +2,297 @@
 TreeMix v. 1.13
 $Revision: 231 $
 
-npop:9 nsnp:1555
-Estimating covariance matrix in 1555 blocks of size 1
-SEED: 1655888596
+npop:9 nsnp:9995
+Estimating covariance matrix in 9995 blocks of size 1
+SEED: 1656400402
 Starting from:
-(C.steinmanni:0.00195306,(C.fatioi:0.00679155,C.profundus:0.0162146):0.00195306);
-Adding C.zuerichensis [4/9]
-ln(likelihood): 25.814575 
-(((C.fatioi:0.00475595,C.steinmanni:0):0.00156108,C.profundus:0.0147933):0.00599161,C.zuerichensis:0.00599161);
-Adding C.confusus [5/9]
-ln(likelihood): 57.655279 
-(((C.fatioi:0.00510655,C.steinmanni:0):0.00310852,C.profundus:0.0159446):0.00212513,(C.zuerichensis:0.00718675,C.confusus:0.00443467):0.00212513);
+((C.zuerichensis:0,C.heglingus:0.00128613):0.0184274,C.profundus:0.0184274);
+Adding C.albellus [4/9]
+ln(likelihood): -121.8611 
+((C.zuerichensis:0.00342848,C.heglingus:0.00596253):0.0100105,(C.profundus:0.0145564,C.albellus:0.00811724):0.0100105);
+Adding C.steinmanni [5/9]
+ln(likelihood): -199.4482 
+((C.profundus:0.020289,C.albellus:0.0134723):0.00041168,((C.zuerichensis:0,C.heglingus:0.00239817):0.0164785,C.steinmanni:0.00220187):0.00041168);
 Adding C.acrinasus [6/9]
-ln(likelihood): 70.923546 
-(C.zuerichensis:0.00508681,(C.confusus:0.00482019,(((C.fatioi:0.00521412,C.steinmanni:0):0.00208744,C.profundus:0.0153928):0.0020486,C.acrinasus:0.00593824):0.00039654):0.00508681);
-Adding C.duplex [7/9]
-ln(likelihood): 89.211065 
-((C.confusus:0.00460279,(((C.fatioi:0.00528954,C.steinmanni:0):0.00225627,C.profundus:0.0152491):0.00250605,C.acrinasus:0.00571725):0.000842645):0.00223782,(C.zuerichensis:0.00527268,C.duplex:0.00899307):0.00223782);
-Adding C.heglingus [8/9]
-ln(likelihood): 177.78315 
-(C.fatioi:0.00294155,(C.steinmanni:0,(C.profundus:0.0150578,(C.acrinasus:0.00527823,(C.confusus:0.00395833,(C.duplex:0.00845638,(C.zuerichensis:4.20901e-05,C.heglingus:0.00257099):0.00563233):0.00414645):0.00112175):0.00279408):0.00242198):0.00294155);
-Adding C.albellus [9/9]
-ln(likelihood): 219.1447 
-((C.steinmanni:0,(C.profundus:0.0146428,(C.acrinasus:0.00539937,(C.confusus:0.00396336,(C.duplex:0.00862079,(C.zuerichensis:0.000154844,C.heglingus:0.00260252):0.00526329):0.00420238):0.00085181):0.00354262):0.00179795):0.00171288,(C.fatioi:0.00262198,C.albellus:0.00443188):0.00171288);
+ln(likelihood): -272.77241 
+((C.profundus:0.0191687,C.albellus:0.0127591):0.00132843,((C.zuerichensis:0,C.heglingus:0.00247547):0.0156862,(C.steinmanni:0.000434939,C.acrinasus:0.00590995):0.00175804):0.00132843);
+Adding C.confusus [7/9]
+ln(likelihood): -196.19611 
+((C.acrinasus:0.00630273,((C.zuerichensis:0,C.heglingus:0.00263451):0.0141572,C.confusus:0.00573725):0.000785173):0.00175944,(C.steinmanni:0.000737249,(C.profundus:0.0176117,C.albellus:0.011552):0.00225009):0.00175944);
+Adding C.fatioi [8/9]
+ln(likelihood): -151.56089 
+((C.zuerichensis:0.000516023,C.heglingus:0.00313781):0.00711597,(C.confusus:0.00521591,(C.acrinasus:0.00571497,(((C.albellus:0.00737406,C.fatioi:0.00394615):0.00456609,C.steinmanni:0):0.00197626,C.profundus:0.0182307):0.00412799):0.000771783):0.00711597);
+Adding C.duplex [9/9]
+ln(likelihood): -151.62628 
+(((C.zuerichensis:0.000210031,C.heglingus:0.00287086):0.00859636,(C.confusus:0.00495184,(C.acrinasus:0.00539617,(((C.albellus:0.00723562,C.fatioi:0.00371652):0.00482686,C.steinmanni:0):0.00209514,C.profundus:0.018007):0.00446161):0.000891932):0.00547217):0.00490081,C.duplex:0.00490081);
 Set root above C.confusus
 Targeting migration to vicinity of:
 C.steinmanni C.acrinasus
 C.profundus C.albellus
-C.steinmanni C.fatioi
 C.heglingus C.albellus
+C.steinmanni C.fatioi
 
 C.heglingus C.albellus
-C.steinmanni C.fatioi
+C.zuerichensis C.albellus
 C.profundus C.albellus
+C.steinmanni C.fatioi
 C.acrinasus C.steinmanni
-C.steinmanni C.acrinasus
 C.albellus C.profundus
+C.steinmanni C.acrinasus
+C.profundus C.albellus
 C.steinmanni C.fatioi
 C.fatioi C.steinmanni
-C.profundus C.albellus
 Trying C.acrinasus C.steinmanni
-C.acrinasus:0.00539937 C.steinmanni:0
-1->2 0.39157861 275.62623 219.1447
-2->1 0.27958238 224.19255 275.62623
-p1->2 0.46312431 242.82054 275.62623
-p2->1 0.24747595 223.99428 275.62623
+C.acrinasus:0.00539617 C.steinmanni:0
+1->2 0.41367257 166.18519 -151.62628
+2->1 0.23509832 -131.78464 166.18519
+p1->2 0.48048055 2.2364548 166.18519
+p2->1 0.31109303 -139.71979 166.18519
 Trying C.albellus C.profundus
-C.albellus:0.00443136 C.profundus:0.0145823
-1->2 0.38894841 235.28283 275.62623
-2->1 0.12894022 228.57327 275.62623
-p1->2 0.45422879 232.89594 275.62623
-p2->1 0.15147577 219.33811 275.62623
-(C.fatioi:0.00173317,C.albellus:0.00719593):0.00422705 C.profundus:0.0146444
-2->1 0.11684042 228.83977 275.62623
-p2->1 5.6427712e-07 219.14469 275.62623
+(C.albellus:0.00723562,C.fatioi:0.00371652):0.00482686 C.profundus:0.0180723
+1->2 0.44807976 -58.641489 166.18519
+2->1 0.11635422 -88.178991 166.18519
+p2->1 5.6427712e-07 -151.62632 166.18519
+C.albellus:0.00723562 C.profundus:0.018007
+1->2 0.39678407 -41.567299 166.18519
+2->1 0.13875616 -79.808329 166.18519
+p2->1 0.23105773 -148.22693 166.18519
 Trying C.fatioi C.steinmanni
-C.fatioi:0.00262198 C.steinmanni:0
-1->2 0.3174364 230.683 275.62623
-2->1 4.0751289e-05 219.1447 275.62623
-p2->1 4.0751289e-05 219.1447 275.62623
+C.fatioi:0.00171877 C.steinmanni:0
+1->2 0.28981221 -77.140207 166.18519
+2->1 4.0751289e-05 -151.62629 166.18519
+p2->1 4.0751289e-05 -151.62629 166.18519
 Trying C.heglingus C.albellus
-C.heglingus:0.00260252 C.albellus:0.00443174
-1->2 0.069587864 222.69322 275.62623
-2->1 0.097772695 225.44125 275.62623
-p1->2 0.068382211 222.02872 275.62623
-p2->1 0.09951704 223.9618 275.62623
-C.heglingus:0.00526804 (C.profundus:0.0145576,(C.steinmanni:0,(C.fatioi:0.00260367,C.albellus:0.00441358):0.0035127):0.00185272):0.00370709
-1->2 0.14709905 229.19553 275.62623
-2->1 0.10177718 221.65906 275.62623
-p1->2 0.15442424 227.16574 275.62623
-p2->1 0.060831193 219.68336 275.62623
-C.heglingus:0.00376628 (C.fatioi:0.00262344,C.albellus:0.00443335):0.00342553
-1->2 0.0064883265 219.18619 275.62623
-p1->2 5.6427712e-07 219.1447 275.62623
-p2->1 0.10146535 222.41208 275.62623
-C.heglingus:0.00519501 (C.steinmanni:0,(C.fatioi:0.00262588,C.albellus:0.00443579):0.00339049):0.0018747
-1->2 0.035908345 219.91316 275.62623
-p1->2 0.020945804 219.33826 275.62623
-(C.zuerichensis:0.000127144,C.heglingus:0.00257482):0.00537739 C.albellus:0.00443188
-2->1 0.14849122 231.10889 275.62623
-p1->2 0.035908345 219.53367 275.62623
-p2->1 0.17948262 228.33364 275.62623
+(C.zuerichensis:0.000210031,C.heglingus:0.00287086):0.00859636 (C.albellus:0.00723542,C.fatioi:0.00371702):0.00482706
+1->2 0.012788365 -150.47573 166.18519
+2->1 0.16184694 -90.273657 166.18519
+p1->2 3.8719494e-07 -151.62642 166.18519
+p2->1 0.21320036 -112.14452 166.18519
+(C.zuerichensis:0.000210321,C.heglingus:0.00287115):0.0173025 C.albellus:0.00723591
+1->2 0.072987765 -125.67523 166.18519
+2->1 0.13404581 -69.535662 166.18519
+p1->2 0.04570863 -147.93925 166.18519
+C.heglingus:0.00287184 (C.fatioi:0.00310851,C.albellus:0.00857273):0.00531201
+1->2 0.017819323 -149.01764 166.18519
+2->1 0.075879306 -133.02427 166.18519
+p2->1 0.066250235 -142.80326 166.18519
+C.heglingus:0.00496587 C.albellus:0.00723899
+1->2 0.072987765 -122.07109 166.18519
+2->1 0.080351517 -121.33025 166.18519
+C.heglingus:0.00573876 (C.steinmanni:0,(C.fatioi:0.00365083,C.albellus:0.0073864):0.00493797):0.00216197
+1->2 0.051945686 -137.12949 166.18519
+p1->2 0.05120283 -140.08866 166.18519
+p2->1 0.062170438 -145.6909 166.18519
 Trying C.profundus C.albellus
-C.profundus:0.0143646 C.albellus:0.00443251
-C.profundus:0.0143646 (C.fatioi:0.0026226,C.albellus:0.00443251):0.00360785
+C.profundus:0.0179991 (C.fatioi:0.00371933,C.albellus:0.00723843):0.00482643
+C.profundus:0.0179991 C.albellus:0.00723843
 Trying C.steinmanni C.acrinasus
-C.steinmanni:0 C.acrinasus:0.00478235
+C.steinmanni:0 C.acrinasus:0.00532431
 Trying C.steinmanni C.fatioi
-(C.profundus:0.0143646,(C.steinmanni:0,(C.fatioi:0.0026226,C.albellus:0.00443251):0.00360785):0.00188734):0.00415245 C.fatioi:0.0026226
-1->2 3.8719494e-07 219.14469 275.62623
-p1->2 3.8719494e-07 219.14468 275.62623
-C.steinmanni:0 C.fatioi:0.00262198
-(C.steinmanni:0,(C.fatioi:0.00262198,C.albellus:0.00443188):0.00342576):0.00179795 C.fatioi:0.00262198
-Migration added
-Local updates around node 1: 1 ln(lk):276.15027 
-Local updates around node 2: 1 ln(lk):283.78274 
-Updates in migration position: 0 ln(lk):283.78274 
-Switches in migration direction: 0 ln(lk):283.78274 
-Local updates around node 1: 0 ln(lk):283.78274 
-Local updates around node 2: 0 ln(lk):283.78274 
-Switches in migration direction: 0 ln(lk):283.78274 
-Updates in migration position: 0 ln(lk):283.78274 
-Trying all local rearrangements
-Local rearrangements: 0 ln(lk):283.78274 
-ln(likelihood):283.78274 
-Targeting migration to vicinity of:
-C.acrinasus C.duplex
-C.heglingus C.albellus
-C.confusus C.duplex
-C.fatioi C.acrinasus
-
-C.confusus C.duplex
-C.acrinasus C.duplex
-C.confusus C.duplex
-C.acrinasus C.duplex
-C.fatioi C.acrinasus
-C.zuerichensis C.albellus
-C.heglingus C.fatioi
-C.heglingus C.albellus
-Trying C.acrinasus C.duplex
-C.acrinasus:0.00578166 C.duplex:0.00861617
-1->2 0.2421263 288.51092 283.78274
-2->1 0.055380456 284.91158 288.51092
-p1->2 0.52903587 290.12767 288.51092
-p2->1 0.065536126 283.9864 290.12767
-Trying C.confusus C.duplex
-C.confusus:0.00178541 C.duplex:0.00861626
-1->2 0.52903587 290.12767 290.12767
-2->1 0.10065299 286.8178 290.12767
-p2->1 0.3970964 284.85774 290.12767
-Trying C.fatioi C.acrinasus
-C.fatioi:0 C.acrinasus:0.00489007
-1->2 0.056062963 285.34823 290.12767
-2->1 0.082019217 285.66115 290.12767
-p1->2 0.056062963 285.34823 290.12767
-p2->1 0.043612111 284.10992 290.12767
-(C.steinmanni:0,C.fatioi:0.00013953):0.0033534 C.acrinasus:0.00574041
-2->1 0.13508719 287.07756 290.12767
-p1->2 0.046891481 284.79045 290.12767
-p2->1 0.15559551 284.70447 290.12767
-Trying C.heglingus C.albellus
-C.heglingus:0.00259777 C.albellus:0.00232857
-1->2 0.068523504 285.77477 290.12767
-2->1 0.092128001 289.1126 290.12767
-p1->2 0.066250235 285.26437 290.12767
-p2->1 0.097141996 288.34159 290.12767
-C.heglingus:0.00517962 ((C.steinmanni:0,C.fatioi:0):0.00284681,C.albellus:0.00403246):0.00500671
-1->2 0.086427301 286.47663 290.12767
-p1->2 0.076131091 285.2891 290.12767
-p2->1 0.1058145 286.52533 290.12767
-(C.zuerichensis:0,C.heglingus:0.00518047):0.00569974 C.albellus:0.00406446
-2->1 0.13598205 293.74421 290.12767
-p1->2 0.00023910322 283.78275 293.74421
-p2->1 0.23288332 293 293.74421
-Trying C.heglingus C.fatioi
-C.heglingus:0.0025981 C.fatioi:0
-1->2 0.0060865115 283.81259 293.74421
-2->1 0.085515618 288.16461 293.74421
-p1->2 0.0045981877 283.7974 293.74421
-p2->1 0.097141996 288.34159 293.74421
-C.heglingus:0.00517962 (C.steinmanni:0,C.fatioi:0):0.00284681
-1->2 0.0013305692 283.78348 293.74421
-p1->2 3.3026194e-07 283.78274 293.74421
-C.heglingus:0.00259791 (C.albellus:0.00406451,(C.steinmanni:0,C.fatioi:0):0.00286666):0.00485567
+C.steinmanni:0 C.fatioi:0.00371933
+(C.profundus:0.0179991,(C.steinmanni:0,(C.fatioi:0.00371933,C.albellus:0.00723843):0.00482643):0.00207073):0.00458424 C.fatioi:0.00371933
+1->2 3.8719494e-07 -151.62631 166.18519
+p1->2 3.8719494e-07 -151.62643 166.18519
+(C.steinmanni:0,(C.fatioi:0.00371652,C.albellus:0.00723561):0.00482687):0.00209514 C.fatioi:0.00371652
 Trying C.zuerichensis C.albellus
-C.zuerichensis:0.000150228 C.albellus:0.00406451
-1->2 0.066028796 285.2691 293.74421
-2->1 0.015098886 283.88152 293.74421
-p2->1 0.0026558505 283.78486 293.74421
-(C.heglingus:0.00256281,C.zuerichensis:0.000186183):0.00529007 C.albellus:0.00406405
+(C.zuerichensis:0.000210031,C.heglingus:0.00287086):0.00859636 (C.fatioi:0.00371652,C.albellus:0.00723561):0.00482687
+(C.zuerichensis:0.000210031,C.heglingus:0.00287086):0.00859636 C.albellus:0.00723561
+C.zuerichensis:0.000210031 (C.fatioi:0.00371652,C.albellus:0.00723561):0.00482687
+1->2 0.012889971 -150.44714 166.18519
+2->1 0.049852014 -146.17374 166.18519
+p2->1 0.033629756 -150.41064 166.18519
+C.zuerichensis:0.00084707 C.albellus:0.00723565
+1->2 0.072987765 -125.61658 166.18519
+2->1 0.055873536 -140.14396 166.18519
 Migration added
-Local updates around node 1: 1 ln(lk):295.58278 
-Local updates around node 2: 0 ln(lk):295.58278 
-Updates in migration position: 0 ln(lk):295.58278 
-Switches in migration direction: 0 ln(lk):295.58278 
-Local updates around node 1: 0 ln(lk):295.58278 
-Local updates around node 2: 0 ln(lk):295.58278 
-Switches in migration direction: 0 ln(lk):295.58278 
-Updates in migration position: 0 ln(lk):295.58278 
+Local updates around node 1: 0 ln(lk):166.18519 
+Local updates around node 2: 1 ln(lk):216.98889 
+Updates in migration position: 0 ln(lk):216.98889 
+Switches in migration direction: 0 ln(lk):216.98889 
+Local updates around node 1: 0 ln(lk):216.98889 
+Local updates around node 2: 0 ln(lk):216.98889 
+Switches in migration direction: 0 ln(lk):216.98889 
+Updates in migration position: 0 ln(lk):216.98889 
 Trying all local rearrangements
-Local rearrangements: 0 ln(lk):295.58278 
-ln(likelihood):295.58278 
+Local rearrangements: 0 ln(lk):216.98889 
+ln(likelihood):216.9889 
 Targeting migration to vicinity of:
-C.fatioi C.acrinasus
-C.acrinasus C.duplex
-C.profundus C.albellus
-C.profundus C.duplex
-
-C.profundus C.zuerichensis
-C.profundus C.duplex
-C.profundus C.heglingus
-C.acrinasus C.duplex
-C.steinmanni C.acrinasus
-C.fatioi C.acrinasus
-C.albellus C.profundus
-C.profundus C.albellus
-C.acrinasus C.steinmanni
-C.acrinasus C.fatioi
-C.albellus C.steinmanni
-C.albellus C.profundus
-C.profundus C.zuerichensis
-C.profundus C.duplex
-C.profundus C.heglingus
-C.acrinasus C.duplex
-C.albellus C.heglingus
-Trying C.acrinasus C.duplex
-C.acrinasus:0.00535412 C.duplex:0.00674161
-1->2 0.14402516 296.95771 295.58278
-2->1 0.043854713 296.26057 296.95771
-p1->2 0.38801861 295.62829 296.95771
-p2->1 0.026927436 295.69677 296.95771
-Trying C.acrinasus C.fatioi
-C.acrinasus:0.00576157 (C.steinmanni:0,C.fatioi:0):0.00262763
-1->2 0.15290193 298.84756 296.95771
-2->1 0.072355226 296.57641 298.84756
-p1->2 0.20378393 297.31356 298.84756
-p2->1 0.042983025 296.02877 298.84756
-C.acrinasus:0.0062042 C.fatioi:0
-1->2 0.083169974 297.24721 298.84756
-2->1 0.072355226 296.57641 298.84756
-p1->2 0.052000277 295.97581 298.84756
-Trying C.acrinasus C.steinmanni
-C.acrinasus:0.00537553 (C.steinmanni:0,C.fatioi:0.000273641):0.00317919
-C.acrinasus:0.00537553 C.steinmanni:0
-2->1 0.072355226 296.57641 298.84756
-p1->2 4.1292344e-07 295.58278 298.84756
-Trying C.albellus C.heglingus
-(C.profundus:0.0133392,(C.albellus:0.00427738,(C.fatioi:0,C.steinmanni:0):0.00265075):0.0052679):0.00557343 C.heglingus:0.00259787
-1->2 0.065808043 296.5762 298.84756
-p1->2 0.020945804 295.61633 298.84756
-C.albellus:0.00427853 C.heglingus:0.00294342
-1->2 0.052286986 296.93874 298.84756
-2->1 3.0968394e-07 295.58278 298.84756
-p1->2 0.054962564 296.89335 298.84756
-p2->1 3.0968394e-07 295.58277 298.84756
-(C.albellus:0.00427738,(C.fatioi:0,C.steinmanni:0):0.00265074):0.0052679 C.heglingus:0.00259787
-Trying C.albellus C.profundus
-C.albellus:0.00427738 C.profundus:0.0133392
-1->2 0.27531239 297.30867 298.84756
-2->1 0.066833243 296.55311 298.84756
-p2->1 5.6427712e-07 295.58278 298.84756
-Trying C.albellus C.steinmanni
-C.albellus:0.00427738 C.steinmanni:0
-1->2 0.044343784 295.81974 298.84756
-2->1 0.46828905 295.89579 298.84756
-p1->2 0.01066607 295.58686 298.84756
-p2->1 0.97237098 295.88825 298.84756
-Trying C.fatioi C.acrinasus
-(C.fatioi:0,C.steinmanni:0):0.00420695 C.acrinasus:0.00540078
-C.fatioi:0 C.acrinasus:0.00540078
-Trying C.profundus C.albellus
-C.profundus:0.0133986 C.albellus:5.69564
-Trying C.profundus C.duplex
-C.profundus:0.0133986 C.duplex:0.00683208
-1->2 0.011738883 295.64222 298.84756
-2->1 0.19131511 298.56771 298.84756
-p1->2 0.20378393 295.63133 298.84756
-p2->1 0.42694074 298.73635 298.84756
-C.profundus:0.0492528 ((C.zuerichensis:0.000150149,C.heglingus:0.00259783):0.00928667,C.duplex:0.00670205):0.00575641
-1->2 0.050855603 297.24026 298.84756
-p1->2 0.83608705 295.58278 298.84756
-p2->1 0.46854842 296.9498 298.84756
-Trying C.profundus C.heglingus
-((C.albellus:0.00428519,(C.fatioi:0,C.steinmanni:0):0.00256312):0,C.profundus:0.0571515):0.0107032 C.heglingus:0.00259775
-C.profundus:0.0571515 (C.zuerichensis:0.000150073,C.heglingus:0.00259775):0.00925923
-1->2 0.0373105 296.76811 298.84756
-2->1 0.18804134 298.57652 298.84756
-p1->2 0.041006152 295.78168 298.84756
-C.profundus:0.0133578 (C.duplex:0.0062691,(C.zuerichensis:0.000150144,C.heglingus:0.00259782):0.0106604):0.00592505
-C.profundus:0.0133578 C.heglingus:0.00259782
-1->2 0.060094334 296.59135 298.84756
-2->1 0.090387508 298.04684 298.84756
-Trying C.profundus C.zuerichensis
-C.profundus:0.0172872 (C.zuerichensis:0.000175268,C.heglingus:0.00262294):0.00935646
-C.profundus:0.0172872 (C.duplex:0.00658441,(C.zuerichensis:0.000175268,C.heglingus:0.00262294):0.00935646):0.0057323
-C.profundus:0.0172872 C.zuerichensis:0.000175268
-1->2 0.014822249 295.71483 298.84756
-2->1 0.090387508 298.04684 298.84756
-p1->2 3.3026194e-07 295.58278 298.84756
-Trying C.steinmanni C.acrinasus
-(C.fatioi:0,C.steinmanni:0):0.00265074 C.acrinasus:0.00535412
-C.steinmanni:0 C.acrinasus:0.00535412
-Migration added
-Local updates around node 1: 0 ln(lk):298.84756 
-Local updates around node 2: 0 ln(lk):298.84756 
-Updates in migration position: 1 ln(lk):298.93203 
-Switches in migration direction: 0 ln(lk):298.93203 
-Local updates around node 1: 0 ln(lk):298.93203 
-Local updates around node 2: 0 ln(lk):298.93203 
-Switches in migration direction: 0 ln(lk):298.93203 
-Updates in migration position: 0 ln(lk):298.93203 
-Trying all local rearrangements
-Local rearrangements: 0 ln(lk):298.93203 
-ln(likelihood):299.16697 
-Targeting migration to vicinity of:
-C.profundus C.duplex
-C.acrinasus C.duplex
 C.heglingus C.albellus
-C.zuerichensis C.confusus
+C.acrinasus C.duplex
+C.zuerichensis C.albellus
+C.confusus C.duplex
 
-C.profundus C.duplex
 C.acrinasus C.duplex
-C.duplex C.profundus
-C.heglingus C.steinmanni
+C.confusus C.duplex
+C.acrinasus C.duplex
+C.confusus C.duplex
 C.heglingus C.albellus
-C.profundus C.duplex
-C.acrinasus C.duplex
-C.albellus C.heglingus
-C.zuerichensis C.confusus
+C.heglingus C.fatioi
+C.zuerichensis C.albellus
+C.heglingus C.albellus
+C.heglingus C.fatioi
+C.zuerichensis C.albellus
 Trying C.acrinasus C.duplex
-C.acrinasus:0.00543025 C.duplex:0.00601264
-1->2 0.14444676 300.46118 299.16697
-2->1 0.044098601 299.6898 300.46118
-p1->2 0.63930029 299.46698 300.46118
-p2->1 0.031314585 299.26547 300.46118
-Trying C.albellus C.heglingus
-((C.steinmanni:0,C.fatioi:0.000742287):0.00501128,C.albellus:0.00209818):0.00687637 C.heglingus:0.00259816
-1->2 0.059042729 300.72997 300.46118
-2->1 3.3026194e-07 299.16697 300.72997
-p1->2 0.059767511 299.92125 300.72997
-p2->1 3.0968394e-07 299.16696 300.72997
-C.albellus:0.00207383 C.heglingus:0.0025979
-1->2 0.056561753 300.79089 300.72997
-2->1 0.014252706 299.22337 300.79089
-p2->1 0.0042880792 299.1736 300.79089
-Trying C.duplex C.profundus
-C.duplex:0.00601845 C.profundus:0.0127334
-1->2 0.063832618 299.94178 300.79089
-2->1 0.016421625 299.28119 300.79089
-p1->2 0.083783321 299.69632 300.79089
-p2->1 0.63930029 299.46698 300.79089
+C.acrinasus:0.00603594 C.duplex:0.00979498
+1->2 0.27201682 247.50728 216.9889
+2->1 0.060753003 226.00931 247.50728
+p1->2 0.59599376 246.10649 247.50728
+p2->1 0.072745554 218.21232 247.50728
+Trying C.confusus C.duplex
+C.confusus:0.002383 C.duplex:0.0097948
+1->2 0.59599376 246.10649 247.50728
+2->1 0.068013579 225.90116 247.50728
+p2->1 0.92242539 219.17274 247.50728
 Trying C.heglingus C.albellus
-C.heglingus:0.00259575 ((C.steinmanni:0,C.fatioi:0.00065949):0.0051505,C.albellus:0.00207666):0.00690413
-C.heglingus:0.00259575 C.albellus:0.00207666
-Trying C.heglingus C.steinmanni
-C.heglingus:0.00259575 ((C.steinmanni:0,C.fatioi:0.00065949):0.0051505,C.albellus:0.00207666):0.00690413
-C.heglingus:0.00259575 (C.steinmanni:0,C.fatioi:0.00065949):0.0051505
-1->2 3.1442306e-07 299.16696 300.79089
-2->1 0.059042729 300.72997 300.79089
-p1->2 3.1442306e-07 299.16697 300.79089
-C.heglingus:0.0025979 C.steinmanni:0
-1->2 0.0093571125 299.28883 300.79089
-2->1 0.056872107 300.66882 300.79089
-p1->2 0.0085036624 299.22752 300.79089
-Trying C.profundus C.duplex
-C.profundus:0.0127359 C.duplex:0.00601128
-Trying C.zuerichensis C.confusus
-C.zuerichensis:0.000149939 C.confusus:0.00147654
-1->2 0.058326188 299.77915 300.79089
-2->1 0.078814194 299.64982 300.79089
-p1->2 0.034946162 299.47654 300.79089
+C.heglingus:0.00286397 C.albellus:0.00689028
+1->2 0.0821862 239.71747 247.50728
+2->1 0.078714825 245.28475 247.50728
+p1->2 0.083065607 236.47476 247.50728
+p2->1 0.079074882 237.27027 247.50728
+(C.zuerichensis:0,C.heglingus:0.00559454):0.00915697 C.albellus:0.00682635
+2->1 0.1229462 290.41125 247.50728
+p1->2 0.023888497 217.39044 290.41125
+p2->1 0.14736409 278.84257 290.41125
+Trying C.heglingus C.fatioi
+C.heglingus:0.00286499 C.fatioi:0
+1->2 0.026142891 220.44016 290.41125
+2->1 0.067786671 235.78468 290.41125
+p1->2 0.0264399 220.10924 290.41125
+p2->1 0.079074882 237.27027 290.41125
+(C.zuerichensis:0,C.heglingus:0.00559454):0.00915697 C.fatioi:0
+2->1 0.1157872 268.19241 290.41125
+p1->2 0.049409293 219.14371 290.41125
+p2->1 0.14736409 278.84257 290.41125
+Trying C.zuerichensis C.albellus
+(C.zuerichensis:0.000204154,C.heglingus:0.00286499):0.0141096 C.albellus:0.00673134
+C.zuerichensis:0.000204154 C.albellus:0.00673134
+1->2 0.082897 236.50205 290.41125
+2->1 0.051593695 226.22745 290.41125
+p2->1 0.050748754 222.69564 290.41125
 Migration added
-Local updates around node 1: 0 ln(lk):300.79089 
-Local updates around node 2: 0 ln(lk):300.79089 
-Updates in migration position: 0 ln(lk):300.79089 
-Switches in migration direction: 0 ln(lk):300.79089 
-ln(likelihood):300.82926 
+Local updates around node 1: 1 ln(lk):300.69317 
+Local updates around node 2: 0 ln(lk):300.69317 
+Updates in migration position: 0 ln(lk):300.69317 
+Switches in migration direction: 0 ln(lk):300.69317 
+Local updates around node 1: 0 ln(lk):300.69317 
+Local updates around node 2: 0 ln(lk):300.69317 
+Switches in migration direction: 0 ln(lk):300.69317 
+Updates in migration position: 0 ln(lk):300.69317 
+Trying all local rearrangements
+Local rearrangements: 0 ln(lk):300.69317 
+ln(likelihood):300.69317 
+Targeting migration to vicinity of:
+C.profundus C.albellus
+C.acrinasus C.duplex
+C.heglingus C.albellus
+C.acrinasus C.fatioi
+
+C.profundus C.duplex
+C.acrinasus C.duplex
+C.profundus C.albellus
+C.acrinasus C.fatioi
+C.heglingus C.albellus
+C.duplex C.profundus
+C.profundus C.albellus
+C.albellus C.profundus
+C.acrinasus C.fatioi
+Trying C.acrinasus C.duplex
+C.acrinasus:0.0052719 C.duplex:0.00766129
+1->2 0.18680228 312.71345 300.69317
+2->1 0.062931046 309.76824 312.71345
+p1->2 0.38937703 301.76812 312.71345
+p2->1 0.064180151 305.15066 312.71345
+Trying C.acrinasus C.fatioi
+C.acrinasus:0.00636528 C.fatioi:0
+1->2 0.064746208 305.93911 312.71345
+2->1 0.019848157 301.65019 312.71345
+p1->2 0.065808043 304.13646 312.71345
+p2->1 0.019848157 301.65019 312.71345
+C.acrinasus:0.00570004 (C.steinmanni:0.000228893,C.fatioi:0):0.00367048
+1->2 0.1299479 311.25411 312.71345
+p1->2 0.20545161 311.0836 312.71345
+p2->1 0.023403957 301.07591 312.71345
+Trying C.albellus C.profundus
+C.albellus:0.00709836 C.profundus:0.0163464
+1->2 0.20455091 311.08057 312.71345
+2->1 0.093102999 312.14416 312.71345
+p2->1 0.031820729 300.74313 312.71345
+Trying C.duplex C.profundus
+C.duplex:0.00763793 C.profundus:0.0163688
+1->2 0.016764089 301.07805 312.71345
+2->1 3.0968394e-07 300.69316 312.71345
+p1->2 0.41552624 301.97138 312.71345
+p2->1 0.37719432 301.76867 312.71345
+Trying C.heglingus C.albellus
+C.heglingus:0.00286434 C.albellus:0.00713568
+1->2 3.0968394e-07 300.69314 312.71345
+2->1 0.026589634 303.23694 312.71345
+p1->2 3.0968394e-07 300.69312 312.71345
+p2->1 0.026290987 302.70973 312.71345
+Trying C.profundus C.albellus
+C.profundus:0.0163619 C.albellus:0.00712091
+Trying C.profundus C.duplex
+C.profundus:0.0163619 C.duplex:0.00746731
+Migration added
+Local updates around node 1: 0 ln(lk):312.71345 
+Local updates around node 2: 0 ln(lk):312.71345 
+Updates in migration position: 0 ln(lk):312.71345 
+Switches in migration direction: 0 ln(lk):312.71345 
+ln(likelihood):312.74105 
+Targeting migration to vicinity of:
+C.profundus C.albellus
+C.profundus C.duplex
+C.heglingus C.albellus
+C.acrinasus C.fatioi
+
+C.profundus C.albellus
+C.acrinasus C.fatioi
+C.heglingus C.albellus
+C.duplex C.profundus
+C.profundus C.albellus
+C.albellus C.profundus
+C.acrinasus C.fatioi
+C.profundus C.duplex
+C.albellus C.heglingus
+Trying C.acrinasus C.fatioi
+C.acrinasus:0.00557601 C.fatioi:0
+1->2 0.062589824 317.67938 312.74105
+2->1 0.022054944 313.94972 317.67938
+p1->2 0.073137827 315.97842 317.67938
+p2->1 0.022054944 313.94972 317.67938
+C.acrinasus:0.00606738 (C.steinmanni:0.000202513,C.fatioi:0):0.0036823
+1->2 0.12161984 322.45401 317.67938
+p1->2 0.2104324 322.92968 322.45401
+p2->1 0.024920359 313.3273 322.92968
+Trying C.albellus C.heglingus
+C.albellus:0.00708536 C.heglingus:0.00286411
+1->2 0.027831698 315.51106 322.92968
+2->1 3.0968394e-07 312.74101 322.92968
+p1->2 0.027578857 314.92797 322.92968
+p2->1 3.0968394e-07 312.741 322.92968
+(C.albellus:0.00712726,(C.steinmanni:0.000193411,C.fatioi:0):0.00364513):0.00705805 C.heglingus:0.00286424
+p1->2 0.028147338 313.82272 322.92968
+Trying C.albellus C.profundus
+C.albellus:0.00712578 C.profundus:0.0164116
+1->2 0.20344163 322.92871 322.92968
+2->1 0.093710199 324.29727 322.92968
+p2->1 0.028665433 312.77873 324.29727
+Trying C.duplex C.profundus
+C.duplex:0.0138972 C.profundus:0.0163872
+1->2 0.026589634 314.37123 324.29727
+2->1 0.016121151 313.5382 324.29727
+p1->2 0.26874608 313.47997 324.29727
+p2->1 3.1442306e-07 312.74104 324.29727
+Trying C.heglingus C.albellus
+C.heglingus:0.00286424 C.albellus:0.00712725
+Trying C.profundus C.albellus
+C.profundus:0.0164018 C.albellus:0.00712725
+Trying C.profundus C.duplex
+C.profundus:0.0164018 C.duplex:0.0139235
+Migration added
+Local updates around node 1: 0 ln(lk):324.29727 
+Local updates around node 2: 0 ln(lk):324.29727 
+Updates in migration position: 0 ln(lk):324.29727 
+Switches in migration direction: 0 ln(lk):324.29727 
+ln(likelihood):325.19443 
 DONE.
