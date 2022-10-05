@@ -1,0 +1,11 @@
+
+
+processing file: README.Rmd
+running: bash  -c '#wget https://raw.githubusercontent.com/edgardomortiz/vcf2phylip/master/vcf2phylip.py'
+running: bash  -c '## With corrected Fish_clean and second round with 10.000 runs of bootstrap 
+iqtree -s TREE.min4.nexus -m GTR -b 1000 -nt 24 -pre TREE3
+'
+output file: README.knit.md
+
+
+Output created: README.html

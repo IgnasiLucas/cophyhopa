@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FISH=/gata/joiglu/cophyhopa/data/Fish_clean.tsv
+FISH=/gata/joiglu/cophyhopa/data/Fish_clean2.tsv
 USED=/gata/mar/cophyhopa/results/2022-04-22/assem2_clust_0.93/s3_cluster_stats.txt
 
 if [ ! -e popmap.txt ]; then

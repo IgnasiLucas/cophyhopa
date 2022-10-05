@@ -2,31 +2,31 @@
 TreeMix v. 1.13
 $Revision: 231 $
 
-npop:10 nsnp:484
-Estimating covariance matrix in 484 blocks of size 1
-SEED: 1655888081
+npop:10 nsnp:10110
+Estimating covariance matrix in 10110 blocks of size 1
+SEED: 1656400016
 Starting from:
-(C.profundus:0.0047186,(C.fatioi:0.000562915,C.steinmanni:0):0.0047186);
-Adding C.zuerichensis [4/10]
-ln(likelihood): 60.81495 
-((C.profundus:0.00621879,(C.fatioi:0.00183567,C.steinmanni:0):0):0.00413286,C.zuerichensis:0.00413286);
-Adding C.albellus [5/10]
-ln(likelihood): 94.961362 
-(((C.fatioi:0.00191192,C.steinmanni:0):0.000249531,(C.profundus:0.00573932,C.albellus:0.00232315):0.000980165):0.00444315,C.zuerichensis:0.00444315);
-Adding C.duplex [6/10]
-ln(likelihood): 127.61809 
-(((C.fatioi:0.0020143,C.steinmanni:0):0.000631546,(C.profundus:0.00587994,C.albellus:0.00263824):0.000967522):0.00286789,(C.zuerichensis:0.0029444,C.duplex:0.00444457):0.00286789);
-Adding C.heglingus [7/10]
-ln(likelihood): 159.07494 
-(((C.fatioi:0.00200363,C.steinmanni:0):0.00042036,(C.profundus:0.00589085,C.albellus:0.00262673):0.000766415):0.00254252,(C.duplex:0.00496442,(C.zuerichensis:0.000706046,C.heglingus:0.00232225):0.00336996):0.00254252);
-Adding C.acrinasus [8/10]
-ln(likelihood): 195.98973 
-(((C.zuerichensis:0.000741484,C.heglingus:0.00231985):0.00430154,(((C.fatioi:0.00187987,(C.profundus:0.00553501,C.albellus:0.00234159):0.00083784):0.00068146,C.steinmanni:0):0.00170812,C.acrinasus:0.00350422):0.00178623):0.00281379,C.duplex:0.00281379);
-Adding Arctic [9/10]
-ln(likelihood): 267.17956 
-((C.acrinasus:0.00331187,((C.zuerichensis:9.11296e-05,C.heglingus:0.00199393):0.00342229,C.duplex:0.00423782):0.00290195):0.000550976,(((C.fatioi:0.00203002,(C.profundus:0.00569035,C.albellus:0.00239803):0.000638698):0.000664779,C.steinmanni:0):0.00070975,Arctic:0.0546155):0.000550976);
-Adding C.confusus [10/10]
-ln(likelihood): 334.42367 
-((C.acrinasus:0.00327097,((C.zuerichensis:7.48725e-05,C.heglingus:0.00198149):0.00338707,C.duplex:0.0042313):0.00293663):0.000348973,(((C.fatioi:0.00197898,(C.profundus:0.0056442,C.albellus:0.00235062):0.00065784):0.000649805,C.steinmanni:0):0.00108485,(Arctic:0.052953,C.confusus:0):0.0018901):0.000348973);
+((C.duplex:0.00777862,C.confusus:0.00306266):0.00266858,C.steinmanni:0.00266858);
+Adding C.acrinasus [4/10]
+ln(likelihood): -491.65752 
+((C.duplex:0.00795715,C.confusus:0.00322621):0.00187045,(C.steinmanni:0.00120822,C.acrinasus:0.00343977):0.00187045);
+Adding C.zuerichensis [5/10]
+ln(likelihood): -426.96371 
+((C.duplex:0.00711389,C.zuerichensis:0.00597861):0.00194753,(C.confusus:0.00343973,(C.steinmanni:0.00091981,C.acrinasus:0.00299066):0.0011098):0.00194753);
+Adding Arctic [6/10]
+ln(likelihood): -107.8011 
+((C.steinmanni:0.00095475,C.acrinasus:0.00277973):0.00120691,((Arctic:0.0747949,(C.duplex:0.00602048,C.zuerichensis:0.00488077):0.0026449):0,C.confusus:0.00317308):0.00120691);
+Adding C.albellus [7/10]
+ln(likelihood): -112.11017 
+((C.acrinasus:0.00342066,((Arctic:0.0745217,(C.duplex:0.0058519,C.zuerichensis:0.00459872):0.00275897):0,C.confusus:0.00294724):0.000609308):0.00184516,(C.steinmanni:0,C.albellus:0.00735039):0.00184516);
+Adding C.profundus [8/10]
+ln(likelihood): -71.866517 
+((C.acrinasus:0.00344051,(C.steinmanni:0.00015021,(C.albellus:0.00679494,C.profundus:0.00974216):0.00137862):0.00220583):0.000431796,(((C.duplex:0.00581206,C.zuerichensis:0.00472909):0.00291349,C.confusus:0.00298629):0,Arctic:0.0746238):0.000431796);
+Adding C.heglingus [9/10]
+ln(likelihood): 126.71803 
+((C.profundus:0.00988127,(C.steinmanni:1.49959e-05,(C.acrinasus:0.00309241,((C.confusus:0.00193033,Arctic:0.0735238):0.000951177,(C.duplex:0.00566303,(C.zuerichensis:0.000165724,C.heglingus:0.00170619):0.00515631):0.00316329):0.000480587):0.00248227):0.00109722):0.00366635,C.albellus:0.00366635);
+Adding C.fatioi [10/10]
+ln(likelihood): 150.49236 
+(((((C.acrinasus:0.00312394,((C.confusus:0.00189979,Arctic:0.0735136):0.000983919,(C.duplex:0.00569756,(C.zuerichensis:0.000195959,C.heglingus:0.00171113):0.00508005):0.00315597):0.000413348):0.00261795,C.profundus:0.010478):0.0012435,C.steinmanni:0):0.00283487,C.fatioi:0.00220822):0.00213877,C.albellus:0.00213877);
 Set root above Arctic
 DONE.

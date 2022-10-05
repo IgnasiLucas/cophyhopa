@@ -1,0 +1,149 @@
+---
+title: "Dsuite"
+author: "Mar Llaberia-Robledillo"
+date: "28/6/2022"
+output: html_document
+---
+
+#### Removing species with less than 10 individuals/samples and creating the pop file 
+
+```{r, eval = FALSE}
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
+                       col.names = c('sample', 'group', 'pop', 'lake'))
+
+poptable <- poptable[-which(poptable[,3] == "C.alpinus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.alpinus/C.steinmanni"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii"), ]
+poptable <- poptable[-which(poptable[,3] == "C.fatioi/C.albellus"), ]
+poptable <- poptable[-which(poptable[,3] == "C.brienzii/C.fatioi"), ]
+
+poptable[,3] <- as.character(poptable[,3])
+poptable[which(poptable[,3] == "D"), 3] <- "Outgroup"
+poptable[which(poptable[,3] == "P"), 3] <- "Outgroup"
+poptable[which(poptable[,3] == "L"), 3] <- "Outgroup"
+
+poptable$lake <- NULL
+poptable$group <- NULL
+
+write.table(poptable, file = '~/cophyhopa/results/2022-06-28/pop.txt', quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
+write.table(poptable[,1], file = '~/cophyhopa/results/2022-06-28/keep.txt', quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+
+```
+
+#### Data selecting and filtering 
+
+```{bash}
+# Create the vcf.gz file (remove the hybrids and zip vcf)
+VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+FILE=suite
+if [ ! -e $FILE.vcf.gz ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep keep.txt \
+            --remove ~/cophyhopa/results/2022-05-04/TheWorst.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out $FILE \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing 1 \
+            --stdout \
+            --recode --recode-INFO-all \
+            | gzip > $FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+```
+
+```{bash}
+FILE=suite
+
+Dsuite Dtrios $FILE.vcf.gz pop.txt
+
+```
+
+Next, let's look at the results in more detail, for example in R. We load the _BBAA.txt file and first look at the distribution of D values:
+```{r}
+setwd("~/cophyhopa/results/2022-06-28")
+BBAA <- read.table("pop_BBAA.txt", as.is = T, header = T)
+plot(BBAA$Dstatistic, ylab = "D", xlab = "Trio number")
+plot(BBAA$p.value, ylab = "p value", xlab = "Trio number")
+abline(h = 0.05)
+hist(BBAA$p.value, ylab = "p value", xlab = "Trio number")
+plot(BBAA$f4.ratio, ylab = "f4.ratio", xlab = "Trio number")
+
+```
+
+```{r, message=FALSE, warning=FALSE, collapse=TRUE, fig.width=15, fig.height=15, results='hide', fig.keep='all'}
+library(RColorBrewer)
+library(R.utils)
+source("~/cophyhopa/results/2022-06-02/plotting_funcs.R") # here you need to add the path
+
+plot_tree("~/cophyhopa/results/2022-06-02/ALP_TREE/outALP_TREE.0", mbar = FALSE, scale = FALSE, plus = 0.01)
+
+```
+
+```{r results='asis'}
+library(knitr)
+maxD <- BBAA[which(BBAA$Dstatistic > 0.010), ]
+maxD <- maxD[order(maxD$Dstatistic, decreasing = TRUE),]
+kable(maxD, caption = "Combinations with higher Dstatistic")
+```
+
+
+
+
+
+
+```{bash, eval = FALSE, include = FALSE}
+cut -f 2 pop.txt | uniq | head -n 20 > plot_order.txt
+
+./plot_d.rb pop_BBAA.txt plot_order.txt 0.7 pop_BBAA_D.png
+./plot_f4ratio.rb pop_BBAA.txt plot_order.txt 0.2 pop_BBAA_f4ratio.png
+```
+
+```{r, eval=FALSE, include = FALSE}
+trios <- data.frame("C.zuerichensis", "C.heglingus", "C.duplex")
+trios[2,] <- c("C.heglingus", "C.zuerichensis", "C.duplex")
+trios[3,] <- c("C.zuerichensis", "C.duplex", "C.acrinasus")
+
+write.table(trios, file = '~/cophyhopa/results/2022-06-28/trios.txt', quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
+```
+
+```{bash, eval = FALSE, include = FALSE}
+#fail 
+FILE=suite
+Dsuite Dinvestigate $FILE.vcf.gz pop.txt tios.txt
+```
+
+```{r, eval = FALSE, include = FALSE}
+## Plot D statistic
+
+bbaa <- cbind(as.character(D_BBAA[, 1]), as.character(D_BBAA[, 2]), as.numeric(D_BBAA[, 4]))
+write.table(bbaa, file = '~/cophyhopa/results/2022-06-28/bbaa.txt', quote = FALSE, row.names = FALSE, col.names = FALSE)
+a <- read.table('~/cophyhopa/results/2022-06-28/bbaa.txt', 
+                       col.names = c('sp1', 'sp2', 'd'))
+library(reshape2)
+b<- acast(a, sp1~sp2, value.var='d', add.missing = TRUE, fun.aggregate = mean)
+b[which(is.na(b))] <- 0
+
+heatmap(b, cexRow = 1, cexCol = 1,  margins = c(8, 8))
+
+##-----------
+
+## Plot f4-ratio 
+
+f4 <- cbind(as.character(D_BBAA[, 1]), as.character(D_BBAA[, 2]), as.numeric(D_BBAA[, 7]))
+write.table(bbaa, file = '~/cophyhopa/results/2022-06-28/f4.txt', quote = FALSE, row.names = FALSE, col.names = FALSE)
+a <- read.table('~/cophyhopa/results/2022-06-28/f4.txt', 
+                       col.names = c('sp1', 'sp2', 'f4'))
+
+b<- acast(a, sp1~sp2, value.var='f4', add.missing = TRUE, fun.aggregate = mean)
+b[which(is.na(b))] <- 0
+
+heatmap(b, cexRow = 1, cexCol = 1,  margins = c(8, 8))
+```

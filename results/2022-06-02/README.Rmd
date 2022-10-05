@@ -15,7 +15,7 @@ The clust file contains three columns, whereby the first and the second column i
 #### Removing species with less than 10 individuals/samples and creating the .clust file 
 
 ```{r, eval = FALSE}
-poptable <- read.table('~/cophyhopa/data/popmap0.txt', 
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
                        col.names = c('sample', 'group', 'pop', 'lake'))
 
 poptable <- poptable[-which(poptable[,3] == "C.alpinus"), ]
@@ -30,6 +30,9 @@ poptable$group <- poptable$sample
 write.table(poptable, file = '~/cophyhopa/results/2022-06-02/TREE/TREE.clust', quote = FALSE,
             row.names = FALSE, col.names = FALSE)
 
+write.table(poptable[,1], file = '~/cophyhopa/results/2022-06-02/TREE/ALL.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
 ```
 
 #### Data selecting and filtering 
@@ -41,7 +44,8 @@ FILE=TREE
 if [ ! -e ./TREE/$FILE.vcf.gz ]; then
    vcftools --vcf $VCF \
             --out dirty \
-            --keep ~/cophyhopa/data/ADMX/ALL.txt \
+            --keep ./TREE/ALL.txt \
+            --remove ~/cophyhopa/results/2022-05-04/TheWorst.txt \
             --recode \
             --recode-INFO-all
    vcftools --vcf dirty.recode.vcf \
@@ -51,7 +55,6 @@ if [ ! -e ./TREE/$FILE.vcf.gz ]; then
             --mac 2 \
             --max-alleles 2 \
             --max-meanDP 1000 \
-            --max-missing-count 7 \
             --max-missing 1 \
             --stdout \
             --recode --recode-INFO-all \
@@ -61,6 +64,7 @@ if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
 ```
 
 #### Generate the INPUT file and execute TreeMix
+There are two important parameters. The first is rooting the tree assuming the Arctic species as a outgroup, since it seems that these species are more differentiated of Alpine sp. The second is to test the optimal number of migration events (seems that has to be similar to the k obtained from admixture).
 
 ```{bash include=TRUE, results = 'hide', eval = FALSE}
 # Download the script that generates the input file and execute it 
@@ -151,7 +155,7 @@ The clust file contains three columns, whereby the first and the second column i
 #### Removing species with less than 10 individuals/samples and creating the .clust file 
 
 ```{r, eval = FALSE}
-poptable <- read.table('~/cophyhopa/data/popmap0.txt', 
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
                        col.names = c('sample', 'group', 'pop', 'lake'))
 
 poptable <- poptable[-which(poptable[,3] == "C.alpinus"), ]
@@ -169,6 +173,9 @@ poptable$group <- poptable$sample
 write.table(poptable, file = '~/cophyhopa/results/2022-06-02/ALP_TREE/ALP_TREE.clust', quote = FALSE,
             row.names = FALSE, col.names = FALSE)
 
+write.table(poptable[,1], file = '~/cophyhopa/results/2022-06-02/ALP_TREE/ALP.txt', quote = FALSE,
+            row.names = FALSE, col.names = FALSE)
+
 ```
 
 #### Data selecting and filtering 
@@ -180,7 +187,8 @@ FILE=ALP_TREE
 if [ ! -e ./ALP_TREE/$FILE.vcf.gz ]; then
    vcftools --vcf $VCF \
             --out dirty \
-            --keep ~/cophyhopa/data/ADMX/ALP.txt \
+            --remove ~/cophyhopa/results/2022-05-04/TheWorst.txt \
+            --keep ./ALP_TREE/ALP.txt \
             --recode \
             --recode-INFO-all
    vcftools --vcf dirty.recode.vcf \
@@ -197,6 +205,7 @@ if [ ! -e ./ALP_TREE/$FILE.vcf.gz ]; then
             | gzip > ./ALP_TREE/$FILE.vcf.gz
 fi
 if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
 ```
 
 #### Generate the INPUT file and execute TreeMix
@@ -239,7 +248,7 @@ plot_tree("ALP_TREE/outALP_TREE.12", mbar = FALSE, scale = FALSE, lwd = 2)
 
 ```{r, eval=FALSE, include=FALSE}
 # Create the clust file and save it
-poptable <- read.table('~/cophyhopa/data/popmap0.txt', 
+poptable <- read.table('~/cophyhopa/data/popmap.txt', 
                        col.names = c('sample', 'group', 'pop', 'lake'))
 samples <- readLines("~/cophyhopa/data/Alpine.txt")
 

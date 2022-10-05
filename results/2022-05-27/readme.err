@@ -1,0 +1,43 @@
+
+
+processing file: README.Rmd
+running: bash  -c "VCF='../2022-04-22/assem2_outfiles/assem2.vcf'
+if [ ! -e alpine.recode.vcf ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep Alpine.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out alpine \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --recode --recode-INFO-all
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e arctic.recode.vcf ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep Arctic.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out arctic \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 6 \\
+            --recode --recode-INFO-all
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi"
+output file: README.knit.md
+
+
+Output created: README.html

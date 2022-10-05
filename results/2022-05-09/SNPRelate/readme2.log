@@ -130,6 +130,6 @@ List of 3
  $ collapse  : logi TRUE
 
 
-/usr/lib/rstudio-server/bin/pandoc/pandoc +RTS -K512m -RTS README_2.knit.md --to html4 --from markdown+autolink_bare_uris+tex_math_single_backslash --output README_2.html --lua-filter /usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/pagebreak.lua --lua-filter /usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/latex-div.lua --self-contained --variable bs3=TRUE --standalone --section-divs --template /usr/local/lib/R/site-library/rmarkdown/rmd/h/default.html --no-highlight --variable highlightjs=1 --variable theme=bootstrap --mathjax --variable 'mathjax-url=https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' --include-in-header /tmp/Rtmp7hD6Ap/rmarkdown-strd3db1f99a8bd.html 
+/usr/lib/rstudio-server/bin/pandoc/pandoc +RTS -K512m -RTS README_2.knit.md --to html4 --from markdown+autolink_bare_uris+tex_math_single_backslash --output README_2.html --lua-filter /usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/pagebreak.lua --lua-filter /usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/latex-div.lua --self-contained --variable bs3=TRUE --standalone --section-divs --template /usr/local/lib/R/site-library/rmarkdown/rmd/h/default.html --no-highlight --variable highlightjs=1 --variable theme=bootstrap --mathjax --variable 'mathjax-url=https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' --include-in-header /tmp/RtmprhLN6E/rmarkdown-str9e67259ced55.html 
 > 
 > 

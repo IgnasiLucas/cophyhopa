@@ -3,15 +3,16 @@
 
 library(GWASTools); library(ggplot2); library(SNPRelate); library(stringr); 
 setwd("~/cophyhopa/results/2022-05-09/SNPRelate")
-vcf <- snpgdsVCF2GDS("~/cophyhopa/results/2022-05-04/assem2_indv2.recode.vcf", 
+vcf <- snpgdsVCF2GDS("~/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf", 
                      "~/cophyhopa/results/2022-05-09/SNPRelate/all_geno.gds", 
                      method = "biallelic.only")
 
 all_samp <- snpgdsOpen("all_geno.gds")
 #snpgdsClose(all_geno)
 
-DATA <- '../../../data/Fish_clean.tsv'
+DATA <- '../../../data/Fish_clean2.tsv'
 Fish <- read.table(DATA, header = TRUE)
+Fish <- read.delim("~/cophyhopa/data/Fish_clean2.tsv")
 row.names(Fish) <- Fish$Fish_code
 fish <- data.frame(Fish$Sci_name_CONSENSUS_ID, 
                    Fish$MOL_MORPH_CONSENSUS_ID,
@@ -61,8 +62,8 @@ write.table(Fish.arctic, file = 'Arctic.txt', quote = FALSE,
 
 # Creating the tables for separate analysis for the two regions
 
-DATA <- '../../../data/Fish_clean.tsv'
-Fish <- read.table(DATA, header = TRUE)
+DATA <- '../../../data/Fish_clean2.tsv'
+Fish <- read.delim("~/cophyhopa/data/Fish_clean2.tsv")
 row.names(Fish) <- Fish$Fish_code
 popmap <- read.delim("~/cophyhopa/data/old_popmap.txt", header=FALSE)
 samp_used <- popmap[,1]
@@ -71,7 +72,7 @@ Walen <- intersect(samp_used, row.names(Fish[Fish$Lake == 'Walen',]))
 write.table(Walen, file = '~/cophyhopa/data/Walen.txt', quote = FALSE,
             row.names = FALSE, col.names = FALSE)
 
-Zurich <- intersect(samp_used, row.names(Fish[Fish$Lake == 'Zürichsee',]))
+Zurich <- intersect(samp_used, row.names(Fish[Fish$Lake == 'Zurich',]))
 write.table(Zurich, file = '~/cophyhopa/data/Zurich.txt', quote = FALSE,
             row.names = FALSE, col.names = FALSE)
 
@@ -189,3 +190,4 @@ poptable <- poptable[-which(poptable[,3] == "C.zuerichensis"), ]
 
 write.table(poptable[,1], file = '~/cophyhopa/data/BTB_INDV.txt', quote = FALSE,
             row.names = FALSE, col.names = FALSE)
+
