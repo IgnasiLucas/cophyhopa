@@ -7,10 +7,10 @@ output: html_document
 
 # Filtering vcf file
 
-```{bash, eval = FALSE}
+```{bash}
 VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
 FILE=iqtree
-if [ ! -e $FILE.vcf ]; then
+if [ ! -e $FILE.recode.vcf ]; then
    vcftools --vcf $VCF \
             --out dirty \
             --remove ~/cophyhopa/results/2022-05-04/TheWorst.txt \
@@ -20,7 +20,7 @@ if [ ! -e $FILE.vcf ]; then
             --out $FILE \
             --thin 500 \
             --remove-indels \
-            --mac 2 \
+            --mac 3 \
             --max-alleles 2 \
             --max-meanDP 1000 \
             --max-missing 1 \
@@ -70,7 +70,7 @@ iqtree -s TREE.min4.nexus -m GTR -b 1000 -nt 12 -pre TREE2
 ```
 
 ```{bash}
-## With corrected Fish_clean and second round with 10.000 runs of bootstrap 
+## With corrected Fish_clean and second round with 1.000 runs of bootstrap 
 iqtree -s TREE.min4.nexus -m GTR -b 1000 -nt 24 -pre TREE3
 
 ```

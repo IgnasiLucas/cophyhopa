@@ -1,0 +1,8 @@
+
+
+processing file: README.Rmd
+running: bash  -c 'beast -java -threads 16 cortree2.xml'
+Quitting from lines 103-112 (README.Rmd) 
+Error in FUN(X[[i]], ...) : object 'CoalescentConstant' not found
+Calls: <Anonymous> ... <Anonymous> -> f -> scales_add_defaults -> lapply -> FUN
+Execution halted

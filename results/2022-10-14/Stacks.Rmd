@@ -1,0 +1,31 @@
+---
+title: "STACKS"
+author: "Mar Llaberia-Robledillo"
+date: "24/10/2022"
+output: 
+   html_document:
+      toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Assembly analysis
+
+The goal of the assembly process is to convert raw or sorted `fastq` data into assembled loci that can be formatted for downstream analyses in phylogenetic or population genetic inference software.
+
+Stacks is designed to work with any restriction-enzyme based data, such as GBS, CRoPS, and both single and double digest RAD (our case). Stacks is designed as a modular pipeline to efficiently curate and assemble large numbers of short-read sequences from multiple samples. Stacks identifies loci in a set of individuals, either de novo or aligned to a reference genome (including gapped alignments), and then genotypes each locus. Stacks incorporates a maximum likelihood statistical model to identify sequence polymorphisms and distinguish them from sequencing errors.
+
+Here, to find polymorphisms and be able to construct a phylogeny of Proteocephalus, we gonna conduct a reference-based analysis. There are three major steps with Stacks. The `process_radtags` program is executed as in a de novo analysis, then the `gstacks` program is executed, which will read in aligned reads to assemble loci (and genotype them as in a de novo analysis), followed by the populations program.
+
+So, first here, in this script, we are going to demultiplex the raw data with Stacks program, remove the barcodes and merge Run 1 and Run 2 (R1 and R2 in the raw data name) to obtain a file fastq.gz for each sample. To do that, we need the barcodes files and the short-read raw data. I recommend that you have a table or similar where all the barcodes are specified with the sample code, and with the raw data file or folder where you can find them as well. 
+
+## Clean the data
+
+In a typical analysis, data will be received from an Illumina sequencer, or some other type of sequencer as FASTQ files. The first requirement is to demultiplex, or sort, the raw data to recover the individual samples in the Illumina library. While doing this, we will use the Phred scores provided in the FASTQ files to discard sequencing reads of low quality.
+
+We need to supply a list of barcodes to the `process_radtags` program in order to desmultiplex our samples. These barcodes can be single-end barcodes or combinatorial barcodes (pairs of barcodes, one on each of the paired reads). Barcodes are specified, one per line (or in tab separated pairs per line), in a text file.
+In addition, we can also supply a sample name in an extra column within the barcodes file so the program will name the output files according to the sample name instead of barcode. Furthermore, if we supply the same sample anme for multiple barcodes, reads containing those barcodes will be consolidated into a single output file (merging them). `process_radtags` can also filter the adapters contamination, and can correct barcodes and restriction enzyme sites (if you can supply it) that are within a certain distance from the true barcode o restriction enzyme cutsite. 
+
+

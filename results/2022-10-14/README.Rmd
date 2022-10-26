@@ -1,0 +1,151 @@
+---
+title: "Demultiplexing (and mapping?) Proteocephalus libraries"
+author: "Mar Llaberia-Robledillo"
+date: "20/10/2022"
+output: 
+   html_document:
+      toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Assembly analysis
+
+The goal of the assembly process is to convert raw or sorted `fastq` data into assembled loci that can be formatted for downstream analyses in phylogenetic or population genetic inference software. `ipyrad`offers an atomized process of seven sequential steps to create a modular workflow that can be easily restarted if interrupted, and can be branched at different points to create assemblies under different combinations of parameter settings.
+
+## Step 0: Load raw data (`.fastq`) and create a directory
+
+In our case, we have many libraries with multiple lanes of sequencing for the samples. To begin with the assembly process, we have to demultiplex the barcodes and join the multiple lanes of sequence data that belong to the same samples. Step 1 reads the barcodes files and raw data.
+
+/*/ Don't move or rename directories that ipyrad creates or your assembly will break.
+
+First, to begin with, `ipyrad` works in bash command line, and needs an input file (demux format) with all the analysis information you want to carry out. Furthermore, it is very easy to use, as it has a straigforward procidure with only 7 steps that you can execute all in one, or one in one (as we do here). Anyways, we need to create these input file and specificate the parameters needed for a given assembly. See this manual for the specifications and details of every parameter (I list it anyway below, but in a summarized way): https://ipyrad.readthedocs.io/en/latest/6-params.html
+
+The params file lists in each line one parameter, followed by a \#\# mark, the name of the parameter, and then a short description of its prupose. The parameters to take in account are: 
+
+-   `[0] [assembly_name]`: Used to name output directories for assembly steps.
+-   `[1] [project_dir]`: Project directory (made in curdir if not present)
+-   `[2] [raw_fastq_path]`: Location of raw non-demultiplexed `fastq`files 
+-   `[3] [barcodes_path]`: Location of barcodes file 
+-   `[4] [sorted_fastq_path]`: Location of demultiplexed/sorted `fastq`files
+-   `[5] [assembly_method]`: Assembly method (`reference`)
+-   `[6] [reference_sequence]`: Location of reference sequence file
+-   `[7] [datatype]`: Datatype (`pairddrad`)
+-   `[8] [restriction_overhang]`: Restriction overhang (empty line in our case)
+-   `[9] [max_low_qual_bases]`: Max low quality base calls (Q\<20) in a read (set to `4`)
+-   `[10] [phred_Qscore_offset]`: phred Q score offset (set to `33`)
+-   `[11] [mindepth_statistical]`: Min depth for statistical base calling (set to `6`)
+-   `[12] [mindepth_majrule]`: Min depth for majority-rule base calling (set to `6`)
+-   `[13] [maxdepth]`: Max cluster depth within samples (set to `10000`)
+-   `[14] [clust_threshold]`: Clustering threshold for de novo assembly (set to `0.93`)
+-   `[15] [max_barcode_mismatch]`: Max number of allowable mismatches in barcodes (`0`)
+-   `[16] [filter_adapters]`: Filter for adapters/primers (set to `2`)
+-   `[17] [filter_min_trim_len]`: Min length of reads after adapter trim (set to `35`)
+-   `[18] [max_alleles_consens]`: Max alleles per site in consensus sequences (set to `2`)
+-   `[19] [max_Ns_consens]`: Max N's (uncalled bases) in consensus (set to `0.05`)
+-   `[20] [max_Hs_consens]`: Max Hs (heterozygotes) in consensus (set to `0.5`)
+-   `[21] [min_samples_locus]`: Min \# samples per locus for output (set to `4`)
+-   `[22] [max_SNPs_locus]`: Max \# SNPs per locus (set to `0.1`)
+-   `[23] [max_Indels_locus]`: Max \# of indels per locus (set to `2`)
+-   `[24] [max_shared_Hs_locus]`: Max \# heterozygous sites per locus (set to `0.5`)
+-   `[25] [trim_reads]`: Trim raw reads edges (`0, -10, 0, -10`)
+-   `[26] [trim_loci]`: Trim locus edges (`0, 0, 0, 0`)
+-   `[27] [output_formats]`: Output formats (set to `*` -all-)
+-   `[28] [pop_assign_file]`: Path to population assignment file
+
+So first, we create two separate demux assemblies (for Run1 and Run2, ipyrad creates it by default with `-n` argument), where the output will be two new params files, followed by the assembly name. Some of the parameters have default values (which we are not going to change in this step), but there are a few parameters that we must change before beginning demultiplexing (since they affect this step);  `raw_fastq_path` and `barcodes_path`. 
+
+```{bash, eval = FALSE}
+conda activate ipyrad
+## create demux Assembly object for Runs 1 and 2
+ipyrad -n run1
+ipyrad -n run2
+
+## edit the params to enter ONLY its raw_fastq_path and barcodes file paths
+#nano params-run1.txt
+#nano params-run2.txt
+
+## visualize the changes in .txt
+#cat params-run1.txt
+#cat params-run2.txt
+```
+
+## Step 1 - Demultiplex the raw data files
+
+This step scans through the raw data and sorts each read based on the mapping of samples to barcodes. At the end of this step we’ll have a new directory in our project directory called `iptest_fastqs/`. Inside this directory will be individual fastq.gz files for each sample.
+
+
+```{bash, eval = FALSE}
+# demultiplex Run1 and Run2
+ipyrad -p params-run1.txt -s 1
+ipyrad -p params-run2.txt -s 1
+
+#show results 
+#ipyrad -p params-run1.txt -r
+#ipyrad -p params-run2.txt -r
+
+# merge the two runs 
+ipyrad -m both params-run1.txt params-run2.txt
+
+```
+
+## Steps 2 and 3 - Filtering and Clustering within-samples
+
+**Step 2** filters reads based on quality scores and **Step 3** de-replicates and clusters reads within each sample by the set clustering threshold. Step 3 is one of the most intensive steps and it is expected to take quite a bit longer than the other steps.
+
+The parameters changed (in `params_both.txt`) in these Steps are:
+
+-   `[9] [max_low_qual_bases]`: Max low quality base calls (Q\<20) in a read (set to `4`)
+-   `[10] [phred_Qscore_offset]`: phred Q score offset (set to `33`)
+-   `[14] [clust_threshold]`: Clustering threshold for de novo assembly (set to `0.85`)
+-   `[16] [filter_adapters]`: Filter for adapters/primers (set to `2`)
+-   `[17] [filter_min_trim_len]`: Min length of reads after adapter trim (set to `35`)
+-   `[25] [trim_reads]`: Trim raw read edges (`0, -10, 0, -10`)
+
+```{bash, eval = FALSE}
+ipyrad -p params-both.txt -s 23 -c 24
+ipyrad -p params-both.txt -r
+```
+
+In Step 3, clustering was done according to 85% similarity between the mapping sequences. We want to try with some different parameters and analyze the sequences to see which of the results fits our wishes. For this reason we create a branching of the results obtained in Step 3, called `assem2.` From here, two assemblies with different configurations in the parameters will be analyzed. At the moment we continue with the Assembly clustered according to 85% similarity.
+
+### Branching to create a new assembly
+
+```{bash, eval = FALSE}
+
+## Create a new branch of the Assembly "both"
+ipyrad -p params_both.txt -b assem2
+
+## Move the new files into a new folder
+# mv assem2.json params_assem2.txt ~/cophyhopa/results/2022-04-22
+```
+
+## Steps 4 to 7 - Heterozygosity, consensus base calls, clustering and filtering
+
+**Step 4** jointly estimates sequencing error rate and heterozygosity to disentangle which reads are "real" and which are sequencing error. This is useful due to in diploid organisms there are a maximum of 2 alleles at any given locus. **Step 5** uses the output of Step 4 (error rate and heterozygosity) to call the consensus of sequences within each cluster. So, here we identify what we believe to be the haplotypes at each locus within each sample. **Step 6** clusters consensus sequences across samples obtained above. We use the same clustering threshold as step 3 to identify sequences between samples that are probably sampled from the same locus, based on sequence similarity. Finally, **Step 7** filters the data and write output files in the desired format. This can be: PHYLIP (Full data set, SNPs only or One SNP per locus), NEXUS, STRUCTURE, EIGENSTRAT (.geno), G-PhoCS and VCF (SNPs only).
+
+The parameters changed (in `params_both.txt`) in these Steps are:
+
+-   `[11] [mindepth_statistical]`: Min depth for statistical base calling (set to `6`)
+-   `[12] [mindepth_majrule]`: Min depth for majority-rule base calling (set to `6`)
+-   `[13] [maxdepth]`: Max cluster depth within samples (set to `10000`)
+-   `[14] [clust_threshold]`: Clustering threshold for de novo assembly (set to `0.85`)
+-   `[18] [max_alleles_consens]`: Max alleles per site in consensus sequences (set to `2`)
+-   `[19] [max_Ns_consens]`: Max N's (uncalled bases) in consensus (set to `0.05`)
+-   `[20] [max_Hs_consens]`: Max Hs (heterozygotes) in consensus (set to `0.05`)
+-   `[21] [min_samples_locus]`: Min \# samples per locus for output (set to `4`)
+-   `[22] [max_SNPs_locus]`: Max \# SNPs per locus (set to `0.1`)
+-   `[23] [max_Indels_locus]`: Max \# of indels per locus (set to `2`)
+-   `[24] [max_shared_Hs_locus]`: Max \# heterozygous sites per locus (set to `0.5`)
+-   `[26] [trim_loci]`: Trim locus edges (`0, 0, 0, 0`)
+-   `[27] [output_formats]`: Output formats (set to `*` -all-)
+-   `[28] [pop_assign_file]`: Path to population assignment file
+
+```{bash, eval = FALSE}
+ipyrad -p params-both.txt -s 456 -c 48
+ipyrad -p params-both.txt -r
+
+ipyrad -p params-both.txt -s 7 -c 24
+```

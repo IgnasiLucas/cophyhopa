@@ -40,7 +40,10 @@ In our case, the panels and ts parameters that has been modified and adapted to 
 With these specifications, we save the file as `XML`. Then, we run BEAST.
 
 ```{bash}
-beast -java -threads 8 cortree.xml
+if [ ! -e cortree2.log ]; then
+   beast -java -threads 16 cortree2.xml
+fi
+
 ```
 
 
@@ -48,10 +51,10 @@ beast -java -threads 8 cortree.xml
 
 ```{r}
 library(tracerer)
-setwd("C:/Users/Mar/Desktop/cor_tree")
+setwd("~/cophyhopa/results/2022-09-21/")
 
 # Parse that log file # needs the full path 
-beast_log_full <- parse_beast_tracelog_file("C:/Users/Mar/Desktop/cor_tree/cortree.log")
+beast_log_full <- parse_beast_tracelog_file("~/cophyhopa/results/2022-09-21/cortree2.log")
 
 ```
 

@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Assembly analysis
 
-The goal of the assembly process is to convert raw or sorted `fastq`data into assembled loci that can be formatted for downstream analyses in phylogenetic or population genetic inference software. `ipyrad`offers an atomized process of seven sequential steps to create a modular workflow that can be easily restarted if interrupted, and can be branched at different points to create assemblies under different combinations of parameter settings.
+The goal of the assembly process is to convert raw or sorted `fastq` data into assembled loci that can be formatted for downstream analyses in phylogenetic or population genetic inference software. `ipyrad`offers an atomized process of seven sequential steps to create a modular workflow that can be easily restarted if interrupted, and can be branched at different points to create assemblies under different combinations of parameter settings.
 
 ## Step 0 - Loading `fastq` files
 
