@@ -1,0 +1,4 @@
+       clusters_total filtered_by_depth filtered_by_maxH  filtered_by_maxAlleles filtered_by_maxN reads_consens   nsites nhetero heterozygosity
+LAN103         255083            179505              449                  3517.0                0         71221 26590237   77057        0.00290
+SUO105         233261            158056              378                  2558.0                0         71795 25763897   60047        0.00233
+THU086         246677            171186              366                  2759.0                0         71942 26244599   64184        0.00245

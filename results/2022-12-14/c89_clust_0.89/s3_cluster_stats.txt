@@ -1,0 +1,4 @@
+       clusters_total  hidepth_min clusters_hidepth avg_depth_total avg_depth_mj avg_depth_stat sd_depth_total sd_depth_mj sd_depth_stat
+LAN103         255083          6.0            77050           33.61       107.82         107.82         194.15      341.90        341.90
+SUO105         233261          6.0            76341           37.70       112.10         112.10         190.58      320.54        320.54
+THU086         246677          6.0            76922           31.60        97.98          97.98         144.39      245.88        245.88
