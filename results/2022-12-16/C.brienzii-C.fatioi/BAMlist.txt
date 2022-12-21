@@ -1,0 +1,5 @@
+C.brienzii-C.fatioi/BRZ004.bam
+C.brienzii-C.fatioi/BRZ013.bam
+C.brienzii-C.fatioi/BRZ021.bam
+C.brienzii-C.fatioi/BRZ114.bam
+C.brienzii-C.fatioi/BRZ115.bam

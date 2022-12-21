@@ -1,0 +1,10 @@
+C.fatioi/BRZ005.bam
+C.fatioi/BRZ006.bam
+C.fatioi/BRZ008.bam
+C.fatioi/BRZ052.bam
+C.fatioi/BRZ054.bam
+C.fatioi/BRZ083.bam
+C.fatioi/BRZ099.bam
+C.fatioi/BRZ107.bam
+C.fatioi/THU081.bam
+C.fatioi/THU120.bam

@@ -1,0 +1,14 @@
+C.confusus/BIE002.bam
+C.confusus/BIE004.bam
+C.confusus/BIE005.bam
+C.confusus/BIE006.bam
+C.confusus/BIE007.bam
+C.confusus/BIE008.bam
+C.confusus/BIE028.bam
+C.confusus/BIE030.bam
+C.confusus/BIE044.bam
+C.confusus/BIE045.bam
+C.confusus/BIE048.bam
+C.confusus/BIE049.bam
+C.confusus/BIE050.bam
+C.confusus/BIE092.bam

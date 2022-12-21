@@ -1,0 +1,6 @@
+LanD/LAN042.bam
+LanD/LAN045.bam
+LanD/LAN050.bam
+LanD/LAN063.bam
+LanD/LAN111.bam
+LanD/LAN130.bam

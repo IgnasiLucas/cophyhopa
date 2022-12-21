@@ -1,0 +1,15 @@
+C.duplex/WAL003.bam
+C.duplex/WAL004.bam
+C.duplex/WAL006.bam
+C.duplex/WAL007.bam
+C.duplex/WAL009.bam
+C.duplex/WAL010.bam
+C.duplex/WAL014.bam
+C.duplex/WAL016.bam
+C.duplex/WAL078.bam
+C.duplex/WAL079.bam
+C.duplex/WAL084.bam
+C.duplex/WAL086.bam
+C.duplex/WAL088.bam
+C.duplex/ZUR011.bam
+C.duplex/ZUR018.bam

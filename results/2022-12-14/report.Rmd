@@ -3,7 +3,7 @@ title: "Understanding some ipyrad outputs"
 author: "J. Ignacio Lucas Lledó"
 date: "`r Sys.Date()`"
 output: html_document
-bibliography: "../../../coregonus2/doc/references.bib"
+bibliography: "../../doc/references.bib"
 ---
 
 ```{r setup, include=FALSE}

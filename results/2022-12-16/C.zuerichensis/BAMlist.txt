@@ -1,0 +1,17 @@
+C.zuerichensis/175600.bam
+C.zuerichensis/175601.bam
+C.zuerichensis/175603.bam
+C.zuerichensis/175604.bam
+C.zuerichensis/175605.bam
+C.zuerichensis/175606.bam
+C.zuerichensis/175607.bam
+C.zuerichensis/175608.bam
+C.zuerichensis/175610.bam
+C.zuerichensis/175611.bam
+C.zuerichensis/175612.bam
+C.zuerichensis/175613.bam
+C.zuerichensis/175614.bam
+C.zuerichensis/175617.bam
+C.zuerichensis/175619.bam
+C.zuerichensis/175620.bam
+C.zuerichensis/175621.bam
