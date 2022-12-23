@@ -1,0 +1,10 @@
+C.acrinasus/THU001.bam
+C.acrinasus/THU002.bam
+C.acrinasus/THU004.bam
+C.acrinasus/THU038.bam
+C.acrinasus/THU067.bam
+C.acrinasus/THU097.bam
+C.acrinasus/THU114.bam
+C.acrinasus/THU143.bam
+C.acrinasus/THU183.bam
+C.acrinasus/THU187.bam

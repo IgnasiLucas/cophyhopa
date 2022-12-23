@@ -1,0 +1,411 @@
+---
+title: "Site frequency spectra"
+author: "J. Ignacio Lucas Lledó"
+date: "`r Sys.Date()`"
+output: html_document
+bibliography: "../../doc/references.bib"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+I want to use `angsd` to estimate the site frequency spectra (SFS) of every
+*Coregonus* species, directly from the BAM files. I need to filter the BAM
+files, to remove poorly mapped readsk. And I need to decide on the ancestral
+state of every variable position, in order to polarize the spectra. It would
+be nice to incorporate the uncertainty of the ancestral allele in the likelihood
+of the SFS. Aparantly the `est-sfs` program [@Keightley2018] can do that. It
+accepts either two or three outgroups. Because Alpine and Arctic species are
+reciprocal outgroups, one of the *C. clupeaformis* genomes [@Merot2022] can
+be used as a second outgroup. And the *Salmo salar* reference genome could be
+the third reference genome.
+
+@Merot2022 sequenced two ecomorphs of the american *C. clupeaformis*. If the
+divergence in this species used variation also available in *C. lavaretus*,
+the use of only one of the ecomorphs as an outgroup would bias the polarization.
+Thus, I should use both. Actually, I could use more, because the programme
+`est-sfs` can use polymorphism data in the outgroup species.
+
+I download the genome assemblies of the [dawrf](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/020/615/455/GCF_020615455.1_ASM2061545v1/GCF_020615455.1_ASM2061545v1_genomic.fna.gz)
+and the [normal](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/018/398/675/GCF_018398675.1_ASM1839867v1/GCF_018398675.1_ASM1839867v1_genomic.fna.gz)
+ecomorphs of *C. clupeaformis* from the NCBI ftp site.
+And also the [*Salmo salar* reference genome](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/905/237/065/GCF_905237065.1_Ssal_v3.1/GCF_905237065.1_Ssal_v3.1_genomic.fna.gz).
+
+We need to keep in mind that the *Coregonus* "Balchen" reference genome
+[@DeKayne2020], which belongs to the species currently known as *C. steinmanni*,
+is not perfect. The authors warn of the presence of *collapsed* regions:
+long stretches of chromosomes, or whole chromosomes, that must be duplicated
+in reality but are represented only once in the reference. Supplementary
+table 3 in @DeKayne2020 suggests the potentially collapsed regions are:
+
+ |chr. | start     | 	end   |
+ |----:|----------:|---------:|
+ |  4  |         0 | 31500000 |
+ |  7  |	 39000000 | 65391737 |
+ | 17  |  41500000 | 54216998 |
+ | 22  |         0 | 56862223 |
+ | 28  |         0 | 46671285 |
+ | 32	 |         0 | 44616205 |
+ | 35  |         0 | 42609905 |
+ | 37  |  32500000 | 43663377 |
+ | 38  |	        0 | 36774138 |
+
+## Coverage data
+From the BAM files with only high quality-mapped reads, and using only sites
+with coverage of at least 6 reads per sample, I obtain depth of coverage in
+every sample, with `samtools depth`.
+
+There is a problem: before mapping the reads to the reference, `ipyrad`
+*dereplicated* them. That is, collapsed identical reads in only one representative
+sequence, and tagged its name with the number of identical reads observed
+(the "size=X" label). Unfortunately, `samtools depth` does not take this *size*
+of a read into account, and therefore the depth is quite downwardly biased.
+This was probably the reason why coverage was so uniform along chromosomes
+before I realized. To solve the problem, I use the script `reduplicate.awk`,
+which takes a SAM file, expecting to see "size=1", and repeating the reads
+if necessary with an updated read name.
+
+```{bash collapse}
+BAMDIR=../2022-04-22/assem2_refmapping
+COLLAPSED=../../data/collapsed.txt
+FISHDATA=../../data/Fish_clean2.tsv
+THEWORST=../2022-05-04/TheWorst.txt
+
+if [ ! -e samples_available.txt ]; then
+   ls -1 $BAMDIR | grep -v '.csi' | cut -d "-" -f 1 > samples_available.txt
+fi
+
+if [ ! -e samples.txt ]; then
+   grep -v -F -f $THEWORST samples_available.txt > samples.txt
+fi
+
+if [ ! -e sample_lake_sp.txt ]; then
+   grep -F -f samples.txt $FISHDATA | cut -f 1,2,19 | \
+   gawk '($3 ~ /^[DLP]$/){
+      $3 = substr($2, 1, 3) $3
+   }{
+      gsub(/\//, "-", $3)
+      print $1 "\t" $2 "\t" $3}' > sample_lake_sp.txt
+fi
+
+if [ ! -e species.txt ]; then
+   cut -f 3 sample_lake_sp.txt | sort | uniq > species.txt
+fi
+
+# I want to use only reads mapped with high confidence (MAPQ==60),
+# and I want to add read group information to the BAM files.
+for sp in $(cat species.txt); do
+   if [ ! -d $sp ]; then mkdir $sp; fi
+   if [ ! -e $sp/samples.txt ]; then
+      gawk -v SP=$sp '($3 == SP){print $1}' sample_lake_sp.txt > $sp/samples.txt
+   fi
+   for sample in $(cat $sp/samples.txt); do
+      if [ ! -e $sp/$sample.bam ]; then
+         samtools view -h -q 60 $BAMDIR/${sample}-mapped-sorted.bam | \
+         gawk -v OFS='\t' -f reduplicate.awk | \
+         samtools view -u - | \
+         samtools addreplacerg -o $sp/$sample.bam -r "@RG\tID:$sample\tSM:$sample" - &
+      fi
+   done
+   wait
+   for sample in $(cat $sp/samples.txt); do
+      if [ ! -e $sp/${sample}.depth ]; then
+         # samtools depth prints chromosome, position and depth in every
+         # position with coverage. I wrote an awk script to summarize the
+         # information for every "locus" (continuous stretch with coverage >= 6).
+         samtools depth $sp/${sample}.bam | \
+         gawk -f depth.awk > $sp/${sample}.depth &
+      fi
+   done
+   wait
+done
+if [ ! -e gaps.txt ]; then
+   find . -name '*.depth' -exec grep -v 'chr' '{}' \; | \
+   gawk 'BEGIN{
+      LAST = 1
+   }($2 < LAST){
+      LAST = 1
+   }{
+      F[$2 - LAST]++
+   }END{
+      for (f in F) print f "\t" F[f]
+   }' | sort -nk 1,1 > gaps.txt
+fi
+if [ ! -e lociLength.txt ]; then
+   find . -name '*.depth' -exec grep -v 'chr' '{}' \; | \
+   gawk '{F[$3 - $2 + 1]++}END{
+      for (f in F) print f "\t" F[f]
+   }' > lociLength.txt
+fi
+```
+
+## Chromosome-level duplications
+
+Depth of coverage is reported per site. That's an excessive amount of
+information, and I need to summarize it by locus, under the assumption
+that coverage along one locus is built up from the same set of reads,
+and must therefore be quite homogeneous, except for short deletions.
+(I suppose insertions are not reported: only positions in the reference
+can appear in the output). For example, a heterozygous individual for
+a short deletion inside a locus will show a two-fold change of coverage
+along that locus.
+
+Deletions can also split a read among two loci, or open a short gap
+within the locus: it depends on what I consider a locus. Preliminar
+inspection of the coverage depth data suggests that many loci are within
+400 bases from a neighbour locus. The paired nature of the reads must
+explain most of this proximity among loci, when strictly definied as
+stretches of continuously covered positions. I should relax the definition
+of a locus to include nearby covered segments, such as the two paired ends
+of a sequenced fragment. I decide on a maximum gap length of 450 bases
+within a locus (implemented in `depth.awk`).
+
+Then I need to decide on a minimum length for a locus. Sometimes a locus
+has just enough reads to pass the minimum coverage in only one or a few
+bases, where an additional read overlaps. Such spuriously short loci must
+be removed from consideration. I decide the minimum length must be 60 bases.
+
+Files named with the `.depth` sufix are, then summaries of coverage depth,
+with one value per *locus*, and with loci boundaries included as in a BED
+file. For the purpose of visualizing chromosome-level variations in copy
+number, I need to further summarize the information. With this purpose,
+I create the `DepthPerChr.txt` file.
+
+```{r depth}
+library(ggplot2)
+library(plyr)
+library(kableExtra)
+species <- read.table('species.txt', colClasses = 'character')$V1
+if (! file.exists('DepthPerChr.txt')) {
+   DepthPerChr <- data.frame(
+      chr       = character(),
+      sp        = character(),
+      fish      = character(),
+      MinCov    = double(),
+      MaxCov    = double(),
+      AverCov   = double(),
+      SDCov     = double(),
+      stringsAsFactors = FALSE
+   )
+   for (sp in species) {
+      samples <- read.table(paste0(sp, "/samples.txt"),
+                            colClasses = 'character')$V1
+      for (fish in samples) {
+         df1 <- read.table(paste0(sp, "/", fish, ".depth"), header = TRUE)
+         df1$sp <- sp
+         df1$fish <- fish
+         df2 <- ddply(df1, .(chr, sp, fish), summarize,
+                      MinCov  = min(MeanCov),
+                      MaxCov  = max(MeanCov),
+                      AverCov = mean(MeanCov),
+                      SDCov   = sd(MeanCov))
+         DepthPerChr <- rbind(DepthPerChr, df2)
+      }
+   }
+   write.table(DepthPerChr, file = 'DepthPerChr.txt', sep = '\t',
+               row.names = FALSE, quote = FALSE)
+} else {
+   DepthPerChr <- read.table('DepthPerChr.txt', header = TRUE)
+}
+ggplot(data = DepthPerChr,
+       mapping = aes(x = chr, y = AverCov)) +
+   geom_boxplot() + facet_wrap(~sp)
+```
+
+Some chromosomes have a clear effect on coverage. A statistical model may
+be the natural way to systematically identify the chromosomes that affect
+coverage in every sample. However, it is far from trivial to model the
+coverage data at hand: it depends in non-linear ways on the size of the
+locus, and it is very overdispersed. Plus, the model would have to be
+specified carfully for the estimated coefficients to be interpretable as
+fold-change or ploidy. The attempt below is just a rough approximation.
+
+```{r models}
+if (! file.exists('CovModelCoef.txt')) {
+   for (sp in species) {
+      samples <- read.table(paste0(sp, "/samples.txt"),
+                            colClasses = 'character')$V1
+      for (fish in samples) {
+         df <- read.table(paste0(sp, '/', fish, '.depth'),
+                          header = TRUE)
+         df$size <- df$end - df$start + 1
+         df <- df[df$size >= 200 & df$size < 400, ]
+         df$Cov <- round(df$MeanCov)  # for quasiPoisson modelling
+         m0 <- glm(Cov ~ size + chr,
+                   family = quasipoisson(link = 'log'),
+                   data = df)
+         z <- data.frame(
+            Species = sp,
+            Sample  = fish,
+            Coefficient = rownames(coef(summary(m0))),
+            Estimate = exp(coef(summary(m0))[,1])
+         )
+         if (exists('ModelCoef')) {
+            ModelCoef <- rbind(ModelCoef, z)
+         } else {
+            ModelCoef <- z
+         }
+      }
+   }
+   write.table(ModelCoef, file = 'CovModelCoef.txt', quote = FALSE,
+               sep = '\t', row.names = FALSE)
+} else {
+   ModelCoef <- read.table('CovModelCoef.txt', header = TRUE)
+}
+ggplot(data = ModelCoef[startsWith(as.character(ModelCoef$Coefficient), 'chr'), ],
+       mapping = aes(x = Coefficient, y = Estimate)) +
+   geom_boxplot() +
+   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+```
+
+The plot above shows the estimated chromosome effects on coverage, relative
+to the coverage in the first chromosome (that's why the first chromosome is
+missing). Coefficients around 1.5 suggest those chromosomes could be present
+in three copies per cell, instead of two. Or that about half the cells in the
+tissue have 4 copies instead of 2. A third possibility would be that half the
+chromosome is duplicated. However this last option is ruled out by a relatively
+constant coverage along the affected chromosomes (LR778274.1, LR778284.1 and 
+chrLR778290.1, see below).
+
+I conclude that the following chromosomes must be affected by global or very
+large partial duplications that are not distinguished in the reference genome:
+
+ | num | chromosome | effect |
+ |----:|:----------:|-------:|
+ |  4  | LR778256.1 | 1.0827 |
+ | 22  | LR778274.1 | 1.6782 |
+ | 28  | LR778280.1 | 1.2967 |
+ | 32  | LR778284.1 | 1.5430 |
+ | 35  | LR778287.1 | 1.2210 |
+ | 37  | LR778289.1 | 1.0645 |
+ | 38  | LR778290.1 | 1.4834 |
+ | 40  | LR778292.1 | 1.0577 |
+
+```{r plotCoverage}
+if (! file.exists('Coverage.mp4')) {
+   if (! file.exists('movie1')) {
+      dir.create('movie1')
+   }
+   spNum  <- length(species)
+   i <- 1  # chromosome number
+   j <- 1  # species number
+   for (sp in species) {
+      samples <- read.table(paste0(sp, "/samples.txt"),
+                            colClasses = 'character')$V1
+      coverage <- data.frame(
+         chr = character(),
+         start = integer(),
+         end = integer(),
+         MeanCov = double(),
+         midpoint = double(),
+         species = character(),
+         sample = character()
+      )
+      for (fish in samples) {
+         df <- read.table(paste0(sp, '/', fish, '.depth'),
+                          header = TRUE)
+         df$midpoint <- (df$end + df$start) / 2
+         df$species <- sp
+         df$sample  <- fish
+         coverage <- rbind(coverage, df)
+      }
+      i <- 1
+      for (chr in levels(coverage$chr)) {
+         position <- spNum * (i - 1) + j
+         if (! file.exists(sprintf('movie1/img%03i.png', position))) {
+            p <- ggplot(data = coverage[coverage$chr == chr, ],
+                        mapping = aes(x = midpoint, y = MeanCov, color = sample)) +
+               geom_smooth(method = 'loess') +
+               ggtitle(sprintf("Cromosome %i (%s). %s", i, chr, sp)) +
+               xlab('Position') + ylab('Coverage') + 
+               theme(legend.position = 'none')
+            ggsave(sprintf('movie1/img%03i.png', position), p)
+         }
+         i <- i + 1
+      }
+      j <- j + 1
+   }
+   rm(coverage, p, df)
+}
+```
+
+```{bash movie1}
+if [ ! -e Coverage.mp4 ]; then
+   ffmpeg -framerate 1 -i movie1/img%03d.png \
+          -c:v libx264 -r 1 Coverage.mp4
+fi
+```
+
+## What loci to use
+We cannot detect small-scale changes in copy number, because loci are sparse
+(they give low resolution) and coverage is overdispersed. But we could remove
+loci with extremely high coverage, as well as loci in chromosomes suspected
+to have anomalous copy number. I would like to keep those chromosomes for the
+moment, in order to check later if they have higher levels of observed variation.
+
+I will also keep working separately on each sample, to keep *private* sites.
+Loci that appear in one or few samples are expected to  be low-coverage loci
+from small fragments randomly picked in the size-selection step of library
+preparation. But some large, high-coverage loci may be private to some species
+as a consequence of divergence in restriction sites.
+
+## Ancestral allele
+
+I need the species-specific VCFs, and I want to generate them from the filtered
+and read-group-informed BAM files here. I remove filters that only act upon
+variable positions, in order to minimize the ascertainment bias of variation.
+After obtaining the VCFs, I will need to produce the input data files for
+`est-sfs`. Another challenge is how to get outgroup genotypes for the very same
+positions, in the same order.
+
+```{bash freebayes}
+for sp in $(cat species.txt); do
+   if [ ! -e $sp/$sp.vcf ]; then
+      if [ ! -e $sp/BAMlist.txt ]; then
+         ls -1 $sp/*.bam > $sp/BAMlist.txt
+      fi
+      # -g 1200: maximum coverage. For all species, 1200 is above or about
+      # three standard deviations above the average coverage of the
+      # sample with highest coverage.
+      freebayes -L $sp/BAMlist.txt \
+                -g 1200 \
+                -f ../../data/reference.fa \
+                -P 0.0 \
+                -T 0.002 \
+                -F 0 \
+                -C 1 \
+                -R 240 > $sp/$sp.vcf &
+   fi
+done
+wait
+
+for sp in $(cat species.txt); do
+   if [ ! -e $sp/sfs-input.txt ]; then
+      if [ ! -e $sp/focal.txt ]; then
+         NUMSAMPLES=$(ls -1 $sp/*.bam | wc -l)
+         DOWNSIZE=$(echo "0.8 * $NUMSAMPLES / 1" | bc)
+         gawk -v N=$DOWNSIZE -f get-focal-data.awk $sp/$sp.vcf > $sp/focal.txt &
+      fi
+      if [ ! -e $sp/outgroup1.txt ]; then
+         echo "Work in progress"
+      fi
+      if [ ! -e $sp/outgroup2.txt ]; then
+         echo "Work in progress"
+      fi
+   fi
+done
+wait
+```
+
+Reading the documentation of `est-sfs`, I realize I cannot use simultaneously
+two 
+
+## Session Information
+
+```{r sessionInfo}
+sessionInfo()
+```
+
+# References

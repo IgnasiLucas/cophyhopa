@@ -1,3 +1,33 @@
+# 2022-12-16
+For the purpose of estimating the allele frequency spectra (AFS), I revise the coverage
+profiles and realised that at least three chromosomes (22, 32 and 38) seem to be duplicated
+and some others (4, 28, 35, 37 and 40) could have partial duplications not represented
+or collapsed in the reference genome. According to the authors of the reference genome,
+chromosomes suspected to be affected by collapsed duplicated regions are: 4, 7, 17, 22,
+28, 32, 35, 37 and 38. Given the fragmentary nature of our sequence data, as well as the
+overdispersion caused by the PCR step in library preparation, and the spurious presence
+of small fragments with low coverage, it is impossible to use our coverage data to identify
+with precision the duplicated regions. Having confirmed the suspicion of collapsed duplication
+in some of the chromosomes (in all species), it seems a good idea to exclude all chromosomes
+with potential collapsed duplications from the analysis.
+
+Curiously, the coverage grows with fragment length until about a length of 200 and then
+it decreases (not shown in report). This is probably caused by the size-selection step in
+library preparation.
+
+Currently obtaining species-specific VCFs with freebayes. The report is
+[available in this link.](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-12-16/README.html)
+
+# 2022-12-14
+Just curious about the mapping quality performed by ipyrad. I confirm that mapping to a reference
+makes the clustering threshold irrelevant. I show that the two samples from the most distant
+clades, in Suopatjavri and Langjordvatn, have mapping qualities just as good as a sample from
+the same species as the reference, C. steinmanni.
+
+See the [report in this link](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-12-14/report.html).
+
+# 2022-09-21
+
 # 2022-07-23
 I finally managed to run fastsimcoal2, using the estimated site frequency spectra of
 the two arctic populations. The first and very simple models fitted suggest that

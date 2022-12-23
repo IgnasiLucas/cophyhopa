@@ -1,0 +1,5 @@
+C.alpinus/BRZ044.bam
+C.alpinus/BRZ045.bam
+C.alpinus/BRZ046.bam
+C.alpinus/BRZ047.bam
+C.alpinus/THU182.bam

@@ -1,0 +1,4 @@
+        reads_raw  trim_adapter_bp_read1  trim_adapter_bp_read2  trim_quality_bp_read1  trim_quality_bp_read2  reads_filtered_by_Ns  reads_filtered_by_minlen  reads_passed_filter
+LAN103    9492518                 172336                 127796                5596212                4238002                 28620                      1075              9462823
+SUO105    9560650                 166016                 125652                5924753                4704861                 28340                      1301              9531009
+THU086    8635196                 152096                 122560                5265037                3921319                 26022                      1008              8608166

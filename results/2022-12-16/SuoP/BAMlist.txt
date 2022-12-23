@@ -1,0 +1,14 @@
+SuoP/SUO030.bam
+SuoP/SUO034.bam
+SuoP/SUO043.bam
+SuoP/SUO047.bam
+SuoP/SUO048.bam
+SuoP/SUO049.bam
+SuoP/SUO056.bam
+SuoP/SUO058.bam
+SuoP/SUO059.bam
+SuoP/SUO090.bam
+SuoP/SUO092.bam
+SuoP/SUO094.bam
+SuoP/SUO097.bam
+SuoP/SUO102.bam

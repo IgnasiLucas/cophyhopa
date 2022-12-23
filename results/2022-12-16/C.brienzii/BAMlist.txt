@@ -1,0 +1,3 @@
+C.brienzii/BRZ001.bam
+C.brienzii/BRZ011.bam
+C.brienzii/BRZ057.bam

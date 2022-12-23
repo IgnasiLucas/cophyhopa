@@ -1,0 +1,11 @@
+LanP/LAN005.bam
+LanP/LAN017.bam
+LanP/LAN018.bam
+LanP/LAN019.bam
+LanP/LAN022.bam
+LanP/LAN033.bam
+LanP/LAN038.bam
+LanP/LAN039.bam
+LanP/LAN040.bam
+LanP/LAN041.bam
+LanP/LAN052.bam

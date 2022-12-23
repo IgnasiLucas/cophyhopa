@@ -1,0 +1,16 @@
+C.heglingus/175602.bam
+C.heglingus/175609.bam
+C.heglingus/175615.bam
+C.heglingus/175616.bam
+C.heglingus/175618.bam
+C.heglingus/WAL021.bam
+C.heglingus/WAL022.bam
+C.heglingus/WAL024.bam
+C.heglingus/WAL030.bam
+C.heglingus/WAL031.bam
+C.heglingus/WAL033.bam
+C.heglingus/WAL036.bam
+C.heglingus/WAL040.bam
+C.heglingus/WAL041.bam
+C.heglingus/WAL042.bam
+C.heglingus/WAL045.bam

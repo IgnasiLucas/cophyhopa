@@ -1,0 +1,155 @@
+---
+title: "Understanding some ipyrad outputs"
+author: "J. Ignacio Lucas Lledó"
+date: "`r Sys.Date()`"
+output: html_document
+bibliography: "../../doc/references.bib"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+The typical analysis of ddRAD-seq or RAD-seq data ends up in a VCF
+that only includes polymorphic sites. Excluding from the VCF the sites
+that are invariable saves a lot of disk space. However, the heterozygosity
+is only comparable among samples, and meaningful in terms of model
+parameters, if it is calculated among a representative set of loci.
+Excluding monomorphic and doubtful loci introduces a bias. Also, we
+are interested in the fraction of monomorphic sites, as it is part
+of the allele frequency spectrum (AFS).
+
+My goal in this folder was to determine what is the best measure of
+heterozigosity we can get from ipyrad, and how ipyrad parameters can
+affect the estimates. The one parameter in ipyrad that concerned me
+the most was the *clustering threshold*, which determines how similar
+two reads must be to be considered orthologs in a *de novo* analysis.
+
+Another potential source of bias is the fact that some species are
+much closer related to the reference genome (*C. steinmanni*,
+@DeKayne2022) than others. I was afraid that fewer clusters would
+be found in the most distant species.
+
+In order to check these efects and gain confidence in the results
+from ipyrad, I decided to run ipyrad on only three samples: THU086
+(*C. steinmanni*), and two representatives of the most distant
+clades: LAN103 and SUO105.
+
+## Estimates of heterozygosity
+
+There are two estimates of heterozygosity per sample produced by
+ipyrad. First, step 4 uses a maximum-likelihood method to
+simultaneously estimate heterozygosity and sequencing error rate
+over all clusters. Then, step 5 infer genotypes and counts the
+number of heterozygous sites per sample. Below I use this second,
+count-based heterozygosity that depends on the accuracy of the
+genotypes. It is visibly lower than the ML estimate, suggesting
+that it could be underestimating the true heterozigosity. But it
+is based on a heavily filtered subset of loci with decent coverage.
+
+```{r clust_threshold}
+library(ggplot2)
+summary1 <- read.table('summary.txt', header = TRUE)
+ggplot(data = summary1, mapping = aes(x = clust_threshold,
+                                      y = heterozygosity,
+                                      color = sample)) +
+  geom_point()
+```
+
+The first conclusion is that the clustering threshold does not
+affect heterozygosity (nor the number of clusters), because the
+analysis is not a *de novo* assembly, but an assembly using a
+reference genome. I should have expected that clustering threshold
+was not going to affect the within-sample *clustering* step (step 3).
+
+## Number of clusters (a.k.a *loci*)
+
+```{r barplot}
+library(tidyr)
+summary2 <- summary1[summary1$clust_threshold == 'c93', ]
+summary2$usable <- summary2$clusters_total -
+                   summary2$filtered_by_depth -
+                   summary2$filtered_by_maxAlleles -
+                   summary2$filtered_by_maxH -
+                   summary2$filtered_by_maxN
+summary2 <- pivot_longer(summary2,
+                         cols = c('filtered_by_depth',
+                                  'filtered_by_maxAlleles',
+                                  'filtered_by_maxH',
+                                  'filtered_by_maxN',
+                                  'usable'),
+                         names_to = 'cluster_type',
+                         values_to = 'N_clusters')
+ggplot(summary2, aes(x=sample, y=N_clusters, fill=cluster_type)) +
+  geom_bar(stat='identity')
+```
+
+If samples more distantly related to the reference genome had had a lower
+mapping success, not only the average cluster depth would have been lower,
+but the proportion of clusters filtered for that reason could have been
+higher. But it is not the case.
+
+## Mapping quality
+
+Let's take a look at the mapping quality.
+
+```{r mappingquality}
+library(plyr)
+# mappingQuality.txt contains counts of reads with mapping qualities
+# shown in the first column. Columns 2 to 4 are the three samples:
+#   MAPQ    THU086  LAN103  SUO105
+#   0       1184253 1369975 1591195
+#   1       24849   34668   31628
+#   2       23262   29559   30127
+#   3       28941   37707   38154
+#   4       26104   35555   33458
+#   ...
+
+mapq <- read.table('mappingQuality.txt', header = TRUE)
+
+# I need a suffix in the column names to pivot the table longer
+names(mapq)[2:4] <- paste0(names(mapq)[2:4], "_numReads")
+
+# I add the columns of the proportion of reads with increasing
+# mapping qualities. Note, the code does not assume sample names.
+mapq[, ncol(mapq) + 1] <- mapq[,2] / sum(mapq[,2])
+mapq[, ncol(mapq) + 1] <- mapq[,3] / sum(mapq[,3])
+mapq[, ncol(mapq) + 1] <- mapq[,4] / sum(mapq[,4])
+
+# And name the columns conveniently for pivoting:
+names(mapq)[5:7] <- sub("numReads", "proportion", names(mapq)[2:4])
+tail(mapq)
+
+mapqL <- pivot_longer(mapq, cols = 2:7,
+                      names_to = c('sample', '.value'),
+                      names_sep = '_')
+
+mapqL$range <- factor('high', levels = c('low', 'medium', 'high'),
+                      ordered = TRUE)
+mapqL[mapqL$MAPQ < 60, 'range'] <- 'medium'
+mapqL[mapqL$MAPQ < 40, 'range'] <- 'low'
+
+mapqShort <- ddply(mapqL, .(range, sample),
+                   summarize,
+                   proportion = sum(proportion),
+                   numReads   = sum(numReads))
+
+ggplot(data = mapqShort,
+       mapping = aes(x = sample, y = proportion, fill = range)) +
+  geom_bar(stat = 'identity')
+```
+
+Reads from the same species as the reference (THU086) are only
+slightly better mapped than reads from distant species. In any
+case, it is worth keeping only the highest mapping quality in
+bam files.
+
+## Session Information
+
+```{r sessionInfo}
+sessionInfo()
+```
+
+# References
