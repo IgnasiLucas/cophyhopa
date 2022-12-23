@@ -228,9 +228,6 @@ vcftools --vcf dirty.recode.vcf \
          --fst-window-size 250000\
          --fst-window-step 50000
          
-         
-
-
 ```
 
 
