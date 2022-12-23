@@ -1,0 +1,236 @@
+---
+title: "Heterozygosity and population diversity of Coregonus sp."
+author: "Mar Llaberia-Robledillo"
+date: "12/12/2022"
+output: 
+  html_document:
+    toc: FALSE
+---
+
+## 
+
+We want to estimate the heterozygosaity and genetic diversity of the populations of Coregonus in the Alpine and Arctic regions. 
+For that, we need to "refilter" the original vcf file by the different species and then, estimate the statistics of 
+heterozygosity and ...
+The arguments we gonna use are allele and individual heterozygosity...
+
+### Alpine region 
+
+```{bash, eval = FALSE}
+VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+
+for sp in $(cat alpine_species.txt); do
+  if [ ! -e ${sp}.vcf.gz ]; then
+     vcftools --vcf $VCF \
+              --out dirty \
+              --keep ${sp}.txt \
+              --remove ~/cophyhopa/results/2022-05-04/TheWorst.txt \
+              --recode \
+              --recode-INFO-all
+     vcftools --vcf dirty.recode.vcf \
+              --out ${sp} \
+              --thin 500 \
+              --remove-indels \
+              --mac 2 \
+              --max-alleles 2 \
+              --max-meanDP 1000 \
+              --max-missing 1 \
+              --freq
+     vcftools --vcf dirty.recode.vcf \
+              --out ${sp} \
+              --thin 500 \
+              --remove-indels \
+              --mac 2 \
+              --max-alleles 2 \
+              --max-meanDP 1000 \
+              --max-missing 1 \
+              --het
+  fi
+  if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+done
+```
+
+
+### Arctic region 
+Here we supose that in Norway lakes, there are different species. We consider each ecomorph like one species. 
+
+```{bash eval = FALSE}
+VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+
+for sp in $(cat arctic_species2.txt); do
+  if [ ! -e ${sp}.vcf.gz ]; then
+     vcftools --vcf $VCF \
+              --out dirty \
+              --keep ${sp}.txt \
+              --remove ~/cophyhopa/results/2022-05-04/TheWorst.txt \
+              --recode \
+              --recode-INFO-all
+     vcftools --vcf dirty.recode.vcf \
+              --out ${sp} \
+              --thin 500 \
+              --remove-indels \
+              --mac 2 \
+              --max-alleles 2 \
+              --max-meanDP 1000 \
+              --max-missing 1 \
+              --freq
+     vcftools --vcf dirty.recode.vcf \
+              --out ${sp} \
+              --thin 500 \
+              --remove-indels \
+              --mac 2 \
+              --max-alleles 2 \
+              --max-meanDP 1000 \
+              --max-missing 1 \
+              --het 
+  fi
+  if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+done
+```
+
+
+## Visualization of results 
+
+### Output of vcftools - only considering variable sites (SNP)
+
+```{r OBS}
+
+```
+
+```{r ESP}
+
+```
+
+### Output ipyrad - considering all sites and all samples 
+
+We need to filter the samples before starting. In the clustering output of ipyrad there are all the samples, including those with very low 
+quality and insufficient reads.
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+
+# Population statistics Fs
+
+We try to estimate de F statictis by vcftools, to be able to confirm the prevois results, especially
+those results of Norway lakes (LAN and SUO). Ignasi will try to do an Allele Frequency Spectrum of 
+populations in lakes, an then compare them with results of the Fs statistics. 
+
+```{bash Fst}
+VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+
+if [ ! -e dirty.recode.vcf ]; then
+  vcftools --vcf $VCF \
+           --out dirty \
+           --remove ~/cophyhopa/results/2022-05-04/TheWorst.txt \
+           --recode \
+           --recode-INFO-all
+fi
+
+## FOR ALPINE POPULATIONS
+vcftools --vcf dirty.recode.vcf \
+         --out ./FST/alpine \
+         --thin 500 \
+         --remove-indels \
+         --mac 2 \
+         --max-alleles 2 \
+         --max-meanDP 1000 \
+         --max-missing 1 \
+         --weir-fst-pop C.zuerichensis.txt \
+         --weir-fst-pop C.heglingus.txt \
+         --weir-fst-pop C.confusus.txt \
+         --weir-fst-pop C.fatioi.txt \
+         --weir-fst-pop C.albellus.txt \
+         --weir-fst-pop C.acrinasus.txt \
+         --weir-fst-pop C.steinmanni.txt \
+         --weir-fst-pop C.profundus.txt \
+         --weir-fst-pop C.duplex.txt
+         
+vcftools --vcf dirty.recode.vcf \
+         --out ./FST/alpine_w \
+         --thin 500 \
+         --remove-indels \
+         --mac 2 \
+         --max-alleles 2 \
+         --max-meanDP 1000 \
+         --max-missing 1 \
+         --weir-fst-pop C.zuerichensis.txt \
+         --weir-fst-pop C.heglingus.txt \
+         --weir-fst-pop C.confusus.txt \
+         --weir-fst-pop C.fatioi.txt \
+         --weir-fst-pop C.albellus.txt \
+         --weir-fst-pop C.acrinasus.txt \
+         --weir-fst-pop C.steinmanni.txt \
+         --weir-fst-pop C.profundus.txt \
+         --weir-fst-pop C.duplex.txt \
+         --fst-window-size 250000\
+         --fst-window-step 50000
+         
+         
+## FOR ARCTIC POPULATIONS
+vcftools --vcf dirty.recode.vcf \
+         --out ./FST/arctic \
+         --thin 500 \
+         --remove-indels \
+         --mac 2 \
+         --max-alleles 2 \
+         --max-meanDP 1000 \
+         --max-missing 1 \
+         --weir-fst-pop LAN_D.txt \
+         --weir-fst-pop LAN_L.txt \
+         --weir-fst-pop LAN_P.txt \
+         --weir-fst-pop SUO_L.txt \
+         --weir-fst-pop SUO_P.txt
+         
+vcftools --vcf dirty.recode.vcf \
+         --out ./FST/arctic_w \
+         --thin 500 \
+         --remove-indels \
+         --mac 2 \
+         --max-alleles 2 \
+         --max-meanDP 1000 \
+         --max-missing 1 \
+         --weir-fst-pop LAN_D.txt \
+         --weir-fst-pop LAN_L.txt \
+         --weir-fst-pop LAN_P.txt \
+         --weir-fst-pop SUO_L.txt \
+         --weir-fst-pop SUO_P.txt \
+         --fst-window-size 250000\
+         --fst-window-step 50000
+
+## FOR ALL POPULATIONS
+vcftools --vcf dirty.recode.vcf \
+         --out ./FST/all_pop \
+         --thin 500 \
+         --remove-indels \
+         --mac 2 \
+         --max-alleles 2 \
+         --max-meanDP 1000 \
+         --max-missing 1 \
+         --weir-fst-pop ALPIND.txt \
+         --weir-fst-pop ARCIND.txt
+         
+vcftools --vcf dirty.recode.vcf \
+         --out ./FST/all_pop_w \
+         --thin 500 \
+         --remove-indels \
+         --mac 2 \
+         --max-alleles 2 \
+         --max-meanDP 1000 \
+         --max-missing 1 \
+         --weir-fst-pop ALPIND.txt \
+         --weir-fst-pop ARCIND.txt \
+         --fst-window-size 250000\
+         --fst-window-step 50000
+         
+         
+
+
+```
+
+
