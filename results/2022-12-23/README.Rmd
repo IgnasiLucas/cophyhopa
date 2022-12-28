@@ -1,0 +1,186 @@
+---
+title: "Fst of the populations defined according to their ecomorph and lake"
+author: "Mar Llaberia-Robledillo"
+date: "23/12/2022"
+output: html_document
+---
+
+First, we need to associate the ecomorph to the species we have. This information is in the original .csv that Isabel sent us with the information of every sample. Ignasi compiled the information on the ecomorphs from different references, creating the following summary table.
+
+```{r}
+library(knitr)
+#our information
+MORPH <- read.table("/gata/mar/cophyhopa/results/2022-12-23/eco_sp.txt", col.names = c("ecomorph", "species"))
+kable(MORPH)
+
+#ignasi table
+ECOM <- read.table("/gata/mar/cophyhopa/data/ecomorphs.txt", header = TRUE)
+kable(ECOM)
+
+```
+Using the information from both tables (and further considering the information provided by Ignasi's references), we choose SUO_P and SUO_L (SUO lake), LAN_L and LAN_P (LAN lake) for the lakes in Norway. But for alpine lakes, the thing is that most of them are connected, so species are present in different lakes. We chose the species C.fatioi (Felchen ecomorph) present in Lakes Thun and Brienz, C.steinmani (Balchen ecomorph) present in Lake Thun, C.duplex (Balchen ecomorph) and C.zuerichensis (Felchen ecomorph) present in lakes Walen and Zurich, C.albellus (Albeli ecomorph) present in Lakes Thun and Brienz and, finally, C.confusus (Albeli ecomorph) present in Lake Bienne.
+So, we would be comparing Thun-Brienz vs. Walen-Zurich and Thun-Brienz v. Bienne for the alpine region.
+
+Then the lake that shares the same ecomorph with another lake is taken into account for the next round of Fst stats to be calculated.
+To do that, we need to create a txt file with the names of each individual in a lake that shares the same ecomorph.
+
+I am going to take the txt files previously created in the 2022-12-12 folder with the individuals we need: LAN_L, LAN_P, SUO_P, SUO_L, C.fatioi, C.steinmani, C.duplex, C.zuerichensis, C.albellus and C.confusus.
+
+```{r}
+Ecomorph = c("Albeli", "Felchen", "Balchen", "P (Profundal)", "L (Litoral)")
+Species = c("C.albellus (Thun-Brienz) / C.confusus (Bienne)", "C.fatioi (Thun-Brienz) / C.zuerichensis (Walen-Zurich)",
+            "C.steinmani (Thun) / C.duplex (Walen-Zurich)", "P (LAN) / P (SUO)", "L (LAN) / L (SUO)")
+SUM <- data.frame(Ecomorph, Species)
+kable(SUM)
+```
+
+```{bash}
+VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+
+if [ ! -e dirty.recode.vcf ]; then
+  vcftools --vcf $VCF \
+           --out dirty \
+           --remove ~/cophyhopa/results/2022-05-04/TheWorst.txt \
+           --recode \
+           --recode-INFO-all
+fi
+```
+
+# Comparison of the same ecomoph between lakes
+## ALPINE REGION
+### Felchen: Thun-Brienz vs. Walen-Zurich lakes
+```{bash}
+vcftools --vcf dirty.recode.vcf \
+         --out ./FST/Felchen_Alpine \
+         --thin 500 \
+         --remove-indels \
+         --mac 2 \
+         --max-alleles 2 \
+         --max-meanDP 1000 \
+         --max-missing 1 \
+         --weir-fst-pop C.fatioi.txt \
+         --weir-fst-pop C.zuerichensis.txt
+         
+vcftools --vcf dirty.recode.vcf \
+         --out ./FST/Felchen_Alpine_w \
+         --thin 500 \
+         --remove-indels \
+         --mac 2 \
+         --max-alleles 2 \
+         --max-meanDP 1000 \
+         --max-missing 1 \
+         --weir-fst-pop C.fatioi.txt \
+         --weir-fst-pop C.zuerichensis.txt \
+         --fst-window-size 250000 \
+         --fst-window-step 50000
+```
+
+### Balchen: Thun-Brienz vs. Walen-Zurich lakes
+```{bash}
+vcftools --vcf dirty.recode.vcf \
+         --out ./FST/Balchen_Alpine \
+         --thin 500 \
+         --remove-indels \
+         --mac 2 \
+         --max-alleles 2 \
+         --max-meanDP 1000 \
+         --max-missing 1 \
+         --weir-fst-pop C.steinmanni.txt \
+         --weir-fst-pop C.duplex.txt
+         
+vcftools --vcf dirty.recode.vcf \
+         --out ./FST/Balchen_Alpine_w \
+         --thin 500 \
+         --remove-indels \
+         --mac 2 \
+         --max-alleles 2 \
+         --max-meanDP 1000 \
+         --max-missing 1 \
+         --weir-fst-pop C.steinmanni.txt \
+         --weir-fst-pop C.duplex.txt \
+         --fst-window-size 250000 \
+         --fst-window-step 50000
+```
+
+### Albeli: Thun-Brienz vs. Bienne lakes
+```{bash}
+vcftools --vcf dirty.recode.vcf \
+         --out ./FST/Albeli_Alpine \
+         --thin 500 \
+         --remove-indels \
+         --mac 2 \
+         --max-alleles 2 \
+         --max-meanDP 1000 \
+         --max-missing 1 \
+         --weir-fst-pop C.albellus.txt \
+         --weir-fst-pop C.confusus.txt
+         
+vcftools --vcf dirty.recode.vcf \
+         --out ./FST/Albeli_Alpine_w \
+         --thin 500 \
+         --remove-indels \
+         --mac 2 \
+         --max-alleles 2 \
+         --max-meanDP 1000 \
+         --max-missing 1 \
+         --weir-fst-pop C.albellus.txt \
+         --weir-fst-pop C.confusus.txt \
+         --fst-window-size 250000 \
+         --fst-window-step 50000
+         
+```
+
+## ARCTIC REGION 
+### P (Profundal): LAN vs. SUO
+```{bash}
+vcftools --vcf dirty.recode.vcf \
+         --out ./FST/P_Arctic \
+         --thin 500 \
+         --remove-indels \
+         --mac 2 \
+         --max-alleles 2 \
+         --max-meanDP 1000 \
+         --max-missing 1 \
+         --weir-fst-pop LAN_P.txt \
+         --weir-fst-pop SUO_P.txt
+         
+vcftools --vcf dirty.recode.vcf \
+         --out ./FST/P_Arctic_w \
+         --thin 500 \
+         --remove-indels \
+         --mac 2 \
+         --max-alleles 2 \
+         --max-meanDP 1000 \
+         --max-missing 1 \
+         --weir-fst-pop LAN_P.txt \
+         --weir-fst-pop SUO_P.txt \
+         --fst-window-size 250000 \
+         --fst-window-step 50000
+```
+
+### L (Litoral): LAN vs. SUO
+```{bash}
+vcftools --vcf dirty.recode.vcf \
+         --out ./FST/L_Arctic \
+         --thin 500 \
+         --remove-indels \
+         --mac 2 \
+         --max-alleles 2 \
+         --max-meanDP 1000 \
+         --max-missing 1 \
+         --weir-fst-pop LAN_L.txt \
+         --weir-fst-pop SUO_L.txt
+         
+vcftools --vcf dirty.recode.vcf \
+         --out ./FST/L_Arctic_w \
+         --thin 500 \
+         --remove-indels \
+         --mac 2 \
+         --max-alleles 2 \
+         --max-meanDP 1000 \
+         --max-missing 1 \
+         --weir-fst-pop LAN_L.txt \
+         --weir-fst-pop SUO_L.txt \
+         --fst-window-size 250000 \
+         --fst-window-step 50000
+```
