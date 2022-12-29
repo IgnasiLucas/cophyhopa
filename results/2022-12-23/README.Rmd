@@ -52,139 +52,153 @@ fi
 ## ALPINE REGION
 ### Felchen: Thun-Brienz vs. Walen-Zurich lakes
 ```{bash}
-vcftools --vcf dirty.recode.vcf \
-         --out ./FST/Felchen_Alpine \
-         --thin 500 \
-         --remove-indels \
-         --mac 2 \
-         --max-alleles 2 \
-         --max-meanDP 1000 \
-         --max-missing 1 \
-         --weir-fst-pop C.fatioi.txt \
-         --weir-fst-pop C.zuerichensis.txt
-         
-vcftools --vcf dirty.recode.vcf \
-         --out ./FST/Felchen_Alpine_w \
-         --thin 500 \
-         --remove-indels \
-         --mac 2 \
-         --max-alleles 2 \
-         --max-meanDP 1000 \
-         --max-missing 1 \
-         --weir-fst-pop C.fatioi.txt \
-         --weir-fst-pop C.zuerichensis.txt \
-         --fst-window-size 250000 \
-         --fst-window-step 50000
+if [ ! -e FST/Felchen_Alpine.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out ./FST/Felchen_Alpine \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing 1 \
+            --weir-fst-pop C.fatioi.txt \
+            --weir-fst-pop C.zuerichensis.txt
+fi
+if [ ! -e FST/Felchen_Alpine_w.windowed.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out ./FST/Felchen_Alpine_w \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing 1 \
+            --weir-fst-pop C.fatioi.txt \
+            --weir-fst-pop C.zuerichensis.txt \
+            --fst-window-size 250000 \
+            --fst-window-step 50000
+fi
 ```
 
 ### Balchen: Thun-Brienz vs. Walen-Zurich lakes
 ```{bash}
-vcftools --vcf dirty.recode.vcf \
-         --out ./FST/Balchen_Alpine \
-         --thin 500 \
-         --remove-indels \
-         --mac 2 \
-         --max-alleles 2 \
-         --max-meanDP 1000 \
-         --max-missing 1 \
-         --weir-fst-pop C.steinmanni.txt \
-         --weir-fst-pop C.duplex.txt
-         
-vcftools --vcf dirty.recode.vcf \
-         --out ./FST/Balchen_Alpine_w \
-         --thin 500 \
-         --remove-indels \
-         --mac 2 \
-         --max-alleles 2 \
-         --max-meanDP 1000 \
-         --max-missing 1 \
-         --weir-fst-pop C.steinmanni.txt \
-         --weir-fst-pop C.duplex.txt \
-         --fst-window-size 250000 \
-         --fst-window-step 50000
+if [ ! -e FST/Balchen_Alpine.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out ./FST/Balchen_Alpine \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing 1 \
+            --weir-fst-pop C.steinmanni.txt \
+            --weir-fst-pop C.duplex.txt
+fi
+if [ ! -e FST/Balchen_Alpine_w.windowed.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out ./FST/Balchen_Alpine_w \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing 1 \
+            --weir-fst-pop C.steinmanni.txt \
+            --weir-fst-pop C.duplex.txt \
+            --fst-window-size 250000 \
+            --fst-window-step 50000
+fi
 ```
 
 ### Albeli: Thun-Brienz vs. Bienne lakes
 ```{bash}
-vcftools --vcf dirty.recode.vcf \
-         --out ./FST/Albeli_Alpine \
-         --thin 500 \
-         --remove-indels \
-         --mac 2 \
-         --max-alleles 2 \
-         --max-meanDP 1000 \
-         --max-missing 1 \
-         --weir-fst-pop C.albellus.txt \
-         --weir-fst-pop C.confusus.txt
-         
-vcftools --vcf dirty.recode.vcf \
-         --out ./FST/Albeli_Alpine_w \
-         --thin 500 \
-         --remove-indels \
-         --mac 2 \
-         --max-alleles 2 \
-         --max-meanDP 1000 \
-         --max-missing 1 \
-         --weir-fst-pop C.albellus.txt \
-         --weir-fst-pop C.confusus.txt \
-         --fst-window-size 250000 \
-         --fst-window-step 50000
-         
+if [ ! -e FST/Albeli_Alpine.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out ./FST/Albeli_Alpine \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing 1 \
+            --weir-fst-pop C.albellus.txt \
+            --weir-fst-pop C.confusus.txt
+fi
+if [ ! -e FST/Albeli_Alpine_w.windowed.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out ./FST/Albeli_Alpine_w \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing 1 \
+            --weir-fst-pop C.albellus.txt \
+            --weir-fst-pop C.confusus.txt \
+            --fst-window-size 250000 \
+            --fst-window-step 50000
+fi
 ```
 
 ## ARCTIC REGION 
 ### P (Profundal): LAN vs. SUO
 ```{bash}
-vcftools --vcf dirty.recode.vcf \
-         --out ./FST/P_Arctic \
-         --thin 500 \
-         --remove-indels \
-         --mac 2 \
-         --max-alleles 2 \
-         --max-meanDP 1000 \
-         --max-missing 1 \
-         --weir-fst-pop LAN_P.txt \
-         --weir-fst-pop SUO_P.txt
-         
-vcftools --vcf dirty.recode.vcf \
-         --out ./FST/P_Arctic_w \
-         --thin 500 \
-         --remove-indels \
-         --mac 2 \
-         --max-alleles 2 \
-         --max-meanDP 1000 \
-         --max-missing 1 \
-         --weir-fst-pop LAN_P.txt \
-         --weir-fst-pop SUO_P.txt \
-         --fst-window-size 250000 \
-         --fst-window-step 50000
+if [ ! -e FST/P_Arctic.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out ./FST/P_Arctic \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing 1 \
+            --weir-fst-pop LAN_P.txt \
+            --weir-fst-pop SUO_P.txt
+fi
+if [ ! -e FST/P_Arctic_w.windowed.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out ./FST/P_Arctic_w \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing 1 \
+            --weir-fst-pop LAN_P.txt \
+            --weir-fst-pop SUO_P.txt \
+            --fst-window-size 250000 \
+            --fst-window-step 50000
+fi
 ```
 
 ### L (Litoral): LAN vs. SUO
 ```{bash}
-vcftools --vcf dirty.recode.vcf \
-         --out ./FST/L_Arctic \
-         --thin 500 \
-         --remove-indels \
-         --mac 2 \
-         --max-alleles 2 \
-         --max-meanDP 1000 \
-         --max-missing 1 \
-         --weir-fst-pop LAN_L.txt \
-         --weir-fst-pop SUO_L.txt
-         
-vcftools --vcf dirty.recode.vcf \
-         --out ./FST/L_Arctic_w \
-         --thin 500 \
-         --remove-indels \
-         --mac 2 \
-         --max-alleles 2 \
-         --max-meanDP 1000 \
-         --max-missing 1 \
-         --weir-fst-pop LAN_L.txt \
-         --weir-fst-pop SUO_L.txt \
-         --fst-window-size 250000 \
-         --fst-window-step 50000
+if [ ! -e FST/L_Arctic.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out ./FST/L_Arctic \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing 1 \
+            --weir-fst-pop LAN_L.txt \
+            --weir-fst-pop SUO_L.txt
+fi
+if [ ! -e FST/L_Arctic_w.windowed.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out ./FST/L_Arctic_w \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing 1 \
+            --weir-fst-pop LAN_L.txt \
+            --weir-fst-pop SUO_L.txt \
+            --fst-window-size 250000 \
+            --fst-window-step 50000
+fi
 ```
 
 # Visualization 
@@ -193,7 +207,7 @@ vcftools --vcf dirty.recode.vcf \
 ### Variation by chromosome in FELCHEN ecomorph
 ```{r}
 library(ggplot2)
-setwd("~/cophyhopa/results/2022-12-23")
+#setwd("~/cophyhopa/results/2022-12-23")
 FELCHEN <- read.table("./FST/Felchen_Alpine.weir.fst", header = TRUE)
 CHR <- as.character(unique(FELCHEN$CHROM))
 
@@ -206,7 +220,8 @@ for (i in 1:length(CHR)) {
   print(ggplot(data = FELCHEN[which(FELCHEN$CHROM == CHR[i]), ],
        mapping = aes(x = POS, y = WEIR_AND_COCKERHAM_FST)) +
    geom_point() +
-   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)))
+   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+   ggtitle(CHR[i]))
 }
 ```
 
@@ -226,7 +241,8 @@ for (i in 1:length(CHR)) {
   print(ggplot(data = BALCHEN[which(BALCHEN$CHROM == CHR[i]), ],
        mapping = aes(x = POS, y = WEIR_AND_COCKERHAM_FST)) +
    geom_point() +
-   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)))
+   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+   ggtitle(CHR[i]))
 }
 ```
 
@@ -246,7 +262,8 @@ for (i in 1:length(CHR)) {
   print(ggplot(data = ALBELI[which(ALBELI$CHROM == CHR[i]), ],
        mapping = aes(x = POS, y = WEIR_AND_COCKERHAM_FST)) +
    geom_point() +
-   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)))
+   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+   ggtitle(CHR[i]))
 }
 ```
 
@@ -267,7 +284,8 @@ for (i in 1:length(CHR)) {
   print(ggplot(data = PROF[which(PROF$CHROM == CHR[i]), ],
        mapping = aes(x = POS, y = WEIR_AND_COCKERHAM_FST)) +
    geom_point() +
-   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)))
+   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+   ggtitle(CHR[i]))
 }
 ```
 
@@ -287,6 +305,7 @@ for (i in 1:length(CHR)) {
   print(ggplot(data = LITO[which(LITO$CHROM == CHR[i]), ],
        mapping = aes(x = POS, y = WEIR_AND_COCKERHAM_FST)) +
    geom_point() +
-   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)))
+   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+   ggtitle(CHR[i]))
 }
 ```
