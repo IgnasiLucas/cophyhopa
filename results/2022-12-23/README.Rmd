@@ -2,7 +2,9 @@
 title: "Fst of the populations defined according to their ecomorph and lake"
 author: "Mar Llaberia-Robledillo"
 date: "23/12/2022"
-output: html_document
+output: 
+  html_document:
+    toc: TRUE
 ---
 
 First, we need to associate the ecomorph to the species we have. This information is in the original .csv that Isabel sent us with the information of every sample. Ignasi compiled the information on the ecomorphs from different references, creating the following summary table.
@@ -183,4 +185,108 @@ vcftools --vcf dirty.recode.vcf \
          --weir-fst-pop SUO_L.txt \
          --fst-window-size 250000 \
          --fst-window-step 50000
+```
+
+# Visualization 
+
+## ALPINE REGION
+### Variation by chromosome in FELCHEN ecomorph
+```{r}
+library(ggplot2)
+setwd("~/cophyhopa/results/2022-12-23")
+FELCHEN <- read.table("./FST/Felchen_Alpine.weir.fst", header = TRUE)
+CHR <- as.character(unique(FELCHEN$CHROM))
+
+ggplot(data = FELCHEN,
+       mapping = aes(x = CHROM, y = WEIR_AND_COCKERHAM_FST)) +
+   geom_boxplot() +
+   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+for (i in 1:length(CHR)) {
+  print(ggplot(data = FELCHEN[which(FELCHEN$CHROM == CHR[i]), ],
+       mapping = aes(x = POS, y = WEIR_AND_COCKERHAM_FST)) +
+   geom_point() +
+   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)))
+}
+```
+
+### Variation by chromosome in BALCHEN ecomorph
+```{r}
+library(ggplot2)
+setwd("~/cophyhopa/results/2022-12-23")
+BALCHEN <- read.table("./FST/Balchen_Alpine.weir.fst", header = TRUE)
+CHR <- as.character(unique(BALCHEN$CHROM))
+
+ggplot(data = BALCHEN,
+       mapping = aes(x = CHROM, y = WEIR_AND_COCKERHAM_FST)) +
+   geom_boxplot() +
+   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+for (i in 1:length(CHR)) {
+  print(ggplot(data = BALCHEN[which(BALCHEN$CHROM == CHR[i]), ],
+       mapping = aes(x = POS, y = WEIR_AND_COCKERHAM_FST)) +
+   geom_point() +
+   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)))
+}
+```
+
+### Variation by chromosome in ALBELI ecomorph
+```{r}
+library(ggplot2)
+setwd("~/cophyhopa/results/2022-12-23")
+ALBELI <- read.table("./FST/Albeli_Alpine.weir.fst", header = TRUE)
+CHR <- as.character(unique(ALBELI$CHROM))
+
+ggplot(data = ALBELI,
+       mapping = aes(x = CHROM, y = WEIR_AND_COCKERHAM_FST)) +
+   geom_boxplot() +
+   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+for (i in 1:length(CHR)) {
+  print(ggplot(data = ALBELI[which(ALBELI$CHROM == CHR[i]), ],
+       mapping = aes(x = POS, y = WEIR_AND_COCKERHAM_FST)) +
+   geom_point() +
+   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)))
+}
+```
+
+## ARCTIC REGION
+### Variation by chromosome in P (Profundal) ecomorph
+```{r}
+library(ggplot2)
+setwd("~/cophyhopa/results/2022-12-23")
+PROF <- read.table("./FST/P_Arctic.weir.fst", header = TRUE)
+CHR <- as.character(unique(FELCHEN$CHROM))
+
+ggplot(data = PROF,
+       mapping = aes(x = CHROM, y = WEIR_AND_COCKERHAM_FST)) +
+   geom_boxplot() +
+   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+for (i in 1:length(CHR)) {
+  print(ggplot(data = PROF[which(PROF$CHROM == CHR[i]), ],
+       mapping = aes(x = POS, y = WEIR_AND_COCKERHAM_FST)) +
+   geom_point() +
+   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)))
+}
+```
+
+## Variation by chromosome in L (Litoral) ecomorph
+```{r}
+library(ggplot2)
+setwd("~/cophyhopa/results/2022-12-23")
+LITO <- read.table("./FST/L_Arctic.weir.fst", header = TRUE)
+CHR <- as.character(unique(FELCHEN$CHROM))
+
+ggplot(data = LITO,
+       mapping = aes(x = CHROM, y = WEIR_AND_COCKERHAM_FST)) +
+   geom_boxplot() +
+   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+for (i in 1:length(CHR)) {
+  print(ggplot(data = LITO[which(LITO$CHROM == CHR[i]), ],
+       mapping = aes(x = POS, y = WEIR_AND_COCKERHAM_FST)) +
+   geom_point() +
+   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)))
+}
 ```
