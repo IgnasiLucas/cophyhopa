@@ -1,0 +1,118 @@
+---
+title: "Fst within lakes."
+author: "J. Ignacio Lucas Lledó & Mar Llaberia-Robledillo"
+date: "`r Sys.Date()`"
+output:
+   html_document:
+      toc: TRUE
+---
+
+Species in the same lake are supposed to hybridize occasionally, so that they may
+share variation along large portions of the genome. That is: the $F_{ST}$ between species
+in the same lake are expected to be low, in general. But loci that contribute to the
+adaptation of an ecomorph must remain divergent between ecomorphs in the same lake.
+In a background of low $F_{ST}$ values, it should be easy to spot the positions with
+high $F_{ST}$ values.
+
+I will compare first *C. fatioi* (Felchen ecomorph, Thun and Brienz lakes) with
+*C. steinmanni* (Balchen ecomorph, in Thun). 
+
+```{bash Thun-Brienz}
+VCF=../2022-04-22/assem2_outfiles/assem2.vcf
+FISHDATA=../../data/Fish_clean2.tsv
+
+if [ ! -d FST ]; then mkdir FST; fi
+
+if [ ! -e FST/fatioi-steinmanni.windowed.weir.fst ]; then
+   if [ ! -e dirty.recode.vcf ]; then
+      vcftools --vcf $VCF \
+               --out dirty \
+               --remove ../2022-05-04/TheWorst.txt \
+               --recode \
+               --recode-INFO-all
+   fi
+
+   if [ ! -e C.fatioi.txt ]; then
+      gawk '($19 == "C.fatioi"){print $1}' $FISHDATA > C.fatioi.txt
+   fi
+
+   if [ ! -e C.steinmanni ]; then
+      gawk '($19 == "C.steinmanni"){print $1}' $FISHDATA > C.steinmanni.txt
+   fi
+
+   vcftools --vcf dirty.recode.vcf \
+            --out FST/fatioi-steinmanni \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-missing 1 \
+            --max-meanDP 1000 \
+            --weir-fst-pop C.fatioi.txt \
+            --weir-fst-pop C.steinmanni.txt \
+            --fst-window-size 400000 \
+            --fst-window-step  50000
+fi
+```
+
+```{r plots1}
+library(Biostrings)
+library(GenomicRanges)
+library(ggplot2)
+ref             <- readDNAStringSet('../../data/reference.fa')
+# The names of chromosomes must be only the first word in the fasta name line.
+names(ref)      <- sapply(strsplit(names(ref), " "), '[[', 1)
+# the refWidth table contains the lengths of chromosomes.
+refWidth        <- width(ref)
+names(refWidth) <- names(ref)
+
+fst <- read.table('FST/fatioi-steinmanni.windowed.weir.fst',
+                  header = TRUE, stringsAsFactors = FALSE)
+fst$POS    <- (fst$BIN_END + fst$BIN_START) / 2
+offset     <- cumsum(refWidth)[1:39]
+names(offset) <- names(ref)[2:40]
+offset['LR778253.1'] <- 0
+fst$offset <- offset[fst$CHROM]
+fst$POS2 <- fst$POS + fst$offset
+ChromCol <- rep(c(1,2), 20)
+names(ChromCol) <- names(ref)
+fst$ChromCol <- ChromCol[fst$CHROM]
+ggplot(data = fst, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
+   geom_point() + theme(legend.position="none")
+```
+
+The equivalent comparison between a Felchen and a Balchen ecomorph in a different
+lake is the comparsion of *C. zuerichensis* (Felchen) and *C. duplex* (Balchen),
+both from the Zurich and Walen lakes. If natural selection targeted the same loci
+in both lakes to produce the adaptations that define the Felchen and Balchen
+ecomorphs, then, several windows with a high $F_{ST}$ above should also have a
+high $F_{ST}$ in the results below. Let's see.
+
+```{bash zuerichensis-duplex}
+if [ ! -e FST/zuerichensis-duplex.windowed.weir.fst ]; then
+   if [ ! -e C.zuerichensis.txt ]; then
+      gawk '($19 == "C.zuerichensis"){print $1}' $FISHDATA > C.zuerichensis.txt
+   fi
+   
+   if [ ! -e C.duplex.txt ]; then
+      gawk '($19 == "C.duplex"){print $1}' $FISHDATA > C.duplex.txt
+   fi
+   vcftools --vcf dirty.recode.vcf \
+            --out FST/fatioi-steinmanni \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-missing 1 \
+            --max-meanDP 1000 \
+            --weir-fst-pop C.zuerichensis.txt \
+            --weir-fst-pop C.duplex.txt \
+            --fst-window-size 400000 \
+            --fst-window-step  50000
+fi
+```
+
+
+```{r plots2}
+
+```
