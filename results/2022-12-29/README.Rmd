@@ -14,6 +14,7 @@ adaptation of an ecomorph must remain divergent between ecomorphs in the same la
 In a background of low $F_{ST}$ values, it should be easy to spot the positions with
 high $F_{ST}$ values.
 
+# Alpine region 
 I will compare first *C. fatioi* (Felchen ecomorph, Thun and Brienz lakes) with
 *C. steinmanni* (Balchen ecomorph, in Thun). 
 
@@ -89,6 +90,8 @@ ecomorphs, then, several windows with a high $F_{ST}$ above should also have a
 high $F_{ST}$ in the results below. Let's see.
 
 ```{bash zuerichensis-duplex}
+FISHDATA=../../data/Fish_clean2.tsv
+
 if [ ! -e FST/zuerichensis-duplex.windowed.weir.fst ]; then
    if [ ! -e C.zuerichensis.txt ]; then
       gawk '($19 == "C.zuerichensis"){print $1}' $FISHDATA > C.zuerichensis.txt
@@ -98,7 +101,7 @@ if [ ! -e FST/zuerichensis-duplex.windowed.weir.fst ]; then
       gawk '($19 == "C.duplex"){print $1}' $FISHDATA > C.duplex.txt
    fi
    vcftools --vcf dirty.recode.vcf \
-            --out FST/fatioi-steinmanni \
+            --out FST/zuerichensis-duplex \
             --thin 500 \
             --remove-indels \
             --mac 2 \
@@ -114,5 +117,109 @@ fi
 
 
 ```{r plots2}
+## (already defined?)
+#ref             <- readDNAStringSet('../../data/reference.fa')
+# The names of chromosomes must be only the first word in the fasta name line.
+#names(ref)      <- sapply(strsplit(names(ref), " "), '[[', 1)
+# the refWidth table contains the lengths of chromosomes.
+#refWidth        <- width(ref)
+#names(refWidth) <- names(ref)
 
+fst <- read.table('FST/zuerichensis-duplex.windowed.weir.fst',
+                  header = TRUE, stringsAsFactors = FALSE)
+fst$POS    <- (fst$BIN_END + fst$BIN_START) / 2
+offset     <- cumsum(refWidth)[1:39]
+names(offset) <- names(ref)[2:40]
+offset['LR778253.1'] <- 0
+fst$offset <- offset[fst$CHROM]
+fst$POS2 <- fst$POS + fst$offset
+ChromCol <- rep(c(1,2), 20)
+names(ChromCol) <- names(ref)
+fst$ChromCol <- ChromCol[fst$CHROM]
+ggplot(data = fst, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
+   geom_point() + theme(legend.position="none")
+```
+
+Determine sites where the ecomorphs are more differentiated (outliers) ??? 
+
+
+# Arctic region 
+First, I will compare P and L ecomorphs of lake SUO. I will recover of the text files created in the previous folder (2022-12-23) for the estimation.
+
+```{bash P-L-SUO}
+
+if [ ! -e FST/P-L-SUO.windowed.weir.fst ]; then
+   P=../2022-12-23/SUO_P.txt
+   L=../2022-12-23/SUO_L.txt
+   
+   vcftools --vcf dirty.recode.vcf \
+            --out FST/P-L-SUO \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-missing 1 \
+            --max-meanDP 1000 \
+            --weir-fst-pop $P \
+            --weir-fst-pop $L \
+            --fst-window-size 400000 \
+            --fst-window-step  50000
+fi
+```
+
+
+```{r plots3}
+fst <- read.table('FST/P-L-SUO.windowed.weir.fst',
+                  header = TRUE, stringsAsFactors = FALSE)
+fst$POS    <- (fst$BIN_END + fst$BIN_START) / 2
+offset     <- cumsum(refWidth)[1:39]
+names(offset) <- names(ref)[2:40]
+offset['LR778253.1'] <- 0
+fst$offset <- offset[fst$CHROM]
+fst$POS2 <- fst$POS + fst$offset
+ChromCol <- rep(c(1,2), 20)
+names(ChromCol) <- names(ref)
+fst$ChromCol <- ChromCol[fst$CHROM]
+ggplot(data = fst, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
+   geom_point() + theme(legend.position="none")
+```
+
+Second, I'm goingo to compare P and L of lake LAN. The same as above. 
+
+```{bash P-L-LAN}
+
+if [ ! -e FST/P-L-LAN.windowed.weir.fst ]; then
+   P=../2022-12-23/LAN_P.txt
+   L=../2022-12-23/LAN_L.txt
+   
+   vcftools --vcf dirty.recode.vcf \
+            --out FST/P-L-LAN \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-missing 1 \
+            --max-meanDP 1000 \
+            --weir-fst-pop $P \
+            --weir-fst-pop $L \
+            --fst-window-size 400000 \
+            --fst-window-step  50000
+fi
+```
+
+
+```{r plots4}
+fst <- read.table('FST/P-L-LAN.windowed.weir.fst',
+                  header = TRUE, stringsAsFactors = FALSE)
+fst$POS    <- (fst$BIN_END + fst$BIN_START) / 2
+offset     <- cumsum(refWidth)[1:39]
+names(offset) <- names(ref)[2:40]
+offset['LR778253.1'] <- 0
+fst$offset <- offset[fst$CHROM]
+fst$POS2 <- fst$POS + fst$offset
+ChromCol <- rep(c(1,2), 20)
+names(ChromCol) <- names(ref)
+fst$ChromCol <- ChromCol[fst$CHROM]
+ggplot(data = fst, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
+   geom_point() + theme(legend.position="none")
 ```
