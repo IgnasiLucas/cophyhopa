@@ -5,6 +5,7 @@ date: "`r Sys.Date()`"
 output:
    html_document:
       toc: TRUE
+bibliography: "../../doc/references.bib"
 ---
 
 Species in the same lake are supposed to hybridize occasionally, so that they may
@@ -15,8 +16,10 @@ In a background of low $F_{ST}$ values, it should be easy to spot the positions 
 high $F_{ST}$ values.
 
 # Alpine region 
-I will compare first *C. fatioi* (Felchen ecomorph, Thun and Brienz lakes) with
-*C. steinmanni* (Balchen ecomorph, in Thun). 
+We will compare first *C. fatioi* (Felchen ecomorph, Thun and Brienz lakes) with
+*C. steinmanni* (Balchen ecomorph, in Thun). We use `vcftools` [@Danecek2011] to
+estimate weighted $F_{ST}$s [@Weir1984] in overlapping genomic windows of one
+million base pairs.
 
 ```{bash Thun-Brienz}
 VCF=../2022-04-22/assem2_outfiles/assem2.vcf
@@ -24,7 +27,7 @@ FISHDATA=../../data/Fish_clean2.tsv
 
 if [ ! -d FST ]; then mkdir FST; fi
 
-if [ ! -e FST/fatioi-steinmanni.windowed.weir.fst ]; then
+if [ ! -e FST/Thun-Brienz.windowed.weir.fst ]; then
    if [ ! -e dirty.recode.vcf ]; then
       vcftools --vcf $VCF \
                --out dirty \
@@ -42,7 +45,7 @@ if [ ! -e FST/fatioi-steinmanni.windowed.weir.fst ]; then
    fi
 
    vcftools --vcf dirty.recode.vcf \
-            --out FST/fatioi-steinmanni \
+            --out FST/Thun-Brienz \
             --thin 500 \
             --remove-indels \
             --mac 2 \
@@ -52,7 +55,7 @@ if [ ! -e FST/fatioi-steinmanni.windowed.weir.fst ]; then
             --weir-fst-pop C.fatioi.txt \
             --weir-fst-pop C.steinmanni.txt \
             --fst-window-size 1000000 \
-            --fst-window-step  100000 >> vcftools.log 2>&1
+            --fst-window-step  250000 >> vcftools.log 2>&1
 fi
 ```
 
@@ -67,7 +70,7 @@ names(ref)      <- sapply(strsplit(names(ref), " "), '[[', 1)
 refWidth        <- width(ref)
 names(refWidth) <- names(ref)
 
-fst1 <- read.table('FST/fatioi-steinmanni.windowed.weir.fst',
+fst1 <- read.table('FST/Thun-Brienz.windowed.weir.fst',
                   header = TRUE, stringsAsFactors = FALSE)
 fst1$POS        <- (fst1$BIN_END + fst1$BIN_START) / 2
 offset          <- cumsum(refWidth)[1:39]
@@ -79,8 +82,22 @@ ChromCol        <- rep(c(1,2), 20)
 names(ChromCol) <- names(ref)
 fst1$ChromCol    <- ChromCol[fst1$CHROM]
 ggplot(data = fst1, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
-   geom_point() + theme(legend.position="none")
+   geom_point() + theme(legend.position="none") +
+   xlab('Position') + ylab(expression("Weighted "*F[ST])) +
+   ggtitle('Thun and Brienz lakes, C. fatioi and C. steinmanni') +
+   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 ```
+
+Above, $F_{ST}$ values are plotted against their positions in the genome,
+with consecutive chromosomes in alternative colors. Every data point is a
+weighted $F_{ST}$ value among a few SNPs in a 1000000-bp genomic window.
+Large overlaps between adjacent windows would make a smoother line in
+individual chromosomes, but give the false impression of a lot of data.
+
+Some $F_{ST}$ values are negative, but close to zero. Negative $F_{ST}$ values
+must mean that individuals from the same species are less similar among them
+than to members of the other species, at least in these samples. I assume the low
+magnitude of negative values is compatible with random sampling variation.
 
 The equivalent comparison between a Felchen and a Balchen ecomorph in a different
 lake is the comparsion of *C. zuerichensis* (Felchen) and *C. duplex* (Balchen),
@@ -92,7 +109,7 @@ high $F_{ST}$ in the results below. Let's see.
 ```{bash zuerichensis-duplex}
 FISHDATA=../../data/Fish_clean2.tsv
 
-if [ ! -e FST/zuerichensis-duplex.windowed.weir.fst ]; then
+if [ ! -e FST/Walen-Zurich.windowed.weir.fst ]; then
    if [ ! -e C.zuerichensis.txt ]; then
       gawk '($19 == "C.zuerichensis"){print $1}' $FISHDATA > C.zuerichensis.txt
    fi
@@ -101,7 +118,7 @@ if [ ! -e FST/zuerichensis-duplex.windowed.weir.fst ]; then
       gawk '($19 == "C.duplex"){print $1}' $FISHDATA > C.duplex.txt
    fi
    vcftools --vcf dirty.recode.vcf \
-            --out FST/zuerichensis-duplex \
+            --out FST/Walen-Zurich \
             --thin 500 \
             --remove-indels \
             --mac 2 \
@@ -111,13 +128,13 @@ if [ ! -e FST/zuerichensis-duplex.windowed.weir.fst ]; then
             --weir-fst-pop C.zuerichensis.txt \
             --weir-fst-pop C.duplex.txt \
             --fst-window-size 1000000 \
-            --fst-window-step  100000 >> vcftools.log 2>&1
+            --fst-window-step  250000 >> vcftools.log 2>&1
 fi
 ```
 
 
 ```{r plots2}
-fst2 <- read.table('FST/zuerichensis-duplex.windowed.weir.fst',
+fst2 <- read.table('FST/Walen-Zurich.windowed.weir.fst',
                    header = TRUE, stringsAsFactors = FALSE)
 fst2$POS        <- (fst2$BIN_END + fst2$BIN_START) / 2
 offset          <- cumsum(refWidth)[1:39]
@@ -129,15 +146,36 @@ ChromCol        <- rep(c(1,2), 20)
 names(ChromCol) <- names(ref)
 fst2$ChromCol   <- ChromCol[fst2$CHROM]
 ggplot(data = fst2, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
-   geom_point() + theme(legend.position="none")
+   geom_point() + theme(legend.position="none") +
+   xlab('Position') + ylab(expression("Weighted "*F[ST])) +
+   ggtitle('Walen and Zurich lakes, C. zuerichensis and C. duplex') +
+   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 ```
 
-```{r comparacio1}
+In lakes Zurich and Walen, which are connected, $F_{ST}$ values between the
+Balchen and Felchen ecomorphs are higher in general, indicating that the
+species *C. zuerichensis* and *C. duplex* are better differentiated genetically
+than *C. fatioi* and *C. steinmanni* in Thun-Brienz.
+
+We assume that the highest values of $F_{ST}$ between two species in the same
+lake must be associated with loci adapted to each species' environment. However,
+we know that $F_{ST}$ is a *relative* measure of divergence between populations,
+because it is influenced by the levels of diversity within populations [@Cruickshank2014].
+That is: the lower the genetic diversity within populations, the higher $F_{ST}$
+is expected to be. We will proceed to identify and compare windows of high
+differentiation, and then we will check if they could be an artifact of
+variable levels of within-population diversity.
+
+The first way to compare highly differentiated genomic regions between lakes
+consists in: defining a threshold and visualizing the positions of windows
+above that threshold in both lakes. The threshold is the 99$^\text{th}$ percentile.
+
+```{r comparacio1, fig.width=10, fig.height=3}
 # Thun-Brienz:
-thrs1 <- quantile(fst1$WEIGHTED_FST, probs = 0.995)
+thrs1 <- quantile(fst1$WEIGHTED_FST, probs = 0.96)
 f1 <- fst1$WEIGHTED_FST >= thrs1
 # Walen-Zurich:
-thrs2 <- quantile(fst2$WEIGHTED_FST, probs = 0.995)
+thrs2 <- quantile(fst2$WEIGHTED_FST, probs = 0.96)
 f2 <- fst2$WEIGHTED_FST >= thrs2
 
 GR1 <- GRanges(
@@ -152,6 +190,7 @@ GR1 <- GRanges(
    seqinfo = Seqinfo(seqnames = names(ref),
                      seqlengths = width(ref))
 )
+GR1 <- trim(GR1)
 GR1 <- reduce(GR1)
 
 GR2 <- GRanges(
@@ -166,9 +205,13 @@ GR2 <- GRanges(
    seqinfo = Seqinfo(seqnames = names(ref),
                      seqlengths = width(ref))
 )
+GR2 <- trim(GR2)
 GR2 <- reduce(GR2)
 
-findOverlaps(GR1, GR2)
+overlaps <- findOverlaps(GR1, GR2, maxgap = 50000)
+overlaps
+AlpOverlaps <- reduce(c(GR1[queryHits(overlaps)],
+                        GR2[subjectHits(overlaps)]))
 
 GR <- data.frame(
    chr = c(seqnames(GR1), seqnames(GR2)),
@@ -176,8 +219,8 @@ GR <- data.frame(
    end = c(end(GR1), end(GR2)),
    lake = c(rep('Thun-Brienz', length(GR1)),
             rep('Walen-Zurich', length(GR2))),
-   height = c(rep(1, length(GR1)),
-              rep(2, length(GR2)))
+   height = c(rep(2, length(GR1)),
+              rep(1, length(GR2)))
 )
 
 for (chr in unique(GR$chr)) {
@@ -199,21 +242,24 @@ for (chr in unique(GR$chr)) {
       ggtitle(chr) + xlab('Position (bp)')
    print(p)
 }
-
 ```
 
+Only `r length(overlaps)` genomic regions are highly differentiated
+between ecomorphs in both Alpine lake systems.
 
-# Arctic region 
-First, I will compare P and L ecomorphs of lake SUO. I will recover of the text files created in the previous folder (2022-12-23) for the estimation.
+# Arctic region
+
+First, I will compare P and L ecomorphs from Suopatjavri. I will
+recover of the text files created in the previous folder (2022-12-23)
+for the estimation.
 
 ```{bash P-L-SUO}
-
-if [ ! -e FST/P-L-SUO.windowed.weir.fst ]; then
+if [ ! -e FST/Suo.windowed.weir.fst ]; then
    P=../2022-12-23/SUO_P.txt
    L=../2022-12-23/SUO_L.txt
    
    vcftools --vcf dirty.recode.vcf \
-            --out FST/P-L-SUO \
+            --out FST/Suo \
             --thin 500 \
             --remove-indels \
             --mac 2 \
@@ -223,13 +269,13 @@ if [ ! -e FST/P-L-SUO.windowed.weir.fst ]; then
             --weir-fst-pop $P \
             --weir-fst-pop $L \
             --fst-window-size 1000000 \
-            --fst-window-step  100000
+            --fst-window-step  250000 >> vcftools.log 2>&1
 fi
 ```
 
 
 ```{r plots3}
-fst3 <- read.table('FST/P-L-SUO.windowed.weir.fst',
+fst3 <- read.table('FST/Suo.windowed.weir.fst',
                   header = TRUE, stringsAsFactors = FALSE)
 fst3$POS    <- (fst3$BIN_END + fst3$BIN_START) / 2
 offset     <- cumsum(refWidth)[1:39]
@@ -241,19 +287,21 @@ ChromCol <- rep(c(1,2), 20)
 names(ChromCol) <- names(ref)
 fst3$ChromCol <- ChromCol[fst3$CHROM]
 ggplot(data = fst3, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
-   geom_point() + theme(legend.position="none")
+   geom_point() + theme(legend.position="none") +
+   xlab('Position') + ylab(expression("Weighted "*F[ST])) +
+   ggtitle('Suopatjavri, P and L ecomorphs') +
+   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 ```
 
-Second, I'm goingo to compare P and L of lake LAN. The same as above. 
+Second, I'm goingo to compare P and L from Langfjordvatn. The same as above. 
 
 ```{bash P-L-LAN}
-
-if [ ! -e FST/P-L-LAN.windowed.weir.fst ]; then
+if [ ! -e FST/Lan.windowed.weir.fst ]; then
    P=../2022-12-23/LAN_P.txt
    L=../2022-12-23/LAN_L.txt
    
    vcftools --vcf dirty.recode.vcf \
-            --out FST/P-L-LAN \
+            --out FST/Lan \
             --thin 500 \
             --remove-indels \
             --mac 2 \
@@ -263,13 +311,13 @@ if [ ! -e FST/P-L-LAN.windowed.weir.fst ]; then
             --weir-fst-pop $P \
             --weir-fst-pop $L \
             --fst-window-size 1000000 \
-            --fst-window-step  100000
+            --fst-window-step  250000 >> vcftools.log 2>&1
 fi
 ```
 
 
 ```{r plots4}
-fst4 <- read.table('FST/P-L-LAN.windowed.weir.fst',
+fst4 <- read.table('FST/Lan.windowed.weir.fst',
                   header = TRUE, stringsAsFactors = FALSE)
 fst4$POS    <- (fst4$BIN_END + fst4$BIN_START) / 2
 offset     <- cumsum(refWidth)[1:39]
@@ -281,15 +329,18 @@ ChromCol <- rep(c(1,2), 20)
 names(ChromCol) <- names(ref)
 fst4$ChromCol <- ChromCol[fst4$CHROM]
 ggplot(data = fst4, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
-   geom_point() + theme(legend.position="none")
+   geom_point() + theme(legend.position="none") +
+   xlab('Position') + ylab(expression("Weighted "*F[ST])) +
+   ggtitle('Langfjordvatn, P and L ecomorphs') +
+   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 ```
 
-```{r comparacio2}
+```{r comparacio2, fig.width=10, fig.height=3}
 # SUO:
-thrs3 <- quantile(fst3$WEIGHTED_FST, probs = 0.995)
+thrs3 <- quantile(fst3$WEIGHTED_FST, probs = 0.96)
 f3 <- fst3$WEIGHTED_FST >= thrs3
 # LAN:
-thrs4 <- quantile(fst4$WEIGHTED_FST, probs = 0.995)
+thrs4 <- quantile(fst4$WEIGHTED_FST, probs = 0.96)
 f4 <- fst4$WEIGHTED_FST >= thrs4
 
 GR3 <- GRanges(
@@ -304,6 +355,7 @@ GR3 <- GRanges(
    seqinfo = Seqinfo(seqnames = names(ref),
                      seqlengths = width(ref))
 )
+GR3 <- trim(GR3)
 GR3 <- reduce(GR3)
 
 GR4 <- GRanges(
@@ -318,16 +370,22 @@ GR4 <- GRanges(
    seqinfo = Seqinfo(seqnames = names(ref),
                      seqlengths = width(ref))
 )
+# vcftools creates windows out of the end of the chromosome.
+GR4 <- trim(GR4)
 GR4 <- reduce(GR4)
 
-findOverlaps(GR3, GR4)
+overlaps <- findOverlaps(GR3, GR4, maxgap = 10000)
+overlaps
+ArcOverlaps <- reduce(c(GR3[queryHits(overlaps)],
+                        GR4[subjectHits(overlaps)]))
+ArcOverlaps
 
 GRn <- data.frame(
    chr = c(seqnames(GR3), seqnames(GR4)),
    start = c(start(GR3), start(GR4)),
    end = c(end(GR3), end(GR4)),
-   lake = c(rep('Thun-Brienz', length(GR3)),
-            rep('Walen-Zurich', length(GR4))),
+   lake = c(rep('Suopatjavri', length(GR3)),
+            rep('Langfjordvatn', length(GR4))),
    height = c(rep(1, length(GR3)),
               rep(2, length(GR4)))
 )
@@ -336,20 +394,220 @@ for (chr in unique(GRn$chr)) {
    f <- GRn$chr == chr
    p <- ggplot(data = GRn[f,],
                mapping = aes(x = start,
-                             y = height,
+                             y = lake,
                              xend = end,
-                             yend = height,
+                             yend = lake,
                              color = lake)) +
       geom_segment(size = 5) +
-      ylim(0,3) +
+      #ylim(0,3) +
       xlim(0, width(ref[chr])) +
-      theme(aspect.ratio = 0.3,
-            axis.text.y = element_blank(),
-            axis.line.y = element_blank(),
-            axis.title.y = element_blank(),
-            axis.ticks.y = element_blank()) +
       ggtitle(chr) + xlab('Position (bp)')
    print(p)
 }
-
 ```
+
+It turns out that a few genomic regions are highly differentiated between
+ecomorphs simultaneously in the two Arctic lakes. Now, the question is if
+any of the `r length(overlaps)` regions presumably important in ecological
+adaptation in the Arctic are also important for the adaptation in the Alpine
+region.
+
+```{r crossRegion, fig.width=10, fig.height=3}
+crossRegionOverlaps <- findOverlaps(AlpOverlaps,
+                                    ArcOverlaps,
+                                    maxgap = 10000)
+crossRegionOverlaps
+chromHighFst <- as.character(
+   unique(seqnames(AlpOverlaps[queryHits(crossRegionOverlaps)]))
+)
+fst1$lake <- 'Thun-Brienz'
+fst1$height <- 3
+fst2$lake <- 'Walen-Zurich'
+fst2$height <- 4
+fst3$lake <- 'Suopatjavri'
+fst3$height <- 1
+fst4$lake <- 'Langfjordvatn'
+fst4$height <- 2
+AllTables <- rbind(fst1[f1,], fst2[f2,], fst3[f3,], fst4[f4,])
+for (chr in chromHighFst) {
+   f <- AllTables$CHROM == chr
+   p <- ggplot(data = AllTables[f,],
+               mapping = aes(x = BIN_START,
+                             y = lake,
+                             xend = BIN_END,
+                             yend = lake,
+                             color = WEIGHTED_FST)) +
+      geom_segment(size = 5) + xlab('Position (bp)') +
+      ggtitle(chr)
+   print(p)
+}
+```
+
+There are 5 regions, in 5 chromosomes with approximate overlap among the
+4 lakes. These are regions of interest that should be studied further to
+see what genes are there.
+
+# Independent windows
+
+For a more formal test of coincidence of highly differentiated regions
+between two lakes, we need $F_{ST}$ estimates independent of each other,
+that is, from *non-overlaping* windows.
+
+```{bash independence}
+if [ ! -e FST/Thun-Brienz.ind.windowed.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out FST/Thun-Brienz.ind \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-missing 1 \
+            --max-meanDP 1000 \
+            --weir-fst-pop C.fatioi.txt \
+            --weir-fst-pop C.steinmanni.txt \
+            --fst-window-size 1000000 \
+            --fst-window-step 1000000 >> vcftools.log 2>&1
+fi
+if [ ! -e FST/Walen-Zurich.ind.windowed.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out FST/Walen-Zurich.ind \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-missing 1 \
+            --max-meanDP 1000 \
+            --weir-fst-pop C.zuerichensis.txt \
+            --weir-fst-pop C.duplex.txt \
+            --fst-window-size 1000000 \
+            --fst-window-step 1000000 >> vcftools.log 2>&1
+fi
+
+if [ ! -e FST/Suo.ind.windowed.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out FST/Suo.ind \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-missing 1 \
+            --max-meanDP 1000 \
+            --weir-fst-pop ../2022-12-23/SUO_P.txt \
+            --weir-fst-pop ../2022-12-23/SUO_L.txt \
+            --fst-window-size 1000000 \
+            --fst-window-step 1000000 >> vcftools.log 2>&1
+fi
+
+if [ ! -e FST/Lan.ind.windowed.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out FST/Lan.ind \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-missing 1 \
+            --max-meanDP 1000 \
+            --weir-fst-pop ../2022-12-23/LAN_P.txt \
+            --weir-fst-pop ../2022-12-23/LAN_L.txt \
+            --fst-window-size 1000000 \
+            --fst-window-step 1000000 >> vcftools.log 2>&1
+fi
+```
+
+```{r newTables}
+fst1 <- read.table('FST/Thun-Brienz.ind.windowed.weir.fst',
+                   header = TRUE, stringsAsFactors = FALSE)
+fst2 <- read.table('FST/Walen-Zurich.ind.windowed.weir.fst',
+                   header = TRUE, stringsAsFactors = FALSE)
+fst3 <- read.table('FST/Suo.ind.windowed.weir.fst',
+                   header = TRUE, stringsAsFactors = FALSE)
+fst4 <- read.table('FST/Lan.ind.windowed.weir.fst',
+                   header = TRUE, stringsAsFactors = FALSE)
+```
+
+# Bivariate distribution of $F_{ST}$s
+
+The plots below give an idea of how few genomic regions are highly
+differentiated between ecomorphs simultaneously in two lake systems.
+The comparisons between lakes from different regions must be quite
+pointless, because we expecte even less coincidence.
+
+```{r correlations}
+row.names(fst1) <- paste0(fst1$CHROM, ':', fst1$BIN_START, sep = '')
+row.names(fst2) <- paste0(fst2$CHROM, ':', fst2$BIN_START, sep = '')
+row.names(fst3) <- paste0(fst3$CHROM, ':', fst3$BIN_START, sep = '')
+row.names(fst4) <- paste0(fst4$CHROM, ':', fst4$BIN_START, sep = '')
+f <- intersect(intersect(row.names(fst1), row.names(fst2)),
+               intersect(row.names(fst3), row.names(fst4)))
+commonFst <- data.frame(
+   chr    = fst1[f, 'CHROM'],
+   start  = fst1[f, 'BIN_START'],
+   end    = fst1[f, 'BIN_END'],
+   Thu    = fst1[f, 'WEIGHTED_FST'],
+   Wal    = fst2[f, 'WEIGHTED_FST'],
+   Suo    = fst3[f, 'WEIGHTED_FST'],
+   Lan    = fst4[f, 'WEIGHTED_FST']
+)
+
+ggplot(commonFst, aes(x=Thu, y=Wal)) + geom_hex() +
+   xlab('Lakes Thun and Brienz') +
+   ylab('Lakes Walen and Zurich') +
+   ggtitle('Alpine region')
+ggplot(commonFst, aes(x=Suo, y=Lan)) + geom_hex() +
+   xlab('Suopatjavri') + ylab('Langfjordvatn') +
+   ggtitle('Arctic region')
+```
+
+# Kolmogorov-Smirnof
+
+```{r kolmogorov-smirnof}
+thrs1 <- quantile(commonFst$Thu, probs = 0.9)
+thrs2 <- quantile(commonFst$Wal, probs = 0.9)
+thrs3 <- quantile(commonFst$Suo, probs = 0.9)
+thrs4 <- quantile(commonFst$Lan, probs = 0.9)
+
+ks.results <- data.frame(
+   chr = unique(commonFst$chr),
+   WalThu = NA,
+   ThuWal = NA,
+   LanSuo = NA,
+   SuoLan = NA
+)
+
+row.names(ks.results) <- ks.results$chr
+
+for (chr in unique(commonFst$chr)) {
+   HighFstThu <- commonFst[commonFst$Thu >= thrs1 & commonFst$chr == chr,]
+   HighFstWal <- commonFst[commonFst$Wal >= thrs2 & commonFst$chr == chr,]
+   HighFstSuo <- commonFst[commonFst$Suo >= thrs3 & commonFst$chr == chr,]
+   HighFstLan <- commonFst[commonFst$Lan >= thrs4 & commonFst$chr == chr,]
+   if (dim(HighFstThu)[1] >= 5) {
+      ks.results[chr, 'ThuWal'] <- ks.test(HighFstThu$Wal,
+                                           commonFst$Wal, exact = FALSE,
+                                           alternative = 'greater')$p.value
+   }
+   if (dim(HighFstWal)[1] >= 5) {
+      ks.results[chr, 'WalThu'] <- ks.test(HighFstWal$Thu,
+                                           commonFst$Thu, exact = FALSE,
+                                           alternative = 'greater')$p.value
+   }
+   if (dim(HighFstLan)[1] >= 5) {
+      ks.results[chr, 'LanSuo'] <- ks.test(HighFstLan$Suo,
+                                           commonFst$Suo, exact = FALSE,
+                                           alternative = 'greater')$p.value
+   }
+   if (dim(HighFstSuo)[1] >= 5) {
+      ks.results[chr, 'SuoLan'] <- ks.test(HighFstSuo$Lan,
+                                           commonFst$Lan, exact = FALSE,
+                                           alternative = 'greater')$p.value
+   }
+}
+```
+
+# Session Information
+
+```{r sessionInfo}
+sessionInfo()
+```
+
+# References

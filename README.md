@@ -1,3 +1,21 @@
+# 2022-12-29
+Estimation of Fst between species of Balchen and Felchen ecomorphs from the same
+lake (in Switzerland) or between species of ecomorphs L and P from the same lake
+in Norway. Our results show some overlap of high-Fst regions across lakes, and
+even some across lakes from different regions. However, for those overlaps to
+be found, the threshold of what is considered "high" Fst must not be very high.
+Just around the 95th or 96th percentile.
+
+See [a wonderful report here](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-12-29/README.html)
+
+# 2022-12-23
+Estimation of Fst between species of the same ecomorph from different lakes. This
+comparison may be useful later. It is not finished.
+
+# 2022-12-20
+I use `bedtools` to identify the subset of loci with enough coverage in all samples
+directly from the BAM files.
+
 # 2022-12-16
 For the purpose of estimating the allele frequency spectra (AFS), I revise the coverage
 profiles and realised that at least three chromosomes (22, 32 and 38) seem to be duplicated

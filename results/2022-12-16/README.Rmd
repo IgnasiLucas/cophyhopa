@@ -1,5 +1,5 @@
 ---
-title: "Site frequency spectra"
+title: "Coverage analysis"
 author: "J. Ignacio Lucas Lledó"
 date: "`r Sys.Date()`"
 output: html_document
@@ -360,6 +360,9 @@ After obtaining the VCFs, I will need to produce the input data files for
 `est-sfs`. Another challenge is how to get outgroup genotypes for the very same
 positions, in the same order.
 
+Note: freebayes does not work. I may use samtools mpileup and bcftools call
+(although "calling" would bias the AFS...)
+
 ```{bash freebayes}
 for sp in $(cat species.txt); do
    if [ ! -e $sp/$sp.vcf ]; then
@@ -400,7 +403,7 @@ wait
 ```
 
 Reading the documentation of `est-sfs`, I realize I cannot use simultaneously
-two 
+two sequences of the same outgroup species.
 
 ## Session Information
 
