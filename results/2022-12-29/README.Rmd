@@ -229,18 +229,18 @@ fi
 
 
 ```{r plots3}
-fst <- read.table('FST/P-L-SUO.windowed.weir.fst',
+fst3 <- read.table('FST/P-L-SUO.windowed.weir.fst',
                   header = TRUE, stringsAsFactors = FALSE)
-fst$POS    <- (fst$BIN_END + fst$BIN_START) / 2
+fst3$POS    <- (fst3$BIN_END + fst3$BIN_START) / 2
 offset     <- cumsum(refWidth)[1:39]
 names(offset) <- names(ref)[2:40]
 offset['LR778253.1'] <- 0
-fst$offset <- offset[fst$CHROM]
-fst$POS2 <- fst$POS + fst$offset
+fst3$offset <- offset[fst3$CHROM]
+fst3$POS2 <- fst3$POS + fst3$offset
 ChromCol <- rep(c(1,2), 20)
 names(ChromCol) <- names(ref)
-fst$ChromCol <- ChromCol[fst$CHROM]
-ggplot(data = fst, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
+fst3$ChromCol <- ChromCol[fst3$CHROM]
+ggplot(data = fst3, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
    geom_point() + theme(legend.position="none")
 ```
 
@@ -269,17 +269,87 @@ fi
 
 
 ```{r plots4}
-fst <- read.table('FST/P-L-LAN.windowed.weir.fst',
+fst4 <- read.table('FST/P-L-LAN.windowed.weir.fst',
                   header = TRUE, stringsAsFactors = FALSE)
-fst$POS    <- (fst$BIN_END + fst$BIN_START) / 2
+fst4$POS    <- (fst4$BIN_END + fst4$BIN_START) / 2
 offset     <- cumsum(refWidth)[1:39]
 names(offset) <- names(ref)[2:40]
 offset['LR778253.1'] <- 0
-fst$offset <- offset[fst$CHROM]
-fst$POS2 <- fst$POS + fst$offset
+fst4$offset <- offset[fst4$CHROM]
+fst4$POS2 <- fst4$POS + fst4$offset
 ChromCol <- rep(c(1,2), 20)
 names(ChromCol) <- names(ref)
-fst$ChromCol <- ChromCol[fst$CHROM]
-ggplot(data = fst, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
+fst4$ChromCol <- ChromCol[fst4$CHROM]
+ggplot(data = fst4, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
    geom_point() + theme(legend.position="none")
+```
+
+```{r comparacio2}
+# SUO:
+thrs3 <- quantile(fst3$WEIGHTED_FST, probs = 0.995)
+f3 <- fst3$WEIGHTED_FST >= thrs3
+# LAN:
+thrs4 <- quantile(fst4$WEIGHTED_FST, probs = 0.995)
+f4 <- fst4$WEIGHTED_FST >= thrs4
+
+GR3 <- GRanges(
+   seqnames = factor(fst3[f3, 'CHROM']),
+   ranges = IRanges(start = fst3[f3, 'BIN_START'],
+                    end = fst3[f3, 'BIN_END'],
+                    names = paste0(fst3[f3, 'CHROM'], ':',
+                                   fst3[f3, 'BIN_START'], '-',
+                                   fst3[f3, 'BIN_END'],
+                                   sep = '')),
+   strand = '+',
+   seqinfo = Seqinfo(seqnames = names(ref),
+                     seqlengths = width(ref))
+)
+GR3 <- reduce(GR3)
+
+GR4 <- GRanges(
+   seqnames = factor(fst4[f4, 'CHROM']),
+   ranges = IRanges(start = fst4[f4, 'BIN_START'],
+                    end = fst4[f4, 'BIN_END'],
+                    names = paste0(fst4[f4, 'CHROM'], ':',
+                                   fst4[f4, 'BIN_START'], '-',
+                                   fst4[f4, 'BIN_END'],
+                                   sep = '')),
+   strand = '+',
+   seqinfo = Seqinfo(seqnames = names(ref),
+                     seqlengths = width(ref))
+)
+GR4 <- reduce(GR4)
+
+findOverlaps(GR3, GR4)
+
+GRn <- data.frame(
+   chr = c(seqnames(GR3), seqnames(GR4)),
+   start = c(start(GR3), start(GR4)),
+   end = c(end(GR3), end(GR4)),
+   lake = c(rep('Thun-Brienz', length(GR3)),
+            rep('Walen-Zurich', length(GR4))),
+   height = c(rep(1, length(GR3)),
+              rep(2, length(GR4)))
+)
+
+for (chr in unique(GRn$chr)) {
+   f <- GRn$chr == chr
+   p <- ggplot(data = GRn[f,],
+               mapping = aes(x = start,
+                             y = height,
+                             xend = end,
+                             yend = height,
+                             color = lake)) +
+      geom_segment(size = 5) +
+      ylim(0,3) +
+      xlim(0, width(ref[chr])) +
+      theme(aspect.ratio = 0.3,
+            axis.text.y = element_blank(),
+            axis.line.y = element_blank(),
+            axis.title.y = element_blank(),
+            axis.ticks.y = element_blank()) +
+      ggtitle(chr) + xlab('Position (bp)')
+   print(p)
+}
+
 ```

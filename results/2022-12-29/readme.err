@@ -12,7 +12,7 @@ if [ ! -e FST/fatioi-steinmanni.windowed.weir.fst ]; then
                --out dirty \\
                --remove ../2022-05-04/TheWorst.txt \\
                --recode \\
-               --recode-INFO-all
+               --recode-INFO-all > vcftools.log 2>&1 
    fi
 
    if [ ! -e C.fatioi.txt ]; then
@@ -33,8 +33,8 @@ if [ ! -e FST/fatioi-steinmanni.windowed.weir.fst ]; then
             --max-meanDP 1000 \\
             --weir-fst-pop C.fatioi.txt \\
             --weir-fst-pop C.steinmanni.txt \\
-            --fst-window-size 400000 \\
-            --fst-window-step  50000
+            --fst-window-size 1000000 \\
+            --fst-window-step  100000 >> vcftools.log 2>&1
 fi"
 running: bash  -c "FISHDATA=../../data/Fish_clean2.tsv
 
@@ -56,8 +56,8 @@ if [ ! -e FST/zuerichensis-duplex.windowed.weir.fst ]; then
             --max-meanDP 1000 \\
             --weir-fst-pop C.zuerichensis.txt \\
             --weir-fst-pop C.duplex.txt \\
-            --fst-window-size 400000 \\
-            --fst-window-step  50000
+            --fst-window-size 1000000 \\
+            --fst-window-step  100000 >> vcftools.log 2>&1
 fi"
 running: bash  -c '
 if [ ! -e FST/P-L-SUO.windowed.weir.fst ]; then
@@ -74,8 +74,8 @@ if [ ! -e FST/P-L-SUO.windowed.weir.fst ]; then
             --max-meanDP 1000 \
             --weir-fst-pop $P \
             --weir-fst-pop $L \
-            --fst-window-size 400000 \
-            --fst-window-step  50000
+            --fst-window-size 1000000 \
+            --fst-window-step  100000
 fi'
 running: bash  -c '
 if [ ! -e FST/P-L-LAN.windowed.weir.fst ]; then
@@ -92,8 +92,8 @@ if [ ! -e FST/P-L-LAN.windowed.weir.fst ]; then
             --max-meanDP 1000 \
             --weir-fst-pop $P \
             --weir-fst-pop $L \
-            --fst-window-size 400000 \
-            --fst-window-step  50000
+            --fst-window-size 1000000 \
+            --fst-window-step  100000
 fi'
 output file: README.knit.md
 
