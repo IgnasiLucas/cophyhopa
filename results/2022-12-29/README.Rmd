@@ -1,5 +1,5 @@
 ---
-title: "Fst within lakes."
+title: "$F_{ST}$ within lakes."
 author: "J. Ignacio Lucas Lledó & Mar Llaberia-Robledillo"
 date: "`r Sys.Date()`"
 output:
@@ -30,7 +30,7 @@ if [ ! -e FST/fatioi-steinmanni.windowed.weir.fst ]; then
                --out dirty \
                --remove ../2022-05-04/TheWorst.txt \
                --recode \
-               --recode-INFO-all
+               --recode-INFO-all > vcftools.log 2>&1 
    fi
 
    if [ ! -e C.fatioi.txt ]; then
@@ -51,15 +51,15 @@ if [ ! -e FST/fatioi-steinmanni.windowed.weir.fst ]; then
             --max-meanDP 1000 \
             --weir-fst-pop C.fatioi.txt \
             --weir-fst-pop C.steinmanni.txt \
-            --fst-window-size 400000 \
-            --fst-window-step  50000
+            --fst-window-size 1000000 \
+            --fst-window-step  100000 >> vcftools.log 2>&1
 fi
 ```
 
 ```{r plots1}
-library(Biostrings)
-library(GenomicRanges)
-library(ggplot2)
+suppressMessages(library(Biostrings))
+suppressMessages(library(GenomicRanges))
+suppressMessages(library(ggplot2))
 ref             <- readDNAStringSet('../../data/reference.fa')
 # The names of chromosomes must be only the first word in the fasta name line.
 names(ref)      <- sapply(strsplit(names(ref), " "), '[[', 1)
@@ -67,18 +67,18 @@ names(ref)      <- sapply(strsplit(names(ref), " "), '[[', 1)
 refWidth        <- width(ref)
 names(refWidth) <- names(ref)
 
-fst <- read.table('FST/fatioi-steinmanni.windowed.weir.fst',
+fst1 <- read.table('FST/fatioi-steinmanni.windowed.weir.fst',
                   header = TRUE, stringsAsFactors = FALSE)
-fst$POS    <- (fst$BIN_END + fst$BIN_START) / 2
-offset     <- cumsum(refWidth)[1:39]
-names(offset) <- names(ref)[2:40]
+fst1$POS        <- (fst1$BIN_END + fst1$BIN_START) / 2
+offset          <- cumsum(refWidth)[1:39]
+names(offset)   <- names(ref)[2:40]
 offset['LR778253.1'] <- 0
-fst$offset <- offset[fst$CHROM]
-fst$POS2 <- fst$POS + fst$offset
-ChromCol <- rep(c(1,2), 20)
+fst1$offset      <- offset[fst1$CHROM]
+fst1$POS2        <- fst1$POS + fst1$offset
+ChromCol        <- rep(c(1,2), 20)
 names(ChromCol) <- names(ref)
-fst$ChromCol <- ChromCol[fst$CHROM]
-ggplot(data = fst, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
+fst1$ChromCol    <- ChromCol[fst1$CHROM]
+ggplot(data = fst1, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
    geom_point() + theme(legend.position="none")
 ```
 
@@ -110,37 +110,97 @@ if [ ! -e FST/zuerichensis-duplex.windowed.weir.fst ]; then
             --max-meanDP 1000 \
             --weir-fst-pop C.zuerichensis.txt \
             --weir-fst-pop C.duplex.txt \
-            --fst-window-size 400000 \
-            --fst-window-step  50000
+            --fst-window-size 1000000 \
+            --fst-window-step  100000 >> vcftools.log 2>&1
 fi
 ```
 
 
 ```{r plots2}
-## (already defined?)
-#ref             <- readDNAStringSet('../../data/reference.fa')
-# The names of chromosomes must be only the first word in the fasta name line.
-#names(ref)      <- sapply(strsplit(names(ref), " "), '[[', 1)
-# the refWidth table contains the lengths of chromosomes.
-#refWidth        <- width(ref)
-#names(refWidth) <- names(ref)
-
-fst <- read.table('FST/zuerichensis-duplex.windowed.weir.fst',
-                  header = TRUE, stringsAsFactors = FALSE)
-fst$POS    <- (fst$BIN_END + fst$BIN_START) / 2
-offset     <- cumsum(refWidth)[1:39]
-names(offset) <- names(ref)[2:40]
+fst2 <- read.table('FST/zuerichensis-duplex.windowed.weir.fst',
+                   header = TRUE, stringsAsFactors = FALSE)
+fst2$POS        <- (fst2$BIN_END + fst2$BIN_START) / 2
+offset          <- cumsum(refWidth)[1:39]
+names(offset)   <- names(ref)[2:40]
 offset['LR778253.1'] <- 0
-fst$offset <- offset[fst$CHROM]
-fst$POS2 <- fst$POS + fst$offset
-ChromCol <- rep(c(1,2), 20)
+fst2$offset     <- offset[fst2$CHROM]
+fst2$POS2       <- fst2$POS + fst2$offset
+ChromCol        <- rep(c(1,2), 20)
 names(ChromCol) <- names(ref)
-fst$ChromCol <- ChromCol[fst$CHROM]
-ggplot(data = fst, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
+fst2$ChromCol   <- ChromCol[fst2$CHROM]
+ggplot(data = fst2, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
    geom_point() + theme(legend.position="none")
 ```
 
-Determine sites where the ecomorphs are more differentiated (outliers) ??? 
+```{r comparacio1}
+# Thun-Brienz:
+thrs1 <- quantile(fst1$WEIGHTED_FST, probs = 0.995)
+f1 <- fst1$WEIGHTED_FST >= thrs1
+# Walen-Zurich:
+thrs2 <- quantile(fst2$WEIGHTED_FST, probs = 0.995)
+f2 <- fst2$WEIGHTED_FST >= thrs2
+
+GR1 <- GRanges(
+   seqnames = factor(fst1[f1, 'CHROM']),
+   ranges = IRanges(start = fst1[f1, 'BIN_START'],
+                    end = fst1[f1, 'BIN_END'],
+                    names = paste0(fst1[f1, 'CHROM'], ':',
+                                   fst1[f1, 'BIN_START'], '-',
+                                   fst1[f1, 'BIN_END'],
+                                   sep = '')),
+   strand = '+',
+   seqinfo = Seqinfo(seqnames = names(ref),
+                     seqlengths = width(ref))
+)
+GR1 <- reduce(GR1)
+
+GR2 <- GRanges(
+   seqnames = factor(fst2[f2, 'CHROM']),
+   ranges = IRanges(start = fst2[f2, 'BIN_START'],
+                    end = fst2[f2, 'BIN_END'],
+                    names = paste0(fst2[f2, 'CHROM'], ':',
+                                   fst2[f2, 'BIN_START'], '-',
+                                   fst2[f2, 'BIN_END'],
+                                   sep = '')),
+   strand = '+',
+   seqinfo = Seqinfo(seqnames = names(ref),
+                     seqlengths = width(ref))
+)
+GR2 <- reduce(GR2)
+
+findOverlaps(GR1, GR2)
+
+GR <- data.frame(
+   chr = c(seqnames(GR1), seqnames(GR2)),
+   start = c(start(GR1), start(GR2)),
+   end = c(end(GR1), end(GR2)),
+   lake = c(rep('Thun-Brienz', length(GR1)),
+            rep('Walen-Zurich', length(GR2))),
+   height = c(rep(1, length(GR1)),
+              rep(2, length(GR2)))
+)
+
+for (chr in unique(GR$chr)) {
+   f <- GR$chr == chr
+   p <- ggplot(data = GR[f,],
+               mapping = aes(x = start,
+                             y = height,
+                             xend = end,
+                             yend = height,
+                             color = lake)) +
+      geom_segment(size = 5) +
+      ylim(0,3) +
+      xlim(0, width(ref[chr])) +
+      theme(aspect.ratio = 0.3,
+            axis.text.y = element_blank(),
+            axis.line.y = element_blank(),
+            axis.title.y = element_blank(),
+            axis.ticks.y = element_blank()) +
+      ggtitle(chr) + xlab('Position (bp)')
+   print(p)
+}
+
+```
 
 
 # Arctic region 
@@ -162,8 +222,8 @@ if [ ! -e FST/P-L-SUO.windowed.weir.fst ]; then
             --max-meanDP 1000 \
             --weir-fst-pop $P \
             --weir-fst-pop $L \
-            --fst-window-size 400000 \
-            --fst-window-step  50000
+            --fst-window-size 1000000 \
+            --fst-window-step  100000
 fi
 ```
 
@@ -202,8 +262,8 @@ if [ ! -e FST/P-L-LAN.windowed.weir.fst ]; then
             --max-meanDP 1000 \
             --weir-fst-pop $P \
             --weir-fst-pop $L \
-            --fst-window-size 400000 \
-            --fst-window-step  50000
+            --fst-window-size 1000000 \
+            --fst-window-step  100000
 fi
 ```
 
