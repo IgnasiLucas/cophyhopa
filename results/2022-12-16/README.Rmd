@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Introduction
 I want to use `angsd` to estimate the site frequency spectra (SFS) of every
 *Coregonus* species, directly from the BAM files. I need to filter the BAM
-files, to remove poorly mapped readsk. And I need to decide on the ancestral
+files, to remove poorly mapped reads. And I need to decide on the ancestral
 state of every variable position, in order to polarize the spectra. It would
 be nice to incorporate the uncertainty of the ancestral allele in the likelihood
 of the SFS. Aparantly the `est-sfs` program [@Keightley2018] can do that. It
@@ -40,17 +40,17 @@ long stretches of chromosomes, or whole chromosomes, that must be duplicated
 in reality but are represented only once in the reference. Supplementary
 table 3 in @DeKayne2020 suggests the potentially collapsed regions are:
 
- |chr. | start     | 	end   |
+ |chr. | start     |    end   |
  |----:|----------:|---------:|
  |  4  |         0 | 31500000 |
- |  7  |	 39000000 | 65391737 |
+ |  7  |  39000000 | 65391737 |
  | 17  |  41500000 | 54216998 |
  | 22  |         0 | 56862223 |
  | 28  |         0 | 46671285 |
- | 32	 |         0 | 44616205 |
+ | 32  |         0 | 44616205 |
  | 35  |         0 | 42609905 |
  | 37  |  32500000 | 43663377 |
- | 38  |	        0 | 36774138 |
+ | 38  |         0 | 36774138 |
 
 ## Coverage data
 From the BAM files with only high quality-mapped reads, and using only sites
@@ -106,7 +106,10 @@ for sp in $(cat species.txt); do
          samtools view -h -q 60 $BAMDIR/${sample}-mapped-sorted.bam | \
          gawk -v OFS='\t' -f reduplicate.awk | \
          samtools view -u - | \
-         samtools addreplacerg -o $sp/$sample.bam -r "@RG\tID:$sample\tSM:$sample" - &
+         samtools addreplacerg -o $sp/$sample.bam \
+                               -r "@RG\tID:$sample\tSM:$sample" \
+                               -O BAM \
+                               --write-index - &
       fi
    done
    wait
@@ -137,7 +140,7 @@ if [ ! -e lociLength.txt ]; then
    find . -name '*.depth' -exec grep -v 'chr' '{}' \; | \
    gawk '{F[$3 - $2 + 1]++}END{
       for (f in F) print f "\t" F[f]
-   }' > lociLength.txt
+   }' | sort -nk 1,1 > lociLength.txt
 fi
 ```
 
@@ -266,7 +269,7 @@ missing). Coefficients around 1.5 suggest those chromosomes could be present
 in three copies per cell, instead of two. Or that about half the cells in the
 tissue have 4 copies instead of 2. A third possibility would be that half the
 chromosome is duplicated. However this last option is ruled out by a relatively
-constant coverage along the affected chromosomes (LR778274.1, LR778284.1 and 
+constant coverage along the affected chromosomes (LR778274.1, LR778284.1 and
 chrLR778290.1, see below).
 
 I conclude that the following chromosomes must be affected by global or very
@@ -319,7 +322,7 @@ if (! file.exists('Coverage.mp4')) {
                         mapping = aes(x = midpoint, y = MeanCov, color = sample)) +
                geom_smooth(method = 'loess') +
                ggtitle(sprintf("Cromosome %i (%s). %s", i, chr, sp)) +
-               xlab('Position') + ylab('Coverage') + 
+               xlab('Position') + ylab('Coverage') +
                theme(legend.position = 'none')
             ggsave(sprintf('movie1/img%03i.png', position), p)
          }
@@ -360,8 +363,12 @@ After obtaining the VCFs, I will need to produce the input data files for
 `est-sfs`. Another challenge is how to get outgroup genotypes for the very same
 positions, in the same order.
 
-Note: freebayes does not work. I may use samtools mpileup and bcftools call
-(although "calling" would bias the AFS...)
+After several attempts, where `freebayes` was not producing useful informatio,
+I realize the output VCFs could be huge if I request all positions in all
+species. I take advantage of the results in folder `2022-12-20`, already
+available at the time of writing: the sets of loci shared or not among
+samples of every species. I will limit the analysis to sites covered by at
+least 6 reads in every sample from the same species.
 
 ```{bash freebayes}
 for sp in $(cat species.txt); do
@@ -369,17 +376,14 @@ for sp in $(cat species.txt); do
       if [ ! -e $sp/BAMlist.txt ]; then
          ls -1 $sp/*.bam > $sp/BAMlist.txt
       fi
-      # -g 1200: maximum coverage. For all species, 1200 is above or about
-      # three standard deviations above the average coverage of the
-      # sample with highest coverage.
       freebayes -L $sp/BAMlist.txt \
-                -g 1200 \
                 -f ../../data/reference.fa \
-                -P 0.0 \
+                -t ../2022-12-20/$sp/common.loci \
+                --report-monomorphic \
                 -T 0.002 \
-                -F 0 \
-                -C 1 \
-                -R 240 > $sp/$sp.vcf &
+                -4 \
+                -F 0.0 \
+                -C 0 > $sp/$sp.vcf &
    fi
 done
 wait

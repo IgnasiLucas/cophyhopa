@@ -16,6 +16,14 @@ comparison may be useful later. It is not finished.
 I use `bedtools` to identify the subset of loci with enough coverage in all samples
 directly from the BAM files.
 
+This is based on the re-duplicated BAM files, created in 2022-12-16 in order to revert the
+collapse of redundant reads made by ipyrad in the original mappings. The <species>/common.loci
+files include loci covered by at least 6 reads of every sample in that species (after
+excluding the very low-coverage samples previously identified). The <species>/merged.loci
+is the union of loci covered at least 6 times in any sample of that species. There
+are also shared.loci and merged.loci for all species. Extremely highly covered loci
+have not been excluded. 
+
 # 2022-12-16
 For the purpose of estimating the allele frequency spectra (AFS), I revise the coverage
 profiles and realised that at least three chromosomes (22, 32 and 38) seem to be duplicated
@@ -33,7 +41,7 @@ Curiously, the coverage grows with fragment length until about a length of 200 a
 it decreases (not shown in report). This is probably caused by the size-selection step in
 library preparation.
 
-Currently obtaining species-specific VCFs with freebayes. The report is
+Currently obtaining species-specific VCFs with freebayes. The report will be
 [available in this link.](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-12-16/README.html)
 
 # 2022-12-14
