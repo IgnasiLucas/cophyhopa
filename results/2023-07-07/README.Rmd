@@ -1,0 +1,88 @@
+---
+title: "New alignment of reads to reference"
+author: "J. Ignacio Lucas Lledó"
+date: "`r Sys.Date()`"
+output: html_document
+bibliography: ../../doc/references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+I was attempting to use `fastsimcoal2` to infer population parameters for the fish
+in at least Arctic lakes, where the number of species and the level of hybridization
+are low. This method is based on the site-frequency spectra (SFS), which must be inferred
+from the alignments of reads to the reference. I cannot use the VCF prepared by
+ipyrad on `2022-04-22` to infer SFS because it only contains information of variable
+sites. Furthermore, I want to use `est-sfs` [@Keightley2018] to infer the SFS, for
+which I need outgroup data.
+
+One option I tried was to reconstruct a *Coregonus* ancestral genome from the
+alignment of reference genomes of *C. steinmanii* [@DeKayne2020] and *C. clupeaformis*
+[@Merto2022]. However,
+this method is bound to fail for several reasons: a third reference genome is
+required to infer something ancestral in the lineage of the *C. lavaretus* complex.
+Unfortunately, the *C. lavaretus* draft assembly (from a Suohpatjavri sample) is
+less than 1 Mb long at the moment, and would not help much. On the other hand, using
+a more distant third genome, such as *Salmo salar* or any other Salmoninae would
+slow down the alignment and inevitably fail to reconstruct any sequence other than
+genes and conserved elements.
+
+
+
+
+
+
+
+
+Cactus requests input genomes to be *softmasked*, but the draft genome of a *C. lavaretus*
+is not softmasked. I use `Red` (Repeat Detector) [@Girgis2015] to softmask it. In addition
+to masking, I have to make sure the FASTA identifiers are valid. I simplify the contig names.
+
+```{bash redmask, warning=FALSE}
+if [ ! -e Clavaretus.fa ]; then
+   if [ ! -e Clavaretus.softmasked.fa ]; then
+      redmask.py -i ../../data/Clavaretus.fa -o Clavaretus
+   fi
+   gawk '(/^>/){
+      split($1, A, /\|/)
+      print ">" A[2]
+   }(/^[^>]/){
+      print $0
+   }' Clavaretus.softmasked.fa > Clavaretus.fa
+fi
+```
+
+The idea
+
+I am afraid that including *Salmo salar* in the alignment is going to slow the process
+too much. I suppose that having the two *C. clupeaformis* genomes as outgroups should
+be enough. Actually, the draft assembly for *C. lavaretus* is a sample from Suohpatjavri
+(Norway). Even though it's in very poor shape (only 862866 bp, in 97 contigs between
+1000 and 82000 bp long), the ancestor between this genome and that of *C. steinmanii*
+is exactly what we need. But I may end up using the common ancestor of *C. steinmanii*
+and *C. clupeaformis*, because they are more complete. Do I need an outgroup for them?
+
+```{bash cactus1}
+if [ ! -e fish.txt ]; then
+   echo "(((Cclupea_dwarf,Cclupea_normal),(Csteinmanii,Clavaretus)),Ssalar);" > fish.txt
+   echo "" >> fish.txt
+   echo "Cclupea_dwarf ../../data/Cclupea_dwarf.fa" >> fish.txt
+   echo "Cclupea_normal ../../data/Cclupea_normal.fa" >> fish.txt
+   echo "Csteinmanii ../../data/reference.fa" >> fish.txt
+   echo "Clavaretus ./Clavaretus.fa" >> fish.txt
+#   echo "*Ssalar ../../data/Salmo_salar.fa" >> fish.txt
+fi
+```
+
+```{bash cactus2, eval=FALSE}
+# I think "maxCores" is the main option to limit CPU usage. There are other
+# options like: --maxPreemptibleServiceJobs --maxServiceJobs --maxLocalJobs --consCores
+   cactus ./jobstore2 fish.txt fish.hal \
+          --maxCores 24 \
+          --rotatingLogging
+```
+
+
+# Bibliography

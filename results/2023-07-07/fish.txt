@@ -1,0 +1,7 @@
+(((Cclupea_dwarf,Cclupea_normal),(Csteinmanii,Clavaretus)),Ssalar);
+
+Cclupea_dwarf ../../data/Cclupea_dwarf.fa
+Cclupea_normal ../../data/Cclupea_normal.fa
+Csteinmanii ../../data/reference.fa
+Clavaretus ./Clavaretus.fa
+*Ssalar ../../data/Salmo_salar.fa
