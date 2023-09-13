@@ -363,7 +363,7 @@ After obtaining the VCFs, I will need to produce the input data files for
 `est-sfs`. Another challenge is how to get outgroup genotypes for the very same
 positions, in the same order.
 
-After several attempts, where `freebayes` was not producing useful informatio,
+After several attempts, where `freebayes` was not producing useful information,
 I realize the output VCFs could be huge if I request all positions in all
 species. I take advantage of the results in folder `2022-12-20`, already
 available at the time of writing: the sets of loci shared or not among

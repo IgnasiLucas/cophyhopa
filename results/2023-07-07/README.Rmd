@@ -20,7 +20,7 @@ which I need outgroup data.
 
 One option I tried was to reconstruct a *Coregonus* ancestral genome from the
 alignment of reference genomes of *C. steinmanii* [@DeKayne2020] and *C. clupeaformis*
-[@Merto2022]. However,
+[@Merot2022]. However,
 this method is bound to fail for several reasons: a third reference genome is
 required to infer something ancestral in the lineage of the *C. lavaretus* complex.
 Unfortunately, the *C. lavaretus* draft assembly (from a Suohpatjavri sample) is
@@ -29,60 +29,179 @@ a more distant third genome, such as *Salmo salar* or any other Salmoninae would
 slow down the alignment and inevitably fail to reconstruct any sequence other than
 genes and conserved elements.
 
+I am much more likely to infer ancestral sequences if I work with the loci that we have
+sequenced and I compare them with *C. clupeaformis* as an outgroup. I probably just need
+to get consensus sequences for all loci in all species, and align them individually.
 
+The rate limiting step may be the re-alignment of original FASTQ files to either the
+reference genome or the subset of loci. An alignment is inevitable, anyways, because
+the original one with ipyrad did not preserve base-quality information. And it seems
+preferable to align again to the reference genome, just to simplify the reproducibility.
 
+After getting sample-specific BAM files, I can use `samtools consensus` to get the
+FASTA sequences of every individual sample, either in the whole genome (too much)
+or in the selected loci.
 
+I accept the filtering of individuals run on 2022-05-04, which removes 9 individuals,
+specified in `../2022-05-04/TheWorst.txt`, namely: BRZ066, BRZ111, SUO095, THU066,
+THU199,  BRZ108, BRZ110, LAN029 and SUO083.
 
+```{bash align}
+RUN1=../2021-12-21/run1
+RUN2=../2021-12-21/run2
 
+# I will distribute the BAM files in species folders
+# I start with the list of SAMPLES:
+if [ ! -e samples.txt ]; then
+   ls -1 $RUN1 | cut -d '_' -f 1 | uniq | \
+   grep -v -F -f ../2022-05-04/TheWorst.txt > samples.txt
+fi
 
+if [ ! -e sample_lake_sp.txt ]; then
+   grep -F -f samples.txt ../../data/Fish_clean2.tsv | cut -f 1,2,19 | \
+   gawk '($3 ~ /^[DLP]$/){
+      $3 = substr($2,1,3) $3
+   }{
+      gsub(/\//, "-", $3)
+      print $1 "\t" $2 "\t" $3
+   }' > sample_lake_sp.txt
+fi
 
-Cactus requests input genomes to be *softmasked*, but the draft genome of a *C. lavaretus*
-is not softmasked. I use `Red` (Repeat Detector) [@Girgis2015] to softmask it. In addition
-to masking, I have to make sure the FASTA identifiers are valid. I simplify the contig names.
+# SPECIES
+if [ ! -e species.txt ]; then
+   cut -f 3 sample_lake_sp.txt | sort | uniq > species.txt
+fi
 
-```{bash redmask, warning=FALSE}
-if [ ! -e Clavaretus.fa ]; then
-   if [ ! -e Clavaretus.softmasked.fa ]; then
-      redmask.py -i ../../data/Clavaretus.fa -o Clavaretus
+if [ ! -d tmp ]; then mkdir tmp; fi
+for sp in $(cat species.txt); do
+   if [ ! -d $sp ]; then mkdir $sp; fi
+   if [ ! -e $sp/samples.txt ]; then
+      gawk -v SP=$sp '($3 == SP){print $1}' sample_lake_sp.txt > $sp/samples.txt
+      #grep $sp sample_lake_sp.txt | cut -f 1 > $sp/samples.txt   ## equivalent?
    fi
-   gawk '(/^>/){
-      split($1, A, /\|/)
-      print ">" A[2]
-   }(/^[^>]/){
-      print $0
-   }' Clavaretus.softmasked.fa > Clavaretus.fa
+   for sample in $(cat $sp/samples.txt); do
+      if [ ! -e $sp/$sample.bam ]; then
+         if [ ! -e tmp/$sample.run1.bam ]; then
+            bwa-mem2 mem -o tmp/$sample.run1.sam \
+                         -t 16 \
+                         -R "@RG\tID:${sample}\tSM:${sample}" \
+                         ../../data/reference.fa \
+                         $RUN1/${sample}_R1_.fastq.gz \
+                         $RUN1/${sample}_R2_.fastq.gz
+            samtools view -u tmp/$sample.run1.sam | \
+            samtools sort -o tmp/$sample.run1.bam
+            rm tmp/$sample.run1.sam
+         fi
+         if [ ! -e tmp/$sample.run2.bam ]; then
+            bwa-mem2 mem -o tmp/$sample.run2.sam \
+                         -t 16 \
+                         -R "@RG\tID:${sample}\tSM:${sample}" \
+                         ../../data/reference.fa \
+                         $RUN2/${sample}_R1_.fastq.gz \
+                         $RUN2/${sample}_R2_.fastq.gz
+            samtools view -u tmp/$sample.run2.sam | \
+            samtools sort -o tmp/$sample.run2.bam
+            rm tmp/$sample.run2.sam
+         fi
+         samtools merge --write-index \
+                        -r \
+                        --threads 7 \
+                        $sp/$sample.bam \
+                        tmp/$sample.run1.bam \
+                        tmp/$sample.run2.bam
+      fi
+   done
+done
+rm -r tmp
+```
+
+## Coverage analysis
+With the new mappings, I should repeat the coverage analysis, which will define
+the loci that need to be analysed. This is analogous to what was done in
+`2022-12-16` and `2022-12-20`. But I change the strategy. Instead of getting
+a depth file per sample, and then summarise it with an awk script, I use
+`samtools depth` to get a single depth report per species, which I process
+on the fly with an alternatie `awk` script. Tha way, I save space and I don't
+have to use bedtools.
+
+```{bash coverage}
+for sp in $(cat species.txt); do
+   if [ ! -e $sp/common.loci ]; then
+      samtools depth -q 15 -Q 20 -J -s $sp/*.bam | \
+      gawk -f depth2.awk > $sp/common.loci &
+   fi
+done
+wait
+
+# From work in `2022-12-20`, I expect >20000 loci covered at least 6
+# times in all samples. It should be enough for SFS estimation.
+if [ ! -e common.loci ]; then
+   for sp in $(cat species.txt); do
+      if [ ! -e common.loci ]; then cp $sp/common.loci common.loci; fi
+      bedtools intersect -a common.loci -b $sp/common.loci > z.loci
+      mv z.loci common.loci
+   done
 fi
 ```
 
-The idea
+## VCFs
+Having the BAM files and the common loci, it is tempting to use `samtools consensus`
+to get the consensus sequence of every sample in every locus. However, BAM files contain
+individually aligned reads. Those alignments did not benefit from the multiplicity of
+reads. They lack a common behaviour around indels, for example. That's why it is
+important to run `freebayes`.
 
-I am afraid that including *Salmo salar* in the alignment is going to slow the process
-too much. I suppose that having the two *C. clupeaformis* genomes as outgroups should
-be enough. Actually, the draft assembly for *C. lavaretus* is a sample from Suohpatjavri
-(Norway). Even though it's in very poor shape (only 862866 bp, in 97 contigs between
-1000 and 82000 bp long), the ancestor between this genome and that of *C. steinmanii*
-is exactly what we need. But I may end up using the common ancestor of *C. steinmanii*
-and *C. clupeaformis*, because they are more complete. Do I need an outgroup for them?
+I have noticed terrible performance issues with freebayes. I suspect a large number
+of alternative alleles in complex variation is causing part of the trouble. I am
+reluctant to use filters that only apply to variable (and not monomorphic) sites,
+because that would bias the SFS. However, it is clear from visual inspection of VCFs
+that most alleles in complex cases are just caused by errors, and it should be safe
+to limit the number of alternative alleles to, for example, 5.
 
-```{bash cactus1}
-if [ ! -e fish.txt ]; then
-   echo "(((Cclupea_dwarf,Cclupea_normal),(Csteinmanii,Clavaretus)),Ssalar);" > fish.txt
-   echo "" >> fish.txt
-   echo "Cclupea_dwarf ../../data/Cclupea_dwarf.fa" >> fish.txt
-   echo "Cclupea_normal ../../data/Cclupea_normal.fa" >> fish.txt
-   echo "Csteinmanii ../../data/reference.fa" >> fish.txt
-   echo "Clavaretus ./Clavaretus.fa" >> fish.txt
-#   echo "*Ssalar ../../data/Salmo_salar.fa" >> fish.txt
-fi
+```{bash loci}
+for sp in $(cat species.txt); do
+   if [ ! -e $sp/$sp.vcf ]; then
+      if [ ! -e $sp/BAMlist.txt ]; then
+         ls -1 $sp/*.bam > $sp/BAMlist.txt
+      fi
+      freebayes -L $sp/BAMlist.txt \
+                -f ../../data/reference.fa \
+                -t $sp/common.loci \
+                --report-monomorphic \
+                -T 0.0026 \
+                -4 \
+                -m 20 \
+                -n 5 \
+                -F 0.0 \
+                -C 0 > $sp/$sp.vcf &
+   fi
+done
+wait
 ```
 
-```{bash cactus2, eval=FALSE}
-# I think "maxCores" is the main option to limit CPU usage. There are other
-# options like: --maxPreemptibleServiceJobs --maxServiceJobs --maxLocalJobs --consCores
-   cactus ./jobstore2 fish.txt fish.hal \
-          --maxCores 24 \
-          --rotatingLogging
-```
+Freebayes run for over 2 months, and the species with more samples got
+misteriously interrupted. Then, I had to run two specific scripts to
+finish the VCFs of SuoL and LanL, which I have to *glue* to the interrupted
+ones.
 
+The next step will involve parsing the VCFs to get the data in the format
+required by `est-sfs`.
+
+## Preparing input files for `est-sfs`
+There are five putative species in the arctic, considering the three
+ecomorphs in Langfsjordvatn and the two of them in Suohpatjavri as different
+species. Ecomorph D, only present in Langfsjordvatn is represented by only 6
+samples. In order to estimate the unfolded SFS in every one of them, I can only
+use up to 3 outgroups, and I can only consider one allele from each
+outgroup. Any Alpine species would be an outgroup to all Arctic species.
+And I can use the most frequent allele of each outgroup. It would make
+sense to choose as outgroups the Alpine species with the largest number
+of samples, namely: *C. albellus* (28 samples), *C. profundus* (22 samples)
+and *C. zuerichensis* (17 samples).
+
+Parsing VCFs produced by `freebayes` is difficult because i) many variable
+sites are expressed as complex haplotypes instead of SNPs; and ii) most
+invariable sites are assigned several putative alternative alleles.
 
 # Bibliography
+
