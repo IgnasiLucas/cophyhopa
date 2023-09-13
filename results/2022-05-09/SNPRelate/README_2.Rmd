@@ -2,7 +2,9 @@
 title: "PCA with hybrids"
 author: "Mar Llaberia-Robledillo"
 date: "3/6/2022"
-output: html_document
+output: 
+  html_document:
+    toc: TRUE
 ---
 
 # PCA analysis for Walen and Zurich lakes 
