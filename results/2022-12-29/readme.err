@@ -6,7 +6,7 @@ FISHDATA=../../data/Fish_clean2.tsv
 
 if [ ! -d FST ]; then mkdir FST; fi
 
-if [ ! -e FST/fatioi-steinmanni.windowed.weir.fst ]; then
+if [ ! -e FST/Thun-Brienz.windowed.weir.fst ]; then
    if [ ! -e dirty.recode.vcf ]; then
       vcftools --vcf \$VCF \\
                --out dirty \\
@@ -24,7 +24,7 @@ if [ ! -e FST/fatioi-steinmanni.windowed.weir.fst ]; then
    fi
 
    vcftools --vcf dirty.recode.vcf \\
-            --out FST/fatioi-steinmanni \\
+            --out FST/Thun-Brienz \\
             --thin 500 \\
             --remove-indels \\
             --mac 2 \\
@@ -34,11 +34,11 @@ if [ ! -e FST/fatioi-steinmanni.windowed.weir.fst ]; then
             --weir-fst-pop C.fatioi.txt \\
             --weir-fst-pop C.steinmanni.txt \\
             --fst-window-size 1000000 \\
-            --fst-window-step  100000 >> vcftools.log 2>&1
+            --fst-window-step  250000 >> vcftools.log 2>&1
 fi"
 running: bash  -c "FISHDATA=../../data/Fish_clean2.tsv
 
-if [ ! -e FST/zuerichensis-duplex.windowed.weir.fst ]; then
+if [ ! -e FST/Walen-Zurich.windowed.weir.fst ]; then
    if [ ! -e C.zuerichensis.txt ]; then
       gawk '(\$19 == \"C.zuerichensis\"){print \$1}' \$FISHDATA > C.zuerichensis.txt
    fi
@@ -47,7 +47,7 @@ if [ ! -e FST/zuerichensis-duplex.windowed.weir.fst ]; then
       gawk '(\$19 == \"C.duplex\"){print \$1}' \$FISHDATA > C.duplex.txt
    fi
    vcftools --vcf dirty.recode.vcf \\
-            --out FST/zuerichensis-duplex \\
+            --out FST/Walen-Zurich \\
             --thin 500 \\
             --remove-indels \\
             --mac 2 \\
@@ -57,15 +57,14 @@ if [ ! -e FST/zuerichensis-duplex.windowed.weir.fst ]; then
             --weir-fst-pop C.zuerichensis.txt \\
             --weir-fst-pop C.duplex.txt \\
             --fst-window-size 1000000 \\
-            --fst-window-step  100000 >> vcftools.log 2>&1
+            --fst-window-step  250000 >> vcftools.log 2>&1
 fi"
-running: bash  -c '
-if [ ! -e FST/P-L-SUO.windowed.weir.fst ]; then
+running: bash  -c 'if [ ! -e FST/Suo.windowed.weir.fst ]; then
    P=../2022-12-23/SUO_P.txt
    L=../2022-12-23/SUO_L.txt
    
    vcftools --vcf dirty.recode.vcf \
-            --out FST/P-L-SUO \
+            --out FST/Suo \
             --thin 500 \
             --remove-indels \
             --mac 2 \
@@ -75,15 +74,14 @@ if [ ! -e FST/P-L-SUO.windowed.weir.fst ]; then
             --weir-fst-pop $P \
             --weir-fst-pop $L \
             --fst-window-size 1000000 \
-            --fst-window-step  100000
+            --fst-window-step  250000 >> vcftools.log 2>&1
 fi'
-running: bash  -c '
-if [ ! -e FST/P-L-LAN.windowed.weir.fst ]; then
+running: bash  -c 'if [ ! -e FST/Lan.windowed.weir.fst ]; then
    P=../2022-12-23/LAN_P.txt
    L=../2022-12-23/LAN_L.txt
    
    vcftools --vcf dirty.recode.vcf \
-            --out FST/P-L-LAN \
+            --out FST/Lan \
             --thin 500 \
             --remove-indels \
             --mac 2 \
@@ -93,7 +91,65 @@ if [ ! -e FST/P-L-LAN.windowed.weir.fst ]; then
             --weir-fst-pop $P \
             --weir-fst-pop $L \
             --fst-window-size 1000000 \
-            --fst-window-step  100000
+            --fst-window-step  250000 >> vcftools.log 2>&1
+fi'
+running: bash  -c 'if [ ! -e FST/Thun-Brienz.ind.windowed.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out FST/Thun-Brienz.ind \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-missing 1 \
+            --max-meanDP 1000 \
+            --weir-fst-pop C.fatioi.txt \
+            --weir-fst-pop C.steinmanni.txt \
+            --fst-window-size 1000000 \
+            --fst-window-step 1000000 >> vcftools.log 2>&1
+fi
+if [ ! -e FST/Walen-Zurich.ind.windowed.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out FST/Walen-Zurich.ind \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-missing 1 \
+            --max-meanDP 1000 \
+            --weir-fst-pop C.zuerichensis.txt \
+            --weir-fst-pop C.duplex.txt \
+            --fst-window-size 1000000 \
+            --fst-window-step 1000000 >> vcftools.log 2>&1
+fi
+
+if [ ! -e FST/Suo.ind.windowed.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out FST/Suo.ind \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-missing 1 \
+            --max-meanDP 1000 \
+            --weir-fst-pop ../2022-12-23/SUO_P.txt \
+            --weir-fst-pop ../2022-12-23/SUO_L.txt \
+            --fst-window-size 1000000 \
+            --fst-window-step 1000000 >> vcftools.log 2>&1
+fi
+
+if [ ! -e FST/Lan.ind.windowed.weir.fst ]; then
+   vcftools --vcf dirty.recode.vcf \
+            --out FST/Lan.ind \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-missing 1 \
+            --max-meanDP 1000 \
+            --weir-fst-pop ../2022-12-23/LAN_P.txt \
+            --weir-fst-pop ../2022-12-23/LAN_L.txt \
+            --fst-window-size 1000000 \
+            --fst-window-step 1000000 >> vcftools.log 2>&1
 fi'
 output file: README.knit.md
 

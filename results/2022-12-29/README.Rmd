@@ -81,10 +81,16 @@ fst1$POS2        <- fst1$POS + fst1$offset
 ChromCol        <- rep(c(1,2), 20)
 names(ChromCol) <- names(ref)
 fst1$ChromCol    <- ChromCol[fst1$CHROM]
+
+# Thun-Brienz:
+thrs1 <- quantile(fst1$WEIGHTED_FST, probs = 0.96)
+f1 <- fst1$WEIGHTED_FST >= thrs1
+
 ggplot(data = fst1, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
    geom_point() + theme(legend.position="none") +
-   xlab('Position') + ylab(expression("Weighted "*F[ST])) +
-   ggtitle('Thun and Brienz lakes, C. fatioi and C. steinmanni') +
+   xlab('Position') + ylab(expression(F[ST])) +
+   ggtitle('Felchen vs. Balchen ecomoprhs (Thun-Brienz lakes)') +
+   geom_hline(yintercept = round(thrs1, 2), color = "red") +
    theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 ```
 
@@ -134,6 +140,7 @@ fi
 
 
 ```{r plots2}
+
 fst2 <- read.table('FST/Walen-Zurich.windowed.weir.fst',
                    header = TRUE, stringsAsFactors = FALSE)
 fst2$POS        <- (fst2$BIN_END + fst2$BIN_START) / 2
@@ -145,10 +152,16 @@ fst2$POS2       <- fst2$POS + fst2$offset
 ChromCol        <- rep(c(1,2), 20)
 names(ChromCol) <- names(ref)
 fst2$ChromCol   <- ChromCol[fst2$CHROM]
+
+# Walen-Zurich:
+thrs2 <- quantile(fst2$WEIGHTED_FST, probs = 0.96)
+f2 <- fst2$WEIGHTED_FST >= thrs2
+
 ggplot(data = fst2, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
    geom_point() + theme(legend.position="none") +
-   xlab('Position') + ylab(expression("Weighted "*F[ST])) +
-   ggtitle('Walen and Zurich lakes, C. zuerichensis and C. duplex') +
+   xlab('Position') + ylab(expression(F[ST])) +
+   ggtitle('Felchen vs. Balchen ecomorphs (Walen-Zurich lakes)') +
+   geom_hline(yintercept = round(thrs2, 2), color = "red") +
    theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 ```
 
@@ -168,7 +181,7 @@ variable levels of within-population diversity.
 
 The first way to compare highly differentiated genomic regions between lakes
 consists in: defining a threshold and visualizing the positions of windows
-above that threshold in both lakes. The threshold is the 99$^\text{th}$ percentile.
+above that threshold in both lakes. The threshold is the 96$^\text{th}$ percentile.
 
 ```{r comparacio1, fig.width=10, fig.height=3}
 # Thun-Brienz:
@@ -286,10 +299,16 @@ fst3$POS2 <- fst3$POS + fst3$offset
 ChromCol <- rep(c(1,2), 20)
 names(ChromCol) <- names(ref)
 fst3$ChromCol <- ChromCol[fst3$CHROM]
+
+# SUO:
+thrs3 <- quantile(fst3$WEIGHTED_FST, probs = 0.96)
+f3 <- fst3$WEIGHTED_FST >= thrs3
+
 ggplot(data = fst3, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
    geom_point() + theme(legend.position="none") +
-   xlab('Position') + ylab(expression("Weighted "*F[ST])) +
-   ggtitle('Suopatjavri, P and L ecomorphs') +
+   xlab('Position') + ylab(expression(F[ST])) +
+   ggtitle('Profundal vs. Littoral ecomorphs (Suopatjavri)') +
+   geom_hline(yintercept = round(thrs3, 2), color = "red") +
    theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 ```
 
@@ -328,11 +347,18 @@ fst4$POS2 <- fst4$POS + fst4$offset
 ChromCol <- rep(c(1,2), 20)
 names(ChromCol) <- names(ref)
 fst4$ChromCol <- ChromCol[fst4$CHROM]
+
+# LAN:
+thrs4 <- quantile(fst4$WEIGHTED_FST, probs = 0.96)
+f4 <- fst4$WEIGHTED_FST >= thrs4
+
 ggplot(data = fst4, mapping = aes(x = POS2, y = WEIGHTED_FST, color = ChromCol)) +
    geom_point() + theme(legend.position="none") +
-   xlab('Position') + ylab(expression("Weighted "*F[ST])) +
-   ggtitle('Langfjordvatn, P and L ecomorphs') +
+   xlab('Position') + ylab(expression(F[ST])) +
+   ggtitle('Profundal vs. Littoral ecomorphs (Langfjordvatn)') +
+   geom_hline(yintercept = round(thrs4, 2), color = "red") +
    theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
 ```
 
 ```{r comparacio2, fig.width=10, fig.height=3}
@@ -401,6 +427,11 @@ for (chr in unique(GRn$chr)) {
       geom_segment(size = 5) +
       #ylim(0,3) +
       xlim(0, width(ref[chr])) +
+            theme(aspect.ratio = 0.3,
+            axis.text.y = element_blank(),
+            axis.line.y = element_blank(),
+            axis.title.y = element_blank(),
+            axis.ticks.y = element_blank()) +
       ggtitle(chr) + xlab('Position (bp)')
    print(p)
 }
@@ -438,7 +469,8 @@ for (chr in chromHighFst) {
                              yend = lake,
                              color = WEIGHTED_FST)) +
       geom_segment(size = 5) + xlab('Position (bp)') +
-      ggtitle(chr)
+      ggtitle(chr) +
+      guides(colour=guide_legend(title=expression(F[ST])))
    print(p)
 }
 ```
