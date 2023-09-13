@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "$F_{ST}$s among fish species/ecotypes"
 author: "Mar Llaberia-Robledillo & J. Ignacio Lucas Lledó"
 date: "`r Sys.Date()`"
 output:
@@ -10,10 +10,10 @@ output:
 ```{bash LISTNAMES}
 FISHDATA=../../data/Fish_clean2.tsv
 
-for POP in C.acrinasus C.aplinus C.confusus C.duplex C.fatioi C.profundus C.steinmanni D L P; do 
-  #if [ ! -e C.${POP} ]; then
-    gawk '($19 == "${POP}"){print $1}' $FISHDATA > ${POP}.txt
-  #fi 
+for POP in C.acrinasus C.aplinus C.confusus C.duplex C.fatioi C.profundus C.steinmanni D L P; do
+  if [ ! -e ${POP}.txt ]; then
+    gawk -v POP=${POP} '($19 == POP){print $1}' $FISHDATA > ${POP}.txt
+  fi
 done
 
 if [ ! -d FST ]; then mkdir FST; fi
@@ -23,28 +23,61 @@ if [ ! -e dirty.recode.vcf ]; then
            --out dirty \
            --remove ../2022-05-04/TheWorst.txt \
            --recode \
-           --recode-INFO-all > vcftools.log 2>&1 
+           --recode-INFO-all > vcftools.log 2>&1
 fi
 
 ```
 
 
 ```{bash}
+ALPINE=(C.acrinasus C.aplinus C.confusus C.duplex C.fatioi C.profundus C.steinmanni)
+ARCTIC=(D L P)
 
-if [ ! -e FST/Thun-Brienz.windowed.weir.fst ]; then
-   vcftools --vcf dirty.recode.vcf \
-            --out FST/Thun-Brienz \
-            --thin 500 \
-            --remove-indels \
-            --mac 2 \
-            --max-alleles 2 \
-            --max-missing 1 \
-            --max-meanDP 1000 \
-            --weir-fst-pop C.fatioi.txt \
-            --weir-fst-pop C.steinmanni.txt \
-            --fst-window-size 1000000 \
-            --fst-window-step  250000 >> vcftools.log 2>&1
+for j in $(seq 1 $(( ${#ALPINE[@]} - 1 )) ); do
+   for i in $(seq 0 $(( j - 1 )) ); do
+      if [ ! -e FST/${ALPINE[$i]}.${ALPINE[$j]}.weir.fst ]; then
+         vcftools --vcf dirty.recode.vcf \
+                  --out FST/${ALPINE[$i]}.${ALPINE[$j]} \
+                  --thin 500 \
+                  --remove-indels \
+                  --mac 2 \
+                  --max-alleles 2 \
+                  --max-missing 1 \
+                  --max-meanDP 1000 \
+                  --weir-fst-pop ${ALPINE[$i]}.txt \
+                  --weir-fst-pop ${ALPINE[$j]}.txt >> vcftools.log 2>&1 &
+      fi
+   done
+done
+wait
+
+for j in $(seq 1 $(( ${#ARCTIC[@]} - 1 )) ); do
+   for i in $(seq 0 $(( j - 1 )) ); do
+      if [ ! -e FST/${ARCTIC[$i]}.${ARCTIC[$j]}.weir.fst ]; then
+         vcftools --vcf dirty.recode.vcf \
+                  --out FST/${ARCTIC[$i]}.${ARCTIC[$j]} \
+                  --thin 500 \
+                  --remove-indels \
+                  --mac 2 \
+                  --max-alleles 2 \
+                  --max-missing 1 \
+                  --max-meanDP 1000 \
+                  --weir-fst-pop ${ARCTIC[$i]}.txt \
+                  --weir-fst-pop ${ARCTIC[$j]}.txt >> vcftools.log 2>&1 &
+      fi
+   done
+done
+wait
+
+if [ ! -e summary.txt ]; then
+   echo -e "Pop1\tPop2\tMean.FST" > summary.txt
+   for file in $(ls -1 FST/); do
+      gawk '(NR > 1){S += $3}END{
+         split(FILENAME, A, /\./)
+         MEANFST = S / (NR - 1)
+         print A[1] "\t" A[2] "\t" MEANFST
+      }' $file >> summary.txt
+   done
 fi
-
 ```
 
