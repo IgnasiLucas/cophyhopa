@@ -1,0 +1,32 @@
+
+
+processing file: README.Rmd
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+
+cat Alpine.txt Arctic.txt >> AREG.txt
+
+if [ ! -e areg.recode.vcf ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep AREG.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out areg \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --recode --recode-INFO-all
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+"
+
+Quitting from lines 37-47 [unnamed-chunk-2] (README.Rmd)
+Error:
+! object 'alpine' not found
+Backtrace:
+ 1. SNPRelate::snpgdsGetGeno(alpine, sample.id = NULL, with.id = TRUE)
+Execution halted

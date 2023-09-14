@@ -1,0 +1,341 @@
+---
+title: "PCA for regions (Species -p- level)"
+author: "Mar Llaberia-Robledillo"
+date: "`r Sys.Date()`"
+output:
+   html_document:
+      toc: TRUE
+---
+# PCA analysis for all regions 
+
+```{bash}
+VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+
+cat Alpine.txt Arctic.txt >> AREG.txt
+
+if [ ! -e areg.recode.vcf ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep AREG.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out areg \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --recode --recode-INFO-all
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+```
+
+```{r collapse=TRUE}
+library(GWASTools); library(ggplot2); library(SNPRelate); library(stringr); 
+AREG = '~/cophyhopa/results/2023-09-13/PCA/areg.recode.vcf'
+
+snpgdsVCF2GDS(AREG, "areg.gds", method = "biallelic.only")
+areg <- snpgdsOpen("areg.gds")
+#snpgdsClose(areg)
+popmap <- read.table("~/cophyhopa/data/popmap.txt", quote="\"", comment.char="")
+samp <- snpgdsGetGeno(areg, sample.id = NULL, with.id = TRUE)
+row.names(popmap) <- popmap[,1]
+popmap <- popmap[samp$sample.id, ]
+```
+
+
+```{r collapse=TRUE}
+# pca with
+pca <- snpgdsPCA(areg, autosome.only = FALSE, 
+                 num.thread = 8)
+
+# variance proportion (%)
+pc.percent <- pca$varprop*100
+pc.percent <- head(round(pc.percent, 2))
+
+# Manipulate results ----
+# make a data.frame
+tab <- data.frame(sample.id = pca$sample.id,
+                  EV1 = pca$eigenvect[,1],    # the first eigenvector
+                  EV2 = pca$eigenvect[,2],
+                  EV3 = pca$eigenvect[,3],
+                  EV4 = pca$eigenvect[,4],
+                  EV5 = pca$eigenvect[,5],
+                  EV6 = pca$eigenvect[,6],
+                  EV7 = pca$eigenvect[,7],# the second eigenvector
+                  stringsAsFactors = FALSE)
+head(tab)
+
+# add population data
+pop.group <- as.character(popmap[,2])
+tab[,9] <- pop.group
+colnames(tab)[9] <- "Group"
+## reorder pop names
+tab$Group <- popmap[tab$sample.id, 2]
+
+# add possible species data
+pop.sp <- as.character(popmap[,3])
+tab[,10] <- pop.sp
+colnames(tab)[10] <- "Sp"
+## reorder pop names
+tab$Sp <- popmap[tab$sample.id, 3]
+
+# add lakes information 
+lake <- as.character(popmap[,4])
+tab[,11] <- lake
+colnames(tab)[11] <- "Lake"
+# reorder lakes names
+tab$Lake <- popmap[tab$sample.id, 4]
+```
+
+
+```{r fig.height=8, fig.width=14, collapse=TRUE}
+# PC1, PC2 and PC3
+ggplot(tab, aes(x = EV1, y = EV2, col = Sp)) + geom_point(size = 5) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 15), axis.title.x = element_text(size = 15), 
+                     axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15)) +
+  theme(legend.title = element_text(size = 15)) + theme(legend.text = element_text(size = 15))
+
+ggplot(tab, aes(x = EV1, y = EV3, col = Sp)) + geom_point(size = 5) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV3", pc.percent[3], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+  
+ggplot(tab, aes(x = EV3, y = EV2, col = Sp)) + geom_point(size = 5) + 
+  labs(x = paste("EV3", pc.percent[3],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+```
+
+# PCA analysis for Alpine region 
+
+```{bash}
+VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+FISHDATA=../../../data/Fish_clean2.tsv
+
+for POP in C.acrinasus C.alpinus C.confusus C.duplex C.fatioi C.profundus C.steinmanni; do
+  if [ ! -e ${POP}.txt ]; then
+    gawk -v POP=${POP} '($19 == POP){print $1}' $FISHDATA > ${POP}.txt
+  fi
+done
+cat C.* >> Alpine.txt
+
+if [ ! -e alpine.recode.vcf ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep Alpine.txt \
+            --recode \
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \
+            --out alpine \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --recode --recode-INFO-all
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+```
+
+
+```{r collapse=TRUE}
+library(GWASTools); library(ggplot2); library(SNPRelate); library(stringr); 
+ALPINE = '~/cophyhopa/results/2023-09-13/PCA/alpine.recode.vcf'
+
+snpgdsVCF2GDS(ALPINE, "alpine.gds", method = "biallelic.only")
+alpine <- snpgdsOpen("alpine.gds")
+#snpgdsClose(alpine)
+popmap <- read.table("~/cophyhopa/data/popmap.txt", quote="\"", comment.char="")
+samp <- snpgdsGetGeno(alpine, sample.id = NULL, with.id = TRUE)
+row.names(popmap) <- popmap[,1]
+popmap <- popmap[samp$sample.id, ]
+```
+
+
+```{r collapse=TRUE}
+# pca with
+pca <- snpgdsPCA(alpine, autosome.only = FALSE, 
+                 num.thread = 8)
+
+# variance proportion (%)
+pc.percent <- pca$varprop*100
+pc.percent <- head(round(pc.percent, 2))
+
+# Manipulate results ----
+# make a data.frame
+tab <- data.frame(sample.id = pca$sample.id,
+                  EV1 = pca$eigenvect[,1],    # the first eigenvector
+                  EV2 = pca$eigenvect[,2],
+                  EV3 = pca$eigenvect[,3],
+                  EV4 = pca$eigenvect[,4],
+                  EV5 = pca$eigenvect[,5],
+                  EV6 = pca$eigenvect[,6],
+                  EV7 = pca$eigenvect[,7],# the second eigenvector
+                  stringsAsFactors = FALSE)
+head(tab)
+
+# add population data
+pop.group <- as.character(popmap[,2])
+tab[,9] <- pop.group
+colnames(tab)[9] <- "Group"
+## reorder pop names
+tab$Group <- popmap[tab$sample.id, 2]
+
+# add possible species data
+pop.sp <- as.character(popmap[,3])
+tab[,10] <- pop.sp
+colnames(tab)[10] <- "Sp"
+## reorder pop names
+tab$Sp <- popmap[tab$sample.id, 3]
+
+# add lakes information 
+lake <- as.character(popmap[,4])
+tab[,11] <- lake
+colnames(tab)[11] <- "Lake"
+# reorder lakes names
+tab$Lake <- popmap[tab$sample.id, 4]
+```
+
+
+```{r fig.height=8, fig.width=10, collapse=TRUE}
+# PC1, PC2 and PC3
+ggplot(tab, aes(x = EV1, y = EV2, col = Sp)) + geom_point(size = 5) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 15), axis.title.x = element_text(size = 15), 
+                     axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15)) +
+  theme(legend.title = element_text(size = 15)) + theme(legend.text = element_text(size = 15))
+
+ggplot(tab, aes(x = EV1, y = EV3, col = Sp)) + geom_point(size = 4) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV3", pc.percent[3], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+  
+ggplot(tab, aes(x = EV3, y = EV2, col = Sp)) + geom_point(size = 4) + 
+  labs(x = paste("EV3", pc.percent[3],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+```
+
+
+# PCA analysis for Arctic region 
+
+```{bash}
+VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+FISHDATA=../../../data/Fish_clean2.tsv
+
+for POP in D L P; do
+  if [ ! -e ${POP}.txt ]; then
+    gawk -v POP=${POP} '($19 == POP){print $1}' $FISHDATA > ${POP}.txt
+  fi
+done
+cat D.txt L.txt P.txt >> Arctic.txt
+
+if [ ! -e arctic.recode.vcf ]; then
+   vcftools --vcf $VCF \
+            --out dirty \
+            --keep Arctic.txt \
+            --recode --recode-INFO-all
+
+   vcftools --vcf dirty.recode.vcf \
+            --out arctic \
+            --thin 500 \
+            --remove-indels \
+            --mac 2 \
+            --max-alleles 2 \
+            --max-meanDP 1000 \
+            --max-missing-count 7 \
+            --recode --recode-INFO-all
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+```
+
+
+```{r collapse=TRUE}
+ARCTIC <- '~/cophyhopa/results/2023-09-13/PCA/arctic.recode.vcf'
+
+vcf <- snpgdsVCF2GDS(ARCTIC, "arctic.gds", method = "biallelic.only")
+
+arctic <- snpgdsOpen("arctic.gds")
+#snpgdsClose(arctic)
+popmap <- read.table("~/cophyhopa/data/popmap.txt", quote="\"", comment.char="")
+samp <- snpgdsGetGeno(arctic, sample.id = NULL, with.id = TRUE)
+row.names(popmap) <- popmap[,1]
+popmap <- popmap[samp$sample.id, ]
+
+```
+
+
+```{r collapse=TRUE}
+# pca with
+pca <- snpgdsPCA(arctic, autosome.only = FALSE, 
+                 num.thread = 8)  
+# variance proportion (%)
+pc.percent <- pca$varprop*100
+pc.percent <- head(round(pc.percent, 2))
+
+# Manipulate results ----
+# make a data.frame
+tab <- data.frame(sample.id = pca$sample.id,
+                  EV1 = pca$eigenvect[,1],    # the first eigenvector
+                  EV2 = pca$eigenvect[,2],
+                  EV3 = pca$eigenvect[,3],
+                  EV4 = pca$eigenvect[,4],
+                  EV5 = pca$eigenvect[,5],
+                  EV6 = pca$eigenvect[,6],
+                  EV7 = pca$eigenvect[,7],# the second eigenvector
+                  stringsAsFactors = FALSE)
+head(tab)
+# add population data
+pop.group <- as.character(popmap[,2])
+tab[,9] <- pop.group
+colnames(tab)[9] <- "Group"
+## reorder pop names
+tab$Group <- popmap[tab$sample.id, 2]
+
+# add possible species data
+pop.sp <- as.character(popmap[,3])
+tab[,10] <- pop.sp
+colnames(tab)[10] <- "Sp"
+## reorder pop names
+tab$Sp <- popmap[tab$sample.id, 3]
+                    
+# add lakes information 
+lake <- as.character(popmap[,4])
+tab[,11] <- lake
+colnames(tab)[11] <- "Lake"
+# reorder lakes names
+tab$Lake <- popmap[tab$sample.id, 4]
+```
+
+
+```{r fig.height=8, fig.width=10, collapse=TRUE}
+# PC1, PC2 and PC3
+ggplot(tab, aes(x = EV1, y = EV2, col = Lake)) + geom_point(size = 5) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 15), axis.title.x = element_text(size = 15), 
+                     axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15)) +
+  theme(legend.title = element_text(size = 15)) + theme(legend.text = element_text(size = 15))
+
+ggplot(tab, aes(x = EV1, y = EV3, col = Lake)) + geom_point(size = 4) + 
+  labs(x = paste("EV1", pc.percent[1],"%"), y = paste("EV3", pc.percent[3], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+
+ggplot(tab, aes(x = EV3, y = EV2, col = Lake)) + geom_point(size = 4) + 
+  labs(x = paste("EV3", pc.percent[3],"%"), y = paste("EV2", pc.percent[2], "%")) + 
+  theme_bw() + theme(axis.title.y = element_text(size = 10), axis.title.x = element_text(size = 10), 
+                     axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10)) +
+  theme(legend.title = element_text(size = 10)) + theme(legend.text = element_text(size = 10))
+```

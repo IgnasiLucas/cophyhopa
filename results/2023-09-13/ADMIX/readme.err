@@ -1,0 +1,197 @@
+
+
+processing file: README.Rmd
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+
+cat Alpine.txt Arctic.txt >> AREG.txt
+FILE=AREG
+
+if [ ! -e \$FILE.vcf.gz ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep AREG.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out \$FILE \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > \$FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c \$FILE\".vcf.gz\" | \\
+   gawk '(/^[^#]/){
+      A[\$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr \"\\t\" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf \$FILE\".vcf.gz\" \\
+         --plink --mac 2 --remove-indels --max-alleles 2 \\
+         --chrom-map chromMap.txt \\
+         --out \$FILE
+
+gawk -v OFS=\"\\t\" '{
+   \$1 = 1
+   \$2 = 1 \":\" \$4
+   print \$0
+}' \$FILE\".map\" > better.map
+mv better.map \$FILE.map
+
+plink --file \$FILE --make-bed --out \$FILE --allow-no-sex --allow-extra-chr 0"
+running: bash  -c "INPUT='/gata/mar/cophyhopa/results/2023-09-13/ADMIX/AREG.bed'
+
+for K in 2 3 4 5 6 7 8 ; do 
+  if [ ! -e log\${K}.AREG.out ]; then
+    admixture --cv \$INPUT \$K | tee log\${K}.AREG.out; 
+  fi 
+done"
+running: bash  -c 'grep -h CV log*.AREG.out'
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+FISHDATA=../../../data/Fish_clean2.tsv
+
+for POP in C.acrinasus C.alpinus C.confusus C.duplex C.fatioi C.profundus C.steinmanni; do
+  if [ ! -e \${POP}.txt ]; then
+    gawk -v POP=\${POP} '(\$19 == POP){print \$1}' \$FISHDATA > \${POP}.txt
+  fi
+done
+cat C.* >> Alpine.txt
+FILE=ALPINE
+if [ ! -e \$FILE.vcf.gz ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep Alpine.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out \$FILE \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > \$FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c \$FILE\".vcf.gz\" | \\
+   gawk '(/^[^#]/){
+      A[\$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr \"\\t\" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf \$FILE\".vcf.gz\" \\
+         --plink --mac 2 --remove-indels --max-alleles 2 \\
+         --chrom-map chromMap.txt \\
+         --out \$FILE
+
+gawk -v OFS=\"\\t\" '{
+   \$1 = 1
+   \$2 = 1 \":\" \$4
+   print \$0
+}' \$FILE\".map\" > better.map
+mv better.map \$FILE.map
+
+plink --file \$FILE --make-bed --out \$FILE --allow-no-sex --allow-extra-chr 0"
+running: bash  -c "INPUT='/gata/mar/cophyhopa/results/2023-09-13/ADMIX/ALPINE.bed'
+
+for K in 5 6 7 8 ; do 
+  if [ ! -e log\${K}.ALPINE.out ]; then
+    admixture --cv \$INPUT \$K | tee log\${K}.ALPINE.out; 
+  fi 
+done"
+running: bash  -c 'grep -h CV log*.ALPINE.out'
+running: bash  -c "VCF='/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf'
+FISHDATA=../../../data/Fish_clean2.tsv
+
+for POP in D L P; do
+  if [ ! -e \${POP}.txt ]; then
+    gawk -v POP=\${POP} '(\$19 == POP){print \$1}' \$FISHDATA > \${POP}.txt
+  fi
+done
+cat D.txt L.txt P.txt >> Arctic.txt
+FILE=ARCTIC
+
+if [ ! -e \$FILE.vcf.gz ]; then
+   vcftools --vcf \$VCF \\
+            --out dirty \\
+            --keep Arctic.txt \\
+            --recode \\
+            --recode-INFO-all
+   vcftools --vcf dirty.recode.vcf \\
+            --out \$FILE \\
+            --thin 500 \\
+            --remove-indels \\
+            --mac 2 \\
+            --max-alleles 2 \\
+            --max-meanDP 1000 \\
+            --max-missing-count 7 \\
+            --stdout \\
+            --recode --recode-INFO-all \\
+            | gzip > \$FILE.vcf.gz
+fi
+if [ -e dirty.recode.vcf ]; then rm dirty.recode.vcf; fi
+
+if [ ! -e chromMap.txt ]; then
+   gunzip -c \$FILE\".vcf.gz\" | \\
+   gawk '(/^[^#]/){
+      A[\$1] = 1
+   }END{
+      N = 1
+      for (chr in A) {
+         print chr \"\\t\" N
+         N = N + 1
+      }
+   }' > chromMap.txt
+fi
+
+vcftools --gzvcf \$FILE\".vcf.gz\" \\
+         --plink --mac 2 --remove-indels --max-alleles 2 \\
+         --chrom-map chromMap.txt \\
+         --out \$FILE
+
+gawk -v OFS=\"\\t\" '{
+   \$1 = 1
+   \$2 = 1 \":\" \$4
+   print \$0
+}' \$FILE\".map\" > better.map
+mv better.map \$FILE.map
+
+plink --file \$FILE --make-bed --out \$FILE --allow-no-sex --allow-extra-chr 0"
+running: bash  -c "
+INPUT='/gata/mar/cophyhopa/results/2023-09-13/ADMIX/ARCTIC.bed'
+
+for K in 2 3 4 ; do 
+  if [ ! -e log\${K}.ARCTIC.out ]; then
+    admixture --cv \$INPUT \$K | tee log\${K}.ARCTIC.out; 
+  fi 
+done
+    "
+running: bash  -c 'grep -h CV log*.ARCTIC.out'
+output file: README.knit.md
+
+
+Output created: README.html
