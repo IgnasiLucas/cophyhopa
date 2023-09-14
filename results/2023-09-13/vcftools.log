@@ -1,0 +1,1804 @@
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf /gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf
+	--remove ../2022-05-04/TheWorst.txt
+	--recode-INFO-all
+	--out dirty
+	--recode
+
+Excluding individuals in 'exclude' list
+After filtering, kept 271 out of 280 Individuals
+Outputting VCF file...
+After filtering, kept 879238 out of a possible 879238 Sites
+Run Time = 263.00 seconds
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop C.acrinasus.txt
+	--weir-fst-pop C.alpinus.txt
+	--keep C.acrinasus.txt
+	--keep C.alpinus.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/C.acrinasus.C.alpinus
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 15 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop C.acrinasus.txt
+	--weir-fst-pop C.confusus.txt
+	--keep C.acrinasus.txt
+	--keep C.confusus.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/C.acrinasus.C.confusus
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 24 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop C.alpinus.txt
+	--weir-fst-pop C.confusus.txt
+	--keep C.alpinus.txt
+	--keep C.confusus.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/C.alpinus.C.confusus
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 19 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop C.acrinasus.txt
+	--weir-fst-pop C.duplex.txt
+	--keep C.acrinasus.txt
+	--keep C.duplex.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/C.acrinasus.C.duplex
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 25 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--vcf dirty.recode.vcf
+	--weir-fst-pop C.alpinus.txt
+	--weir-fst-pop C.confusus.txt
+	--weir-fst-pop C.duplex.txt
+	--weir-fst-pop C.duplex.txt
+	--keep C.alpinus.txt
+	--keep C.confusus.txt
+	--keep C.duplex.txt
+	--keep C.duplex.txt
+	--mac 2
+	--mac 2
+	--max-alleles 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--max-meanDP 1e+03
+	--thin 500
+	--thin 500
+	--max-missing 1
+	--max-missing 1
+	--out FST/C.alpinus.C.duplex
+	--out FST/C.confusus.C.duplex
+	--remove-indels
+	--remove-indels
+
+
+Keeping individuals in 'keep' list
+Keeping individuals in 'keep' list
+After filtering, kept 20 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+After filtering, kept 29 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop C.acrinasus.txt
+	--weir-fst-pop C.fatioi.txt
+	--keep C.acrinasus.txt
+	--keep C.fatioi.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/C.acrinasus.C.fatioi
+	--remove-indels
+
+
+VCFtools - 0.1.17
+Keeping individuals in 'keep' list
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop C.confusus.txt
+	--weir-fst-pop C.fatioi.txt
+	--keep C.confusus.txt
+	--keep C.fatioi.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/C.confusus.C.fatioi
+	--remove-indels
+After filtering, kept 20 out of 271 Individuals
+
+Outputting Weir and Cockerham Fst estimates.
+Keeping individuals in 'keep' list
+After filtering, kept 24 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop C.duplex.txt
+	--weir-fst-pop C.fatioi.txt
+	--keep C.duplex.txt
+	--keep C.fatioi.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/C.duplex.C.fatioi
+	--remove-indels
+
+Keeping individuals in 'keep' list
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+After filtering, kept 25 out of 271 Individuals
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop C.alpinus.txt
+Outputting Weir and Cockerham Fst estimates.
+	--weir-fst-pop C.fatioi.txt
+	--keep C.alpinus.txt
+	--keep C.fatioi.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/C.alpinus.C.fatioi
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 15 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop C.acrinasus.txt
+	--weir-fst-pop C.profundus.txt
+	--keep C.acrinasus.txt
+	--keep C.profundus.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/C.acrinasus.C.profundus
+	--remove-indels
+
+Keeping individuals in 'keep' list
+
+VCFtools - 0.1.17
+After filtering, kept 32 out of 271 Individuals
+(C) Adam Auton and Anthony Marcketta 2009
+
+
+VCFtools - 0.1.17
+Parameters as interpreted:
+Outputting Weir and Cockerham Fst estimates.
+(C) Adam Auton and Anthony Marcketta 2009
+
+	--vcf dirty.recode.vcf
+Parameters as interpreted:
+	--weir-fst-pop C.confusus.txt
+	--vcf dirty.recode.vcf
+	--weir-fst-pop C.profundus.txt
+	--weir-fst-pop C.alpinus.txt
+	--keep C.confusus.txt
+	--weir-fst-pop C.profundus.txt
+
+VCFtools - 0.1.17
+	--keep C.profundus.txt
+	--keep C.alpinus.txt
+(C) Adam Auton and Anthony Marcketta 2009
+
+	--keep C.profundus.txt
+Parameters as interpreted:
+	--mac 2
+	--vcf dirty.recode.vcf
+	--max-alleles 2
+	--weir-fst-pop C.duplex.txt
+	--max-meanDP 1e+03
+	--weir-fst-pop C.profundus.txt
+	--mac 2
+	--thin 500
+	--max-alleles 2
+	--keep C.duplex.txt
+	--max-missing 1
+	--max-meanDP 1e+03
+	--keep C.profundus.txt
+	--out FST/C.confusus.C.profundus
+	--thin 500
+	--remove-indels
+	--max-missing 1
+
+	--out FST/C.alpinus.C.profundus
+	--mac 2
+	--remove-indels
+	--max-alleles 2
+
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/C.duplex.C.profundus
+	--remove-indels
+
+Keeping individuals in 'keep' list
+Keeping individuals in 'keep' list
+Keeping individuals in 'keep' list
+After filtering, kept 36 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+After filtering, kept 27 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+After filtering, kept 37 out of 271 Individuals
+
+VCFtools - 0.1.17
+Outputting Weir and Cockerham Fst estimates.
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop C.fatioi.txt
+	--weir-fst-pop C.profundus.txt
+	--keep C.fatioi.txt
+	--keep C.profundus.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/C.fatioi.C.profundus
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 32 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--vcf dirty.recode.vcf
+	--weir-fst-pop C.acrinasus.txt
+	--weir-fst-pop C.alpinus.txt
+	--weir-fst-pop C.steinmanni.txt
+	--weir-fst-pop C.steinmanni.txt
+	--keep C.acrinasus.txt
+	--keep C.alpinus.txt
+	--keep C.steinmanni.txt
+	--keep C.steinmanni.txt
+	--mac 2
+	--max-alleles 2
+	--mac 2
+	--max-meanDP 1e+03
+	--max-alleles 2
+	--thin 500
+	--max-meanDP 1e+03
+	--max-missing 1
+	--thin 500
+	--out FST/C.acrinasus.C.steinmanni
+	--max-missing 1
+	--remove-indels
+	--out FST/C.alpinus.C.steinmanni
+
+	--remove-indels
+
+Keeping individuals in 'keep' list
+Keeping individuals in 'keep' list
+After filtering, kept 15 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+After filtering, kept 20 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop C.confusus.txt
+	--weir-fst-pop C.steinmanni.txt
+	--keep C.confusus.txt
+	--keep C.steinmanni.txt
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop C.duplex.txt
+	--weir-fst-pop C.steinmanni.txt
+	--mac 2
+	--keep C.duplex.txt
+	--max-alleles 2
+	--keep C.steinmanni.txt
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/C.confusus.C.steinmanni
+	--mac 2
+	--remove-indels
+	--max-alleles 2
+
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/C.duplex.C.steinmanni
+	--remove-indels
+
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop C.fatioi.txt
+	--weir-fst-pop C.steinmanni.txt
+	--keep C.fatioi.txt
+	--keep C.steinmanni.txt
+	--mac 2
+Keeping individuals in 'keep' list
+	--max-alleles 2
+Keeping individuals in 'keep' list
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/C.fatioi.C.steinmanni
+	--remove-indels
+
+After filtering, kept 25 out of 271 Individuals
+
+VCFtools - 0.1.17
+Outputting Weir and Cockerham Fst estimates.
+After filtering, kept 24 out of 271 Individuals
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+Outputting Weir and Cockerham Fst estimates.
+	--weir-fst-pop C.profundus.txt
+	--weir-fst-pop C.steinmanni.txt
+	--keep C.profundus.txt
+	--keep C.steinmanni.txt
+Keeping individuals in 'keep' list
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/C.profundus.C.steinmanni
+	--remove-indels
+
+After filtering, kept 20 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+Keeping individuals in 'keep' list
+After filtering, kept 32 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+Weir and Cockerham mean Fst estimate: 0.075128
+Weir and Cockerham weighted Fst estimate: 0.11551
+After filtering, kept 13601 out of a possible 879238 Sites
+Run Time = 42.00 seconds
+Weir and Cockerham mean Fst estimate: 0.085
+Weir and Cockerham weighted Fst estimate: 0.14237
+After filtering, kept 13701 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.042609
+Weir and Cockerham weighted Fst estimate: 0.069679
+After filtering, kept 15817 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.095746
+Weir and Cockerham weighted Fst estimate: 0.14598
+After filtering, kept 15176 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.0221
+Weir and Cockerham weighted Fst estimate: 0.032407
+After filtering, kept 16195 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.040022
+Weir and Cockerham weighted Fst estimate: 0.056179
+After filtering, kept 13397 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.15261
+Weir and Cockerham weighted Fst estimate: 0.23697
+After filtering, kept 13818 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.11007
+Weir and Cockerham weighted Fst estimate: 0.1585
+After filtering, kept 12678 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.074333
+Weir and Cockerham weighted Fst estimate: 0.1079
+After filtering, kept 12789 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.1266
+Weir and Cockerham weighted Fst estimate: 0.17128
+After filtering, kept 13678 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.084569
+Weir and Cockerham weighted Fst estimate: 0.11411
+After filtering, kept 14355 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.085105
+Weir and Cockerham weighted Fst estimate: 0.11989
+After filtering, kept 16097 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.040003
+Weir and Cockerham weighted Fst estimate: 0.057169
+After filtering, kept 14821 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.1617
+Weir and Cockerham weighted Fst estimate: 0.24661
+After filtering, kept 13128 out of a possible 879238 Sites
+Run Time = 45.00 seconds
+Weir and Cockerham mean Fst estimate: 0.021474
+Weir and Cockerham weighted Fst estimate: 0.027995
+After filtering, kept 23157 out of a possible 879238 Sites
+Run Time = 45.00 seconds
+Weir and Cockerham mean Fst estimate: 0.073972
+Weir and Cockerham weighted Fst estimate: 0.11025
+After filtering, kept 14543 out of a possible 879238 Sites
+Run Time = 45.00 seconds
+Weir and Cockerham mean Fst estimate: 0.10814
+Weir and Cockerham weighted Fst estimate: 0.14848
+After filtering, kept 18125 out of a possible 879238 Sites
+Run Time = 45.00 seconds
+Weir and Cockerham mean Fst estimate: 0.12176
+Weir and Cockerham weighted Fst estimate: 0.18028
+After filtering, kept 17590 out of a possible 879238 Sites
+Run Time = 46.00 seconds
+Weir and Cockerham mean Fst estimate: 0.14146
+Weir and Cockerham weighted Fst estimate: 0.22715
+After filtering, kept 15826 out of a possible 879238 Sites
+Run Time = 46.00 seconds
+Weir and Cockerham mean Fst estimate: 0.092176
+Weir and Cockerham weighted Fst estimate: 0.13099
+After filtering, kept 20729 out of a possible 879238 Sites
+Run Time = 47.00 seconds
+Weir and Cockerham mean Fst estimate: 0.12694
+Weir and Cockerham weighted Fst estimate: 0.19512
+After filtering, kept 20819 out of a possible 879238 Sites
+Run Time = 47.00 seconds
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop D.txt
+	--weir-fst-pop L.txt
+	--keep D.txt
+	--keep L.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/D.L
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 89 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop D.txt
+	--weir-fst-pop P.txt
+	--keep D.txt
+	--keep P.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/D.P
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 31 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop L.txt
+	--weir-fst-pop P.txt
+	--keep L.txt
+	--keep P.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/L.P
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 108 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+Weir and Cockerham mean Fst estimate: 0.10344
+Weir and Cockerham weighted Fst estimate: 0.15303
+After filtering, kept 24066 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.083726
+Weir and Cockerham weighted Fst estimate: 0.12915
+After filtering, kept 18305 out of a possible 879238 Sites
+Run Time = 47.00 seconds
+Weir and Cockerham mean Fst estimate: 0.019202
+Weir and Cockerham weighted Fst estimate: 0.031473
+After filtering, kept 18087 out of a possible 879238 Sites
+Run Time = 47.00 seconds
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop acrinasus.txt
+	--weir-fst-pop alpinus.txt
+	--keep acrinasus.txt
+	--keep alpinus.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/acrinasus.alpinus
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 15 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop acrinasus.txt
+	--weir-fst-pop confusus.txt
+	--keep acrinasus.txt
+	--keep confusus.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/acrinasus.confusus
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 24 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop alpinus.txt
+	--weir-fst-pop confusus.txt
+	--keep alpinus.txt
+	--keep confusus.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/alpinus.confusus
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 19 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop acrinasus.txt
+	--weir-fst-pop duplex.txt
+	--keep acrinasus.txt
+	--keep duplex.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/acrinasus.duplex
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 25 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--vcf dirty.recode.vcf
+	--weir-fst-pop alpinus.txt
+	--weir-fst-pop confusus.txt
+	--weir-fst-pop duplex.txt
+	--weir-fst-pop duplex.txt
+	--keep alpinus.txt
+	--keep confusus.txt
+	--keep duplex.txt
+	--keep duplex.txt
+	--mac 2
+	--mac 2
+	--max-alleles 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--max-meanDP 1e+03
+	--thin 500
+	--thin 500
+	--max-missing 1
+	--max-missing 1
+	--out FST/confusus.duplex
+	--out FST/alpinus.duplex
+	--remove-indels
+	--remove-indels
+
+
+Keeping individuals in 'keep' list
+Keeping individuals in 'keep' list
+After filtering, kept 20 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+After filtering, kept 29 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop acrinasus.txt
+	--weir-fst-pop fatioi.txt
+	--keep acrinasus.txt
+	--keep fatioi.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/acrinasus.fatioi
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 20 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop confusus.txt
+	--weir-fst-pop fatioi.txt
+	--keep confusus.txt
+	--keep fatioi.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+
+VCFtools - 0.1.17
+	--thin 500
+(C) Adam Auton and Anthony Marcketta 2009
+
+	--max-missing 1
+Parameters as interpreted:
+	--out FST/confusus.fatioi
+	--vcf dirty.recode.vcf
+	--remove-indels
+	--weir-fst-pop duplex.txt
+
+	--weir-fst-pop fatioi.txt
+	--keep duplex.txt
+	--keep fatioi.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/duplex.fatioi
+	--remove-indels
+
+Keeping individuals in 'keep' list
+
+VCFtools - 0.1.17
+Keeping individuals in 'keep' list
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop alpinus.txt
+	--weir-fst-pop fatioi.txt
+	--keep alpinus.txt
+After filtering, kept 24 out of 271 Individuals
+	--keep fatioi.txt
+Outputting Weir and Cockerham Fst estimates.
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/alpinus.fatioi
+	--remove-indels
+After filtering, kept 25 out of 271 Individuals
+
+Outputting Weir and Cockerham Fst estimates.
+Keeping individuals in 'keep' list
+After filtering, kept 15 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop alpinus.txt
+	--weir-fst-pop profundus.txt
+	--keep alpinus.txt
+	--keep profundus.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/alpinus.profundus
+	--remove-indels
+
+Keeping individuals in 'keep' list
+
+VCFtools - 0.1.17
+
+VCFtools - 0.1.17
+After filtering, kept 27 out of 271 Individuals
+(C) Adam Auton and Anthony Marcketta 2009
+
+(C) Adam Auton and Anthony Marcketta 2009
+
+Outputting Weir and Cockerham Fst estimates.
+Parameters as interpreted:
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--vcf dirty.recode.vcf
+	--weir-fst-pop acrinasus.txt
+	--weir-fst-pop confusus.txt
+	--weir-fst-pop profundus.txt
+	--weir-fst-pop profundus.txt
+	--keep acrinasus.txt
+	--keep confusus.txt
+	--keep profundus.txt
+	--keep profundus.txt
+	--mac 2
+	--mac 2
+	--max-alleles 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-meanDP 1e+03
+	--max-missing 1
+	--thin 500
+	--out FST/confusus.profundus
+	--max-missing 1
+	--remove-indels
+	--out FST/acrinasus.profundus
+
+	--remove-indels
+
+Keeping individuals in 'keep' list
+Keeping individuals in 'keep' list
+After filtering, kept 36 out of 271 Individuals
+
+VCFtools - 0.1.17
+After filtering, kept 32 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+(C) Adam Auton and Anthony Marcketta 2009
+
+Outputting Weir and Cockerham Fst estimates.
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop duplex.txt
+	--weir-fst-pop profundus.txt
+	--keep duplex.txt
+	--keep profundus.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/duplex.profundus
+	--remove-indels
+
+Keeping individuals in 'keep' list
+
+VCFtools - 0.1.17
+After filtering, kept 37 out of 271 Individuals
+(C) Adam Auton and Anthony Marcketta 2009
+
+Outputting Weir and Cockerham Fst estimates.
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop fatioi.txt
+	--weir-fst-pop profundus.txt
+	--keep fatioi.txt
+	--keep profundus.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/fatioi.profundus
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 32 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop acrinasus.txt
+	--weir-fst-pop steinmanni.txt
+	--keep acrinasus.txt
+	--keep steinmanni.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/acrinasus.steinmanni
+	--remove-indels
+
+Keeping individuals in 'keep' list
+
+VCFtools - 0.1.17
+After filtering, kept 20 out of 271 Individuals
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+Outputting Weir and Cockerham Fst estimates.
+	--vcf dirty.recode.vcf
+	--weir-fst-pop alpinus.txt
+	--weir-fst-pop steinmanni.txt
+	--keep alpinus.txt
+	--keep steinmanni.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/alpinus.steinmanni
+	--remove-indels
+
+
+VCFtools - 0.1.17
+Keeping individuals in 'keep' list
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop confusus.txt
+	--weir-fst-pop steinmanni.txt
+	--keep confusus.txt
+	--keep steinmanni.txt
+	--mac 2
+	--max-alleles 2
+After filtering, kept 15 out of 271 Individuals
+	--max-meanDP 1e+03
+	--thin 500
+Outputting Weir and Cockerham Fst estimates.
+	--max-missing 1
+	--out FST/confusus.steinmanni
+	--remove-indels
+
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop fatioi.txt
+	--weir-fst-pop steinmanni.txt
+	--keep fatioi.txt
+	--keep steinmanni.txt
+Keeping individuals in 'keep' list
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+
+VCFtools - 0.1.17
+	--max-missing 1
+
+VCFtools - 0.1.17
+After filtering, kept 24 out of 271 Individuals
+(C) Adam Auton and Anthony Marcketta 2009
+
+	--out FST/fatioi.steinmanni
+(C) Adam Auton and Anthony Marcketta 2009
+
+Outputting Weir and Cockerham Fst estimates.
+Parameters as interpreted:
+	--remove-indels
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+
+	--vcf dirty.recode.vcf
+	--weir-fst-pop profundus.txt
+	--weir-fst-pop duplex.txt
+	--weir-fst-pop steinmanni.txt
+	--weir-fst-pop steinmanni.txt
+	--keep profundus.txt
+	--keep duplex.txt
+	--keep steinmanni.txt
+	--keep steinmanni.txt
+	--mac 2
+	--max-alleles 2
+	--mac 2
+	--max-meanDP 1e+03
+	--max-alleles 2
+	--thin 500
+	--max-meanDP 1e+03
+	--max-missing 1
+	--thin 500
+	--out FST/profundus.steinmanni
+Keeping individuals in 'keep' list
+	--max-missing 1
+	--remove-indels
+	--out FST/duplex.steinmanni
+
+	--remove-indels
+
+After filtering, kept 20 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+Keeping individuals in 'keep' list
+Keeping individuals in 'keep' list
+After filtering, kept 32 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+After filtering, kept 25 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+Weir and Cockerham mean Fst estimate: 0.075128
+Weir and Cockerham weighted Fst estimate: 0.11551
+After filtering, kept 13601 out of a possible 879238 Sites
+Run Time = 42.00 seconds
+Weir and Cockerham mean Fst estimate: 0.085
+Weir and Cockerham weighted Fst estimate: 0.14237
+After filtering, kept 13701 out of a possible 879238 Sites
+Run Time = 43.00 seconds
+Weir and Cockerham mean Fst estimate: 0.073972
+Weir and Cockerham weighted Fst estimate: 0.11025
+After filtering, kept 14543 out of a possible 879238 Sites
+Run Time = 43.00 seconds
+Weir and Cockerham mean Fst estimate: 0.085105
+Weir and Cockerham weighted Fst estimate: 0.11989
+After filtering, kept 16097 out of a possible 879238 Sites
+Run Time = 43.00 seconds
+Weir and Cockerham mean Fst estimate: 0.074333
+Weir and Cockerham weighted Fst estimate: 0.1079
+After filtering, kept 12789 out of a possible 879238 Sites
+Run Time = 43.00 seconds
+Weir and Cockerham mean Fst estimate: 0.0221
+Weir and Cockerham weighted Fst estimate: 0.032407
+After filtering, kept 16195 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.040022
+Weir and Cockerham weighted Fst estimate: 0.056179
+After filtering, kept 13397 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.11007
+Weir and Cockerham weighted Fst estimate: 0.1585
+After filtering, kept 12678 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.084569
+Weir and Cockerham weighted Fst estimate: 0.11411
+After filtering, kept 14355 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.15261
+Weir and Cockerham weighted Fst estimate: 0.23697
+After filtering, kept 13818 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.095746
+Weir and Cockerham weighted Fst estimate: 0.14598
+After filtering, kept 15176 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.042609
+Weir and Cockerham weighted Fst estimate: 0.069679
+After filtering, kept 15817 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.1617
+Weir and Cockerham weighted Fst estimate: 0.24661
+After filtering, kept 13128 out of a possible 879238 Sites
+Run Time = 44.00 seconds
+Weir and Cockerham mean Fst estimate: 0.1266
+Weir and Cockerham weighted Fst estimate: 0.17128
+After filtering, kept 13678 out of a possible 879238 Sites
+Run Time = 45.00 seconds
+Weir and Cockerham mean Fst estimate: 0.040003
+Weir and Cockerham weighted Fst estimate: 0.057169
+After filtering, kept 14821 out of a possible 879238 Sites
+Run Time = 45.00 seconds
+Weir and Cockerham mean Fst estimate: 0.10814
+Weir and Cockerham weighted Fst estimate: 0.14848
+After filtering, kept 18125 out of a possible 879238 Sites
+Run Time = 45.00 seconds
+Weir and Cockerham mean Fst estimate: 0.12176
+Weir and Cockerham weighted Fst estimate: 0.18028
+After filtering, kept 17590 out of a possible 879238 Sites
+Run Time = 46.00 seconds
+Weir and Cockerham mean Fst estimate: 0.12694
+Weir and Cockerham weighted Fst estimate: 0.19512
+After filtering, kept 20819 out of a possible 879238 Sites
+Run Time = 46.00 seconds
+Weir and Cockerham mean Fst estimate: 0.021474
+Weir and Cockerham weighted Fst estimate: 0.027995
+After filtering, kept 23157 out of a possible 879238 Sites
+Run Time = 46.00 seconds
+Weir and Cockerham mean Fst estimate: 0.092176
+Weir and Cockerham weighted Fst estimate: 0.13099
+After filtering, kept 20729 out of a possible 879238 Sites
+Run Time = 46.00 seconds
+Weir and Cockerham mean Fst estimate: 0.14146
+Weir and Cockerham weighted Fst estimate: 0.22715
+After filtering, kept 15826 out of a possible 879238 Sites
+Run Time = 47.00 seconds
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop D.txt
+	--weir-fst-pop L.txt
+	--keep D.txt
+	--keep L.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/D.L
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 0 out of 271 Individuals
+Error: Require Genotypes in VCF file in order to output Fst statistics.
+
+VCFtools - 0.1.17
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--vcf dirty.recode.vcf
+	--weir-fst-pop D.txt
+	--weir-fst-pop L.txt
+	--weir-fst-pop P.txt
+	--weir-fst-pop P.txt
+	--keep D.txt
+	--keep L.txt
+	--keep P.txt
+	--keep P.txt
+	--mac 2
+	--mac 2
+	--max-alleles 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--max-meanDP 1e+03
+	--thin 500
+	--thin 500
+	--max-missing 1
+	--max-missing 1
+	--out FST/D.P
+	--out FST/L.P
+	--remove-indels
+	--remove-indels
+
+
+Keeping individuals in 'keep' list
+Keeping individuals in 'keep' list
+After filtering, kept 0 out of 271 Individuals
+After filtering, kept 0 out of 271 Individuals
+Error: Require Genotypes in VCF file in order to output Fst statistics.
+Error: Require Genotypes in VCF file in order to output Fst statistics.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop D.txt
+	--weir-fst-pop L.txt
+	--keep D.txt
+	--keep L.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/D.L
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 89 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop D.txt
+	--weir-fst-pop P.txt
+	--keep D.txt
+	--keep P.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/D.P
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 31 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop L.txt
+	--weir-fst-pop P.txt
+	--keep L.txt
+	--keep P.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/L.P
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 108 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+Weir and Cockerham mean Fst estimate: 0.10344
+Weir and Cockerham weighted Fst estimate: 0.15303
+After filtering, kept 24066 out of a possible 879238 Sites
+Run Time = 41.00 seconds
+Weir and Cockerham mean Fst estimate: 0.083726
+Weir and Cockerham weighted Fst estimate: 0.12915
+After filtering, kept 18305 out of a possible 879238 Sites
+Run Time = 45.00 seconds
+Weir and Cockerham mean Fst estimate: 0.019202
+Weir and Cockerham weighted Fst estimate: 0.031473
+After filtering, kept 18087 out of a possible 879238 Sites
+Run Time = 47.00 seconds
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop Walen.txt
+	--weir-fst-pop Zurich.txt
+	--keep Walen.txt
+	--keep Zurich.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/Walen.Zurich
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 48 out of 271 Individuals
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop Walen.txt
+	--weir-fst-pop Bienne.txt
+	--keep Walen.txt
+	--keep Bienne.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/Walen.Bienne
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 38 out of 271 Individuals
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop Zurich.txt
+	--weir-fst-pop Bienne.txt
+	--keep Zurich.txt
+	--keep Bienne.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/Zurich.Bienne
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 38 out of 271 Individuals
+
+VCFtools - 0.1.16
+
+VCFtools - 0.1.16
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+(C) Adam Auton and Anthony Marcketta 2009
+
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+Parameters as interpreted:
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--vcf dirty.recode.vcf
+	--weir-fst-pop Walen.txt
+	--vcf dirty.recode.vcf
+	--weir-fst-pop Bienne.txt
+	--weir-fst-pop Thun.txt
+	--weir-fst-pop Zurich.txt
+	--weir-fst-pop Thun.txt
+	--keep Walen.txt
+	--weir-fst-pop Thun.txt
+	--keep Bienne.txt
+	--keep Thun.txt
+	--keep Zurich.txt
+	--keep Thun.txt
+	--keep Thun.txt
+	--mac 2
+	--max-alleles 2
+	--mac 2
+	--max-meanDP 1e+03
+	--mac 2
+	--max-alleles 2
+	--thin 500
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--max-missing 1
+	--thin 500
+	--max-meanDP 1e+03
+	--out FST/Zurich.Thun
+	--max-missing 1
+	--thin 500
+	--remove-indels
+	--out FST/Bienne.Thun
+
+	--max-missing 1
+	--remove-indels
+	--out FST/Walen.Thun
+
+	--remove-indels
+
+Keeping individuals in 'keep' list
+Keeping individuals in 'keep' list
+Keeping individuals in 'keep' list
+After filtering, kept 82 out of 271 Individuals
+After filtering, kept 72 out of 271 Individuals
+After filtering, kept 82 out of 271 Individuals
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop Zurich.txt
+	--weir-fst-pop Brienz.txt
+	--keep Zurich.txt
+	--keep Brienz.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/Zurich.Brienz
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 61 out of 271 Individuals
+
+VCFtools - 0.1.16
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+(C) Adam Auton and Anthony Marcketta 2009
+
+	--vcf dirty.recode.vcf
+	--weir-fst-pop Bienne.txt
+Parameters as interpreted:
+	--weir-fst-pop Brienz.txt
+	--keep Bienne.txt
+	--vcf dirty.recode.vcf
+	--keep Brienz.txt
+	--weir-fst-pop Thun.txt
+	--weir-fst-pop Brienz.txt
+	--keep Thun.txt
+	--keep Brienz.txt
+	--mac 2
+	--max-alleles 2
+	--mac 2
+	--max-meanDP 1e+03
+	--max-alleles 2
+	--thin 500
+	--max-meanDP 1e+03
+	--max-missing 1
+	--thin 500
+	--out FST/Bienne.Brienz
+	--max-missing 1
+	--remove-indels
+	--out FST/Thun.Brienz
+
+	--remove-indels
+
+Keeping individuals in 'keep' list
+Keeping individuals in 'keep' list
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+After filtering, kept 51 out of 271 Individuals
+	--vcf dirty.recode.vcf
+	--weir-fst-pop Walen.txt
+	--weir-fst-pop Brienz.txt
+	--keep Walen.txt
+	--keep Brienz.txt
+	--mac 2
+	--max-alleles 2
+After filtering, kept 95 out of 271 Individuals
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/Walen.Brienz
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 61 out of 271 Individuals
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop Walen.txt
+	--weir-fst-pop Langfjordvatn.txt
+	--keep Walen.txt
+	--keep Langfjordvatn.txt
+	--mac 2
+	--max-alleles 2
+
+VCFtools - 0.1.16
+	--max-meanDP 1e+03
+	--thin 500
+(C) Adam Auton and Anthony Marcketta 2009
+
+	--max-missing 1
+Parameters as interpreted:
+	--out FST/Walen.Langfjordvatn
+	--remove-indels
+	--vcf dirty.recode.vcf
+
+	--weir-fst-pop Zurich.txt
+	--weir-fst-pop Langfjordvatn.txt
+	--keep Zurich.txt
+	--keep Langfjordvatn.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/Zurich.Langfjordvatn
+	--remove-indels
+
+Keeping individuals in 'keep' list
+Keeping individuals in 'keep' list
+After filtering, kept 78 out of 271 Individuals
+After filtering, kept 78 out of 271 Individuals
+
+VCFtools - 0.1.16
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--vcf dirty.recode.vcf
+	--weir-fst-pop Thun.txt
+	--weir-fst-pop Bienne.txt
+	--weir-fst-pop Langfjordvatn.txt
+	--weir-fst-pop Langfjordvatn.txt
+	--keep Thun.txt
+	--keep Bienne.txt
+	--keep Langfjordvatn.txt
+	--keep Langfjordvatn.txt
+
+VCFtools - 0.1.16
+	--mac 2
+(C) Adam Auton and Anthony Marcketta 2009
+
+	--max-alleles 2
+	--mac 2
+	--max-meanDP 1e+03
+Parameters as interpreted:
+	--max-alleles 2
+	--thin 500
+	--vcf dirty.recode.vcf
+	--max-meanDP 1e+03
+	--max-missing 1
+	--weir-fst-pop Brienz.txt
+	--thin 500
+	--out FST/Thun.Langfjordvatn
+	--weir-fst-pop Langfjordvatn.txt
+	--max-missing 1
+	--remove-indels
+	--keep Brienz.txt
+	--out FST/Bienne.Langfjordvatn
+	--keep Langfjordvatn.txt
+
+	--remove-indels
+
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/Brienz.Langfjordvatn
+	--remove-indels
+
+Keeping individuals in 'keep' list
+Keeping individuals in 'keep' list
+Keeping individuals in 'keep' list
+After filtering, kept 68 out of 271 Individuals
+After filtering, kept 91 out of 271 Individuals
+After filtering, kept 112 out of 271 Individuals
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop Walen.txt
+	--weir-fst-pop Suopatjavri.txt
+	--keep Walen.txt
+	--keep Suopatjavri.txt
+	--mac 2
+
+VCFtools - 0.1.16
+	--max-alleles 2
+(C) Adam Auton and Anthony Marcketta 2009
+
+	--max-meanDP 1e+03
+Parameters as interpreted:
+	--thin 500
+	--vcf dirty.recode.vcf
+	--max-missing 1
+	--weir-fst-pop Zurich.txt
+	--out FST/Walen.Suopatjavri
+	--weir-fst-pop Suopatjavri.txt
+	--remove-indels
+	--keep Zurich.txt
+
+	--keep Suopatjavri.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/Zurich.Suopatjavri
+	--remove-indels
+
+Keeping individuals in 'keep' list
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop Bienne.txt
+	--weir-fst-pop Suopatjavri.txt
+	--keep Bienne.txt
+	--keep Suopatjavri.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+Keeping individuals in 'keep' list
+	--out FST/Bienne.Suopatjavri
+
+VCFtools - 0.1.16
+	--remove-indels
+
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop Thun.txt
+	--weir-fst-pop Suopatjavri.txt
+	--keep Thun.txt
+	--keep Suopatjavri.txt
+After filtering, kept 84 out of 271 Individuals
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/Thun.Suopatjavri
+	--remove-indels
+
+Keeping individuals in 'keep' list
+Outputting Weir and Cockerham Fst estimates.
+After filtering, kept 84 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+Outputting Weir and Cockerham Fst estimates.
+Outputting Weir and Cockerham Fst estimates.
+Outputting Weir and Cockerham Fst estimates.
+After filtering, kept 74 out of 271 Individuals
+Keeping individuals in 'keep' list
+Outputting Weir and Cockerham Fst estimates.
+Outputting Weir and Cockerham Fst estimates.
+Outputting Weir and Cockerham Fst estimates.
+Outputting Weir and Cockerham Fst estimates.
+Outputting Weir and Cockerham Fst estimates.
+Outputting Weir and Cockerham Fst estimates.
+Outputting Weir and Cockerham Fst estimates.
+Outputting Weir and Cockerham Fst estimates.
+Outputting Weir and Cockerham Fst estimates.
+Outputting Weir and Cockerham Fst estimates.
+Outputting Weir and Cockerham Fst estimates.
+Outputting Weir and Cockerham Fst estimates.
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.16
+After filtering, kept 118 out of 271 Individuals
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+Outputting Weir and Cockerham Fst estimates.
+	--weir-fst-pop Brienz.txt
+	--weir-fst-pop Suopatjavri.txt
+	--keep Brienz.txt
+	--keep Suopatjavri.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/Brienz.Suopatjavri
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 97 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf dirty.recode.vcf
+	--weir-fst-pop Langfjordvatn.txt
+	--weir-fst-pop Suopatjavri.txt
+	--keep Langfjordvatn.txt
+	--keep Suopatjavri.txt
+	--mac 2
+	--max-alleles 2
+	--max-meanDP 1e+03
+	--thin 500
+	--max-missing 1
+	--out FST/Langfjordvatn.Suopatjavri
+	--remove-indels
+
+Keeping individuals in 'keep' list
+After filtering, kept 114 out of 271 Individuals
+Outputting Weir and Cockerham Fst estimates.
+Weir and Cockerham mean Fst estimate: 0.066128
+Weir and Cockerham weighted Fst estimate: 0.090358
+After filtering, kept 13011 out of a possible 879238 Sites
+Run Time = 47.00 seconds
+Weir and Cockerham mean Fst estimate: 0.066952
+Weir and Cockerham weighted Fst estimate: 0.095543
+After filtering, kept 15173 out of a possible 879238 Sites
+Run Time = 47.00 seconds
+Weir and Cockerham mean Fst estimate: 0.078991
+Weir and Cockerham weighted Fst estimate: 0.10617
+After filtering, kept 12448 out of a possible 879238 Sites
+Run Time = 48.00 seconds
+Weir and Cockerham mean Fst estimate: 0.024754
+Weir and Cockerham weighted Fst estimate: 0.037026
+After filtering, kept 21335 out of a possible 879238 Sites
+Run Time = 49.00 seconds
+Weir and Cockerham mean Fst estimate: 0.050861
+Weir and Cockerham weighted Fst estimate: 0.066937
+After filtering, kept 11881 out of a possible 879238 Sites
+Run Time = 49.00 seconds
+Weir and Cockerham mean Fst estimate: 0.093079
+Weir and Cockerham weighted Fst estimate: 0.14903
+After filtering, kept 12481 out of a possible 879238 Sites
+Run Time = 49.00 seconds
+Weir and Cockerham mean Fst estimate: 0.18263
+Weir and Cockerham weighted Fst estimate: 0.31191
+After filtering, kept 16044 out of a possible 879238 Sites
+Run Time = 50.00 seconds
+Weir and Cockerham mean Fst estimate: 0.33569
+Weir and Cockerham weighted Fst estimate: 0.48972
+After filtering, kept 15018 out of a possible 879238 Sites
+Run Time = 50.00 seconds
+Weir and Cockerham mean Fst estimate: 0.092578
+Weir and Cockerham weighted Fst estimate: 0.14647
+After filtering, kept 14383 out of a possible 879238 Sites
+Run Time = 50.00 seconds
+Weir and Cockerham mean Fst estimate: 0.070988
+Weir and Cockerham weighted Fst estimate: 0.11417
+After filtering, kept 14587 out of a possible 879238 Sites
+Run Time = 51.00 seconds
+Weir and Cockerham mean Fst estimate: 0.19062
+Weir and Cockerham weighted Fst estimate: 0.35155
+After filtering, kept 20258 out of a possible 879238 Sites
+Run Time = 51.00 seconds
+Weir and Cockerham mean Fst estimate: 0.066233
+Weir and Cockerham weighted Fst estimate: 0.10511
+After filtering, kept 12833 out of a possible 879238 Sites
+Run Time = 51.00 seconds
+Weir and Cockerham mean Fst estimate: 0.18348
+Weir and Cockerham weighted Fst estimate: 0.34874
+After filtering, kept 17938 out of a possible 879238 Sites
+Run Time = 51.00 seconds
+Weir and Cockerham mean Fst estimate: 0.024306
+Weir and Cockerham weighted Fst estimate: 0.038885
+After filtering, kept 11167 out of a possible 879238 Sites
+Run Time = 51.00 seconds
+Weir and Cockerham mean Fst estimate: 0.19031
+Weir and Cockerham weighted Fst estimate: 0.36861
+After filtering, kept 15210 out of a possible 879238 Sites
+Run Time = 52.00 seconds
+Weir and Cockerham mean Fst estimate: 0.30451
+Weir and Cockerham weighted Fst estimate: 0.52533
+After filtering, kept 14324 out of a possible 879238 Sites
+Run Time = 52.00 seconds
+Weir and Cockerham mean Fst estimate: 0.31987
+Weir and Cockerham weighted Fst estimate: 0.52406
+After filtering, kept 17321 out of a possible 879238 Sites
+Run Time = 52.00 seconds
+Weir and Cockerham mean Fst estimate: 0.32296
+Weir and Cockerham weighted Fst estimate: 0.52058
+After filtering, kept 19940 out of a possible 879238 Sites
+Run Time = 53.00 seconds
+Weir and Cockerham mean Fst estimate: 0.27105
+Weir and Cockerham weighted Fst estimate: 0.50719
+After filtering, kept 14188 out of a possible 879238 Sites
+Run Time = 54.00 seconds
+Weir and Cockerham mean Fst estimate: 0.12339
+Weir and Cockerham weighted Fst estimate: 0.20636
+After filtering, kept 17939 out of a possible 879238 Sites
+Run Time = 54.00 seconds
+Weir and Cockerham mean Fst estimate: 0.18112
+Weir and Cockerham weighted Fst estimate: 0.36049
+After filtering, kept 14758 out of a possible 879238 Sites
+Run Time = 54.00 seconds

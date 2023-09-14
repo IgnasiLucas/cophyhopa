@@ -9,8 +9,15 @@ output:
 
 ```{bash LISTNAMES}
 FISHDATA=../../data/Fish_clean2.tsv
+VCF=/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf
 
-for POP in C.acrinasus C.aplinus C.confusus C.duplex C.fatioi C.profundus C.steinmanni D L P; do
+for POP in acrinasus alpinus confusus duplex fatioi profundus steinmanni; do
+  if [ ! -e ${POP}.txt ]; then
+    gawk -v POP=${POP} '($19 == "C." POP){print $1}' $FISHDATA > ${POP}.txt
+  fi
+done
+
+for POP in D L P; do
   if [ ! -e ${POP}.txt ]; then
     gawk -v POP=${POP} '($19 == POP){print $1}' $FISHDATA > ${POP}.txt
   fi
@@ -30,7 +37,7 @@ fi
 
 
 ```{bash}
-ALPINE=(C.acrinasus C.aplinus C.confusus C.duplex C.fatioi C.profundus C.steinmanni)
+ALPINE=(acrinasus alpinus confusus duplex fatioi profundus steinmanni)
 ARCTIC=(D L P)
 
 for j in $(seq 1 $(( ${#ALPINE[@]} - 1 )) ); do
@@ -73,11 +80,80 @@ if [ ! -e summary.txt ]; then
    echo -e "Pop1\tPop2\tMean.FST" > summary.txt
    for file in $(ls -1 FST/); do
       gawk '(NR > 1){S += $3}END{
-         split(FILENAME, A, /\./)
+         split(FILENAME, A, /[\.\/]/)
          MEANFST = S / (NR - 1)
-         print A[1] "\t" A[2] "\t" MEANFST
-      }' $file >> summary.txt
+         print A[2] "\t" A[3] "\t" MEANFST
+      }' FST/$file >> summary.txt
    done
 fi
 ```
 
+## By lake
+
+```{bash byLake}
+FISHDATA=../../data/Fish_clean2.tsv
+VCF=/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf
+AREG=(Walen Zurich Bienne Thun Brienz Langfjordvatn Suopatjavri)
+
+if [ ! -d FST_Lake ]; then mkdir FST_Lake; fi
+
+for LAKE in ${AREG[@]}; do
+  if [ ! -e FST_Lake/${LAKE}.txt ]; then
+    gawk -v LAKE=${LAKE} '($2 == LAKE){print $1}' $FISHDATA > FST_Lake/${LAKE}.txt
+  fi
+done
+
+for j in $(seq 1 $(( ${#AREG[@]} - 1 )) ); do
+   for i in $(seq 0 $(( j - 1 )) ); do
+      if [ ! -e FST_Lake/${AREG[$i]}.${AREG[$j]}.weir.fst ]; then
+         vcftools --vcf dirty.recode.vcf \
+                  --out FST_Lake/${AREG[$i]}.${AREG[$j]} \
+                  --thin 500 \
+                  --remove-indels \
+                  --mac 2 \
+                  --max-alleles 2 \
+                  --max-missing 1 \
+                  --max-meanDP 1000 \
+                  --weir-fst-pop FST_Lake/${AREG[$i]}.txt \
+                  --weir-fst-pop FST_Lake/${AREG[$j]}.txt >> FST_Lake/vcftools.log 2>&1 &
+      fi
+   done
+done
+wait
+
+if [ ! -e summaryLake.txt ]; then
+   echo -e "Lake1\tLake2\tMean.FST" > summaryLake.txt
+   for file in $(ls -1 FST_Lake/*.weir.fst); do
+      gawk '(NR > 1){S += $3}END{
+         split(FILENAME, A, /[\.\/]/)
+         MEANFST = S / (NR - 1)
+         print A[2] "\t" A[3] "\t" MEANFST
+      }' $file >> summaryLake.txt
+   done
+fi
+```
+
+```{r heatmaps}
+FSTpop <- read.table('summary.txt', header = TRUE)
+Pops   <- unique(c(FSTpop$Pop1, FSTpop$Pop2))
+FSTmat <- matrix(0, nrow = length(Pops), ncol = length(Pops))
+row.names(FSTmat) <- Pops
+colnames(FSTmat)  <- Pops
+for (i in 1:dim(FSTpop)[1]) {
+   FSTmat[FSTpop[i, 1], FSTpop[i, 2]] <- FSTpop[i, 3]
+   FSTmat[FSTpop[i, 2], FSTpop[i, 1]] <- FSTpop[i, 3]
+}
+heatmap(FSTmat, scale = 'none', margins = c(6, 5))
+
+FSTLake <- read.table('summaryLake.txt', header = TRUE)
+Lakes <- unique(c(FSTLake$Lake1, FSTLake$Lake2))
+FSTmat <- matrix(0, nrow = length(Lakes), ncol = length(Lakes))
+row.names(FSTmat) <- Lakes
+colnames(FSTmat) <- Lakes
+for (i in 1:dim(FSTLake)[1]) {
+   FSTmat[FSTLake[i, 1], FSTLake[i, 2]] <- FSTLake[i, 3]
+   FSTmat[FSTLake[i, 2], FSTLake[i, 1]] <- FSTLake[i, 3]
+}
+
+heatmap(FSTmat, scale = 'none', margins = c(8, 7))
+```
