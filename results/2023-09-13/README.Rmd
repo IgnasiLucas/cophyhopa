@@ -7,20 +7,44 @@ output:
       toc: TRUE
 ---
 
+$F_{ST}$ values must be estimated among populations, which are defined not only by the
+species assigned but by the lake as well. Members of the same species living in different
+lakes are from different populations, and we should separate them when estimating $F_{ST}$s.
+
+Some combinations of species and lake are not represented by many individuals. Only populations
+with at least 5 individuals sampled may be used for $F_{ST}$ estimation. Populations based on
+ambiguous species assignation (e.g. Bri.C.brienzii/C.fatioi, with 5 individuals) may be ignored.
+
 ```{bash LISTNAMES}
 FISHDATA=../../data/Fish_clean2.tsv
 VCF=/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf
+if [ ! -e ourFish.txt ]; then
+   gawk '(/^#CHROM/){
+      for (i = 10; i <= NF; i++) print $i
+      exit
+   }' $VCF > ourFish.txt
+fi
 
-for POP in acrinasus alpinus confusus duplex fatioi profundus steinmanni; do
-  if [ ! -e ${POP}.txt ]; then
-    gawk -v POP=${POP} '($19 == "C." POP){print $1}' $FISHDATA > ${POP}.txt
-  fi
-done
+if [ ! -e ourPopulations.txt ]; then
+   grep -f ourFish.txt $FISHDATA | cut -f 2,19 | \
+   gawk '{
+      POP = substr($1, 1, 3) "." $2
+      F[POP]++l
+   }END{
+      for (f in F) {
+         if (F[f] >= 5) print f
+      }
+   }' | \
+   grep -v "/" | sort > ourPopulations.txt
+fi
 
-for POP in D L P; do
-  if [ ! -e ${POP}.txt ]; then
-    gawk -v POP=${POP} '($19 == POP){print $1}' $FISHDATA > ${POP}.txt
-  fi
+for POP in $(cat ourPopulations.txt); do
+   if [ ! -e ${POP}.txt ]; then
+      gawk -v POP=${POP} '{
+         split(POP,A,/\./)
+         if (($2 ~ A[1]) && ($19 ~ A[3])) print $1
+      }' $FISHDATA > ${POP}.txt
+   fi
 done
 
 if [ ! -d FST ]; then mkdir FST; fi
@@ -32,45 +56,25 @@ if [ ! -e dirty.recode.vcf ]; then
            --recode \
            --recode-INFO-all > vcftools.log 2>&1
 fi
-
 ```
 
-
 ```{bash}
-ALPINE=(acrinasus alpinus confusus duplex fatioi profundus steinmanni)
-ARCTIC=(D L P)
-
-for j in $(seq 1 $(( ${#ALPINE[@]} - 1 )) ); do
+#ALPINE=(acrinasus alpinus confusus duplex fatioi profundus steinmanni)
+#ARCTIC=(D L P)
+ALL=($(cat ourPopulations.txt))
+for j in $(seq 1 $(( ${#ALL[@]} - 1 )) ); do
    for i in $(seq 0 $(( j - 1 )) ); do
-      if [ ! -e FST/${ALPINE[$i]}.${ALPINE[$j]}.weir.fst ]; then
+      if [ ! -e FST/${ALL[$i]}.${ALL[$j]}.weir.fst ]; then
          vcftools --vcf dirty.recode.vcf \
-                  --out FST/${ALPINE[$i]}.${ALPINE[$j]} \
+                  --out FST/${ALL[$i]}.${ALL[$j]} \
                   --thin 500 \
                   --remove-indels \
                   --mac 2 \
                   --max-alleles 2 \
                   --max-missing 1 \
                   --max-meanDP 1000 \
-                  --weir-fst-pop ${ALPINE[$i]}.txt \
-                  --weir-fst-pop ${ALPINE[$j]}.txt >> vcftools.log 2>&1 &
-      fi
-   done
-done
-wait
-
-for j in $(seq 1 $(( ${#ARCTIC[@]} - 1 )) ); do
-   for i in $(seq 0 $(( j - 1 )) ); do
-      if [ ! -e FST/${ARCTIC[$i]}.${ARCTIC[$j]}.weir.fst ]; then
-         vcftools --vcf dirty.recode.vcf \
-                  --out FST/${ARCTIC[$i]}.${ARCTIC[$j]} \
-                  --thin 500 \
-                  --remove-indels \
-                  --mac 2 \
-                  --max-alleles 2 \
-                  --max-missing 1 \
-                  --max-meanDP 1000 \
-                  --weir-fst-pop ${ARCTIC[$i]}.txt \
-                  --weir-fst-pop ${ARCTIC[$j]}.txt >> vcftools.log 2>&1 &
+                  --weir-fst-pop ${ALL[$i]}.txt \
+                  --weir-fst-pop ${ALL[$j]}.txt >> vcftools.log 2>&1 &
       fi
    done
 done
@@ -78,57 +82,15 @@ wait
 
 if [ ! -e summary.txt ]; then
    echo -e "Pop1\tPop2\tMean.FST" > summary.txt
-   for file in $(ls -1 FST/); do
-      gawk '(NR > 1){S += $3}END{
-         split(FILENAME, A, /[\.\/]/)
-         MEANFST = S / (NR - 1)
-         print A[2] "\t" A[3] "\t" MEANFST
-      }' FST/$file >> summary.txt
-   done
-fi
-```
-
-## By lake
-
-```{bash byLake}
-FISHDATA=../../data/Fish_clean2.tsv
-VCF=/gata/mar/cophyhopa/results/2022-04-22/assem2_outfiles/assem2.vcf
-AREG=(Walen Zurich Bienne Thun Brienz Langfjordvatn Suopatjavri)
-
-if [ ! -d FST_Lake ]; then mkdir FST_Lake; fi
-
-for LAKE in ${AREG[@]}; do
-  if [ ! -e FST_Lake/${LAKE}.txt ]; then
-    gawk -v LAKE=${LAKE} '($2 == LAKE){print $1}' $FISHDATA > FST_Lake/${LAKE}.txt
-  fi
-done
-
-for j in $(seq 1 $(( ${#AREG[@]} - 1 )) ); do
-   for i in $(seq 0 $(( j - 1 )) ); do
-      if [ ! -e FST_Lake/${AREG[$i]}.${AREG[$j]}.weir.fst ]; then
-         vcftools --vcf dirty.recode.vcf \
-                  --out FST_Lake/${AREG[$i]}.${AREG[$j]} \
-                  --thin 500 \
-                  --remove-indels \
-                  --mac 2 \
-                  --max-alleles 2 \
-                  --max-missing 1 \
-                  --max-meanDP 1000 \
-                  --weir-fst-pop FST_Lake/${AREG[$i]}.txt \
-                  --weir-fst-pop FST_Lake/${AREG[$j]}.txt >> FST_Lake/vcftools.log 2>&1 &
-      fi
-   done
-done
-wait
-
-if [ ! -e summaryLake.txt ]; then
-   echo -e "Lake1\tLake2\tMean.FST" > summaryLake.txt
-   for file in $(ls -1 FST_Lake/*.weir.fst); do
-      gawk '(NR > 1){S += $3}END{
-         split(FILENAME, A, /[\.\/]/)
-         MEANFST = S / (NR - 1)
-         print A[2] "\t" A[3] "\t" MEANFST
-      }' $file >> summaryLake.txt
+   for j in $(seq 1 $(( ${#ALL[@]} - 1 )) ); do
+      for i in $(seq 0 $(( j - 1 )) ); do
+         gawk -v P1=${ALL[$i]} -v P2=${ALL[$j]} '(NR > 1){
+            S += $3
+         }END{
+            MEANFST = S / (NR - 1)
+            print P1 "\t" P2 "\t" MEANFST
+         }' FST/${ALL[$i]}.${ALL[$j]}.weir.fst >> summary.txt
+      done
    done
 fi
 ```
@@ -144,16 +106,4 @@ for (i in 1:dim(FSTpop)[1]) {
    FSTmat[FSTpop[i, 2], FSTpop[i, 1]] <- FSTpop[i, 3]
 }
 heatmap(FSTmat, scale = 'none', margins = c(6, 5))
-
-FSTLake <- read.table('summaryLake.txt', header = TRUE)
-Lakes <- unique(c(FSTLake$Lake1, FSTLake$Lake2))
-FSTmat <- matrix(0, nrow = length(Lakes), ncol = length(Lakes))
-row.names(FSTmat) <- Lakes
-colnames(FSTmat) <- Lakes
-for (i in 1:dim(FSTLake)[1]) {
-   FSTmat[FSTLake[i, 1], FSTLake[i, 2]] <- FSTLake[i, 3]
-   FSTmat[FSTLake[i, 2], FSTLake[i, 1]] <- FSTLake[i, 3]
-}
-
-heatmap(FSTmat, scale = 'none', margins = c(8, 7))
 ```
