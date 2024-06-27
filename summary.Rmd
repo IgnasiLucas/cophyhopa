@@ -1,0 +1,111 @@
+---
+title: "Graphic summary COPHYHOPA's project folder"
+author: "J. Ignacio Lucas Lledó"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    fig_width: 12
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+I want to extract information from all `README.Rmd` files to plot a graph
+of what folders depend on what others. This should be automatic and always
+updated every time it is re-run. Ideally, the same script will work in
+other projects' folders.
+
+Because this is in the main folder, and I want to keep it clean, I will
+not save any intermediate files.
+
+The goal of this plots is to guide the revision of the project's folder
+itself: to identify redundant or deprecated folders, and those that need
+updating after a change, and also to make titles more descriptive.
+
+```{bash data}
+bin/MakeProjectGraph.sh | sort | uniq -c | \
+gawk '{print $3 "\t" $2 "\t" $1}' > connections.txt
+
+ls -1 results > folders.txt
+
+if [ -e titles.txt ]; then rm titles.txt; fi
+for folder in $(ls -1 results); do
+   if [ -e results/$folder/README.Rmd ]; then
+      TITLE=$(grep "^title:" results/$folder/README.Rmd | sed 's/title: //')
+      echo -e $folder "\t" $TITLE >> titles.txt
+   else
+      echo -e $folder "\tNA" >> titles.txt
+   fi
+done
+```
+
+## Fabric plot
+
+```{r graf, fig.width=12, warning=FALSE, message=FALSE}
+library(igraph)
+library(ggraph)
+library(ggplot2)
+links <- read.table('connections.txt',
+                    col.names = c('from', 'to', 'weight'))
+links <- links[links$from != links$to,]
+nodes <- read.table('folders.txt', col.names = 'ID')
+nodes <- nodes[order(nodes$ID), , drop=FALSE]
+title <- read.table('titles.txt', row.names = 1, col.names = c('ID', 'title'))
+nodes$title <- title[nodes$ID, 'title']
+# Some folders may call input from deleted, wrong or not-pulled folders:
+ghosts <- setdiff(links$from, nodes$ID)
+if (length(ghosts) > 0) {
+   nodes <- data.frame(ID = sort(c(nodes$ID, ghosts)))
+   nodes$ghost <- nodes$ID %in% ghosts
+   nodes$title <- title[nodes$ID, 'title']
+   links$ghost <- links$from %in% ghosts
+}
+g <- graph_from_data_frame(d = links, vertices = nodes)
+ggraph(g, layout = 'fabric', sort.by = name) + 
+  geom_node_range(color = 'gray', aes(x=0, xend=50)) +
+  geom_edge_span(end_shape = 'square', aes(edge_colour = ghost)) + 
+  xlim(-35, 50) +
+  geom_node_label(aes(label = title, x = -9), size = 2, hjust = 1) +
+  geom_node_label(aes(label = name, x = -1), size = 2, hjust = 1) +
+  coord_fixed() + theme(legend.position = 'none') +
+  ggtitle("Fabric plot of the project's folders")
+```
+
+Unfortunately, I didn't manage to make the figure any wider. The folder's
+name is preceded by the title of its `README.Rmd` file, if present. Folders
+in blue seem to appear as sources, but are absent in the directory.
+I need to fix that.
+
+## Linear layout with archs
+
+```{r linear, fig.width=12}
+ggraph(g, layout = 'linear', sort.by = name) +
+  geom_edge_arc(arrow = arrow(type = 'closed', angle = 10,
+                              length=unit(0.1, 'inches')),
+                color = 'orange', strength = 0.5, fold = TRUE) +
+  geom_node_label(aes(label = name), angle = -45, y = -0.2,
+                  nudge_x = 1, hjust = 0) +
+  ylim(-4, 10) +
+  theme_void()
+```
+
+```{r oneMore, fig.height=10, warning=FALSE}
+N <- length(V(g))
+ggraph(g, layout = data.frame(x = rep(10.1, N), y = N:1)) +
+  geom_edge_arc(aes(color = weight), strength = 0.5,
+                arrow = arrow(angle = 10,
+                              length = unit(0.1, 'inches'),
+                              type = 'closed'),
+                fold = TRUE)+
+  geom_node_label(aes(label = title), x = 6, hjust = 1) +
+  geom_node_label(aes(label = name), x = 10, hjust = 1) +
+  xlim(-5, 20) + theme(legend.position = 'none')
+```
+
+```{bash cleaning, eval=FALSE}
+rm connections.txt
+rm folders.txt
+rm titles.txt
+```

@@ -1,3 +1,12 @@
+# 2023-09-13
+Estimation of FSTs among populations, defined not only by species but also by lake.
+
+# 2023-07-07
+Not finished.
+
+# 2023-03-10
+Not finished.
+
 # 2022-12-29
 Estimation of Fst between species of Balchen and Felchen ecomorphs from the same
 lake (in Switzerland) or between species of ecomorphs L and P from the same lake
@@ -11,6 +20,9 @@ See [a wonderful report here](https://htmlpreview.github.io/?https://github.com/
 # 2022-12-23
 Estimation of Fst between species of the same ecomorph from different lakes. This
 comparison may be useful later. It is not finished.
+
+# 2022-12-21
+Not finished.
 
 # 2022-12-20
 I use `bedtools` to identify the subset of loci with enough coverage in all samples
@@ -65,7 +77,7 @@ be biased and need to be checked.
 See the [report in this link](https://htmlpreview.github.io/?https://github.com/IgnasiLucas/cophyhopa/blob/soca/results/2022-07-23/README.html).
 
 # 2022-06-15
-
+Not finished.
 
 # 2022-06-02
 Here Mar uses Treemix to get the populations tree, and to infer migration events.
