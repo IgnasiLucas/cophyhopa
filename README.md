@@ -301,3 +301,9 @@ In silico digestions of a reference genome to inform the choice of restriction e
 
 # 2020-11-12
 Preliminar in silico digestions.
+
+***
+
+![](doc/MICIU+AEI.jpg){width=300px}
+
+Project PID2019-104908GB-I00 funded by MICIU/AEI/10.13039/501100011033
